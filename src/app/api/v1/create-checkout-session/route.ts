@@ -29,10 +29,7 @@ export async function POST(req: NextRequest) {
     const total = calculateCartTotal(items);
 
     if (!isDeliveryMinimumMet(orderType, total)) {
-      return NextResponse.json(
-        { error: getDeliveryMinimumMessage("EUR") },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: getDeliveryMinimumMessage("EUR") }, { status: 400 });
     }
 
     const lineItems = items.map((item) => ({

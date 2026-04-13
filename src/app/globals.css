@@ -24,6 +24,11 @@ body {
 .font-playfair {
   font-family: "Playfair Display", serif;
 }
+
+button {
+  cursor: pointer;
+}
+
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {

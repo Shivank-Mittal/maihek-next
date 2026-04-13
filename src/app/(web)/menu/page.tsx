@@ -1,12 +1,11 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { ShoppingCart } from "lucide-react";
+import { motion } from "framer-motion";
 import { useCart } from "@/hooks/use-cart";
 import { toast } from "sonner";
 import CartDrawer from "@/components/cart-drawer";
-import { useIsMobile } from "@/hooks/use-mobile";
+import DishCard from "@/components/dish-card";
 import { Category, Dish } from "./types";
 
 export default function Menu() {
@@ -158,87 +157,6 @@ export default function Menu() {
   );
 }
 
-const DishCard = ({
-  dish,
-  isImageLeft,
-  addToCart,
-}: {
-  dish: Dish;
-  isImageLeft: boolean;
-  addToCart: (
-    item: { _id: string; name: string; price: number; image?: string },
-    quantity: number
-  ) => void;
-}) => {
-  const [quantity, setQuantity] = useState(0);
-  const isMobile = useIsMobile();
-  console.log(isMobile, "isMobile");
-  const handleIncrement = () => setQuantity(quantity + 1);
-  const handleDecrement = () => quantity > 0 && setQuantity(quantity - 1);
-
-  const handleAddToCart = () => {
-    if (quantity > 0) {
-      addToCart(
-        {
-          _id: dish._id,
-          name: dish.name,
-          price: dish.price,
-          image: dish.image,
-        },
-        quantity
-      );
-      setQuantity(0);
-    }
-  };
-
-  return (
-    <div className="bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow duration-200">
-      <h3 className="text-xl font-semibold text-gray-800">{dish.name}</h3>
-      <p className="text-gray-600 mt-2">{dish.description}</p>
-      {dish.includes && dish.includes.length > 0 && (
-        <div>
-          <h4 className="text-sm font-semibold text-gray-400 uppercase tracking-wider">
-            Included Items
-          </h4>
-          <ul className="list-disc list-inside text-gray-400 text-sm mt-2">
-            {dish.includes.map((item, index) => (
-              <li key={index}>{item}</li>
-            ))}
-          </ul>
-        </div>
-      )}
-
-      <div className="flex justify-between items-center mt-4">
-        <p className="text-black font-bold">€{dish.price}</p>
-        <div className="flex items-center space-x-2">
-          <button
-            className="decrease-qty bg-gray-200 text-gray-700 px-2 py-1 rounded hover:bg-gray-300"
-            onClick={handleDecrement}
-            disabled={quantity === 0}
-          >
-            -
-          </button>
-          <span className="text-gray-700 qty-display" data-id="4">
-            {quantity}
-          </span>
-          <button
-            className="increase-qty bg-gray-200 text-gray-700 px-2 py-1 rounded hover:bg-gray-300"
-            onClick={handleIncrement}
-          >
-            +
-          </button>
-          <button
-            className="add-to-cart bg-black text-white px-4 py-2 rounded-lg hover:bg-gray-800 transition-colors duration-200"
-            onClick={handleAddToCart} //images.unsplash.com/photo-1559847844-5315695dadae?w=300&h=200&fit=crop"
-          >
-            Add to Cart
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-};
-
 const CategoryBlock = ({
   _id,
   dishes,
@@ -248,7 +166,10 @@ const CategoryBlock = ({
   _id: string;
   title: string;
   dishes: Dish[];
-  addToCart: (item: { _id: string; name: string; price: number }, quantity: number) => void;
+  addToCart: (
+    item: { _id: string; name: string; price: number; image?: string },
+    quantity: number
+  ) => void;
 }) => {
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.6 }}>
@@ -257,13 +178,8 @@ const CategoryBlock = ({
       </h2>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {dishes.map((dish, index) => (
-          <DishCard
-            key={dish._id}
-            dish={dish}
-            isImageLeft={index % 2 === 0}
-            addToCart={addToCart}
-          />
+        {dishes.map((dish) => (
+          <DishCard key={dish._id} dish={dish} addToCart={addToCart} />
         ))}
       </div>
     </motion.div>

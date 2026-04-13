@@ -53,9 +53,9 @@ const clampQty = (q: unknown): number => {
 const round2 = (n: number) => Math.round((n + Number.EPSILON) * 100) / 100;
 
 type SafeOrder = CartItem & {
-  quantity: number;           // normalized
-  price: number;              // normalized unit price
-  _subtotal: number;          // computed once, used everywhere
+  quantity: number; // normalized
+  price: number; // normalized unit price
+  _subtotal: number; // computed once, used everywhere
 };
 
 // Handles POST requests to /api/send-email
@@ -66,10 +66,7 @@ export async function POST(request: NextRequest) {
 
     // Validate/normalize orders deterministically
     if (!Array.isArray(orders) || orders.length === 0) {
-      return NextResponse.json(
-        { message: "No orders supplied" },
-        { status: 400 }
-      );
+      return NextResponse.json({ message: "No orders supplied" }, { status: 400 });
     }
 
     const safeOrders: SafeOrder[] = orders.map((o, i) => {
@@ -93,15 +90,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const response = await sendEmail(
-      name,
-      safeOrders,
-      phone,
-      email,
-      address,
-      zipcode,
-      orderType
-    );
+    const response = await sendEmail(name, safeOrders, phone, email, address, zipcode, orderType);
     return NextResponse.json({ message: "Email sent successfully!", response });
   } catch (error: any) {
     console.error("Error in API route:", error);
@@ -127,9 +116,11 @@ const sendEmail = async (
   // Custom message based on order type
   let orderMessage = "";
   if (orderType?.toLowerCase() === "livraison") {
-    orderMessage = "<p style='color:#1d4ed8;font-weight:bold;'>🚚 Votre commande sera livrée dans 40 minutes.</p>";
+    orderMessage =
+      "<p style='color:#1d4ed8;font-weight:bold;'>🚚 Votre commande sera livrée dans 40 minutes.</p>";
   } else if (orderType?.toLowerCase() === "emporter") {
-    orderMessage = "<p style='color:#16a34a;font-weight:bold;'>🥡 Vous pouvez récupérer votre commande dans 20 minutes.</p>";
+    orderMessage =
+      "<p style='color:#16a34a;font-weight:bold;'>🥡 Vous pouvez récupérer votre commande dans 20 minutes.</p>";
   }
 
   // Compute grand total once, from precomputed subtotals

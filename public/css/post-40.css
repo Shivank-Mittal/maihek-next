@@ -66,9 +66,7 @@
 .elementor-40 .elementor-element.elementor-element-8815494 {
   text-align: center;
 }
-.elementor-40
-  .elementor-element.elementor-element-8815494
-  .elementor-heading-title {
+.elementor-40 .elementor-element.elementor-element-8815494 .elementor-heading-title {
   font-family: "Quanta Grotesk Pro", Sans-serif;
   font-size: 24px;
   font-weight: normal;
@@ -79,9 +77,7 @@
 .elementor-40 .elementor-element.elementor-element-acd7a0a {
   text-align: center;
 }
-.elementor-40
-  .elementor-element.elementor-element-acd7a0a
-  .elementor-heading-title {
+.elementor-40 .elementor-element.elementor-element-acd7a0a .elementor-heading-title {
   font-family: "Clash Display", Sans-serif;
   font-size: 210px;
   font-weight: 700;
@@ -157,16 +153,12 @@
 .elementor-40 .elementor-element.elementor-element-4683c03 {
   --display: flex;
 }
-.elementor-40
-  .elementor-element.elementor-element-b7d59a0
-  .elementor-heading-title {
+.elementor-40 .elementor-element.elementor-element-b7d59a0 .elementor-heading-title {
   font-family: "Clash Display", Sans-serif;
   font-size: 80px;
   font-weight: 700;
 }
-.elementor-40
-  .elementor-element.elementor-element-daff5aa
-  .elementor-heading-title {
+.elementor-40 .elementor-element.elementor-element-daff5aa .elementor-heading-title {
   font-family: "Quanta Grotesk Pro", Sans-serif;
   font-size: 28px;
   font-weight: normal;
@@ -178,14 +170,11 @@
   font-weight: var(--e-global-typography-text-font-weight);
   color: var(--e-global-color-text);
 }
-.elementor-widget-text-editor.elementor-drop-cap-view-stacked
-  .elementor-drop-cap {
+.elementor-widget-text-editor.elementor-drop-cap-view-stacked .elementor-drop-cap {
   background-color: var(--e-global-color-primary);
 }
-.elementor-widget-text-editor.elementor-drop-cap-view-framed
-  .elementor-drop-cap,
-.elementor-widget-text-editor.elementor-drop-cap-view-default
-  .elementor-drop-cap {
+.elementor-widget-text-editor.elementor-drop-cap-view-framed .elementor-drop-cap,
+.elementor-widget-text-editor.elementor-drop-cap-view-default .elementor-drop-cap {
   color: var(--e-global-color-primary);
   border-color: var(--e-global-color-primary);
 }
@@ -230,9 +219,7 @@
 .elementor-40 .elementor-element.elementor-element-aa5b832 {
   text-align: left;
 }
-.elementor-40
-  .elementor-element.elementor-element-aa5b832
-  .elementor-heading-title {
+.elementor-40 .elementor-element.elementor-element-aa5b832 .elementor-heading-title {
   font-family: "Quanta Grotesk Pro", Sans-serif;
   font-size: 32px;
   font-weight: normal;
@@ -303,9 +290,7 @@
 .elementor-40 .elementor-element.elementor-element-9c62114 {
   text-align: center;
 }
-.elementor-40
-  .elementor-element.elementor-element-9c62114
-  .elementor-heading-title {
+.elementor-40 .elementor-element.elementor-element-9c62114 .elementor-heading-title {
   font-family: "Quanta Grotesk Pro", Sans-serif;
   font-size: 24px;
   font-weight: normal;
@@ -323,9 +308,7 @@
   font-family: var(--e-global-typography-secondary-font-family), Sans-serif;
   font-weight: var(--e-global-typography-secondary-font-weight);
 }
-.elementor-40
-  .elementor-element.elementor-element-d7e5bed
-  .elementor-counter-title {
+.elementor-40 .elementor-element.elementor-element-d7e5bed .elementor-counter-title {
   justify-content: center;
   color: #f7e4bf;
   font-family: "Quanta Grotesk Pro", Sans-serif;
@@ -333,9 +316,7 @@
   font-weight: normal;
   font-style: italic;
 }
-.elementor-40
-  .elementor-element.elementor-element-d7e5bed
-  .elementor-counter-number-wrapper {
+.elementor-40 .elementor-element.elementor-element-d7e5bed .elementor-counter-number-wrapper {
   color: var(--e-global-color-accent);
   font-family: "Quanta Grotesk Pro", Sans-serif;
   font-size: 90px;
@@ -383,15 +364,10 @@
   font-size: 40px;
   font-weight: 600;
 }
-.elementor-40
-  .elementor-element.elementor-element-1c6e7d7
-  .ue-marquee-tag-icon {
+.elementor-40 .elementor-element.elementor-element-1c6e7d7 .ue-marquee-tag-icon {
   font-size: 55px;
 }
-.elementor-40
-  .elementor-element.elementor-element-1c6e7d7
-  .ue-marquee-tag-icon
-  svg {
+.elementor-40 .elementor-element.elementor-element-1c6e7d7 .ue-marquee-tag-icon svg {
   width: 55px;
   height: 55px;
 }
@@ -454,9 +430,7 @@
   --flex-grow: 0;
   --flex-shrink: 0;
 }
-.elementor-40
-  .elementor-element.elementor-element-0453366
-  .elementor-heading-title {
+.elementor-40 .elementor-element.elementor-element-0453366 .elementor-heading-title {
   font-family: "Clash Display", Sans-serif;
   font-size: 80px;
   font-weight: 700;
@@ -506,15 +480,10 @@
   .elementor-image-box-img {
   width: 70px;
 }
-.elementor-40
-  .elementor-element.elementor-element-3664315
-  .elementor-image-box-img
-  img {
+.elementor-40 .elementor-element.elementor-element-3664315 .elementor-image-box-img img {
   transition-duration: 0.3s;
 }
-.elementor-40
-  .elementor-element.elementor-element-3664315
-  .elementor-image-box-title {
+.elementor-40 .elementor-element.elementor-element-3664315 .elementor-image-box-title {
   font-family: "Clash Display", Sans-serif;
   font-size: 24px;
   font-weight: 600;
@@ -540,15 +509,10 @@
   .elementor-image-box-img {
   width: 70px;
 }
-.elementor-40
-  .elementor-element.elementor-element-3e6a682
-  .elementor-image-box-img
-  img {
+.elementor-40 .elementor-element.elementor-element-3e6a682 .elementor-image-box-img img {
   transition-duration: 0.3s;
 }
-.elementor-40
-  .elementor-element.elementor-element-3e6a682
-  .elementor-image-box-title {
+.elementor-40 .elementor-element.elementor-element-3e6a682 .elementor-image-box-title {
   font-family: "Clash Display", Sans-serif;
   font-size: 24px;
   font-weight: 600;
@@ -574,15 +538,10 @@
   .elementor-image-box-img {
   width: 70px;
 }
-.elementor-40
-  .elementor-element.elementor-element-fd8e4ad
-  .elementor-image-box-img
-  img {
+.elementor-40 .elementor-element.elementor-element-fd8e4ad .elementor-image-box-img img {
   transition-duration: 0.3s;
 }
-.elementor-40
-  .elementor-element.elementor-element-fd8e4ad
-  .elementor-image-box-title {
+.elementor-40 .elementor-element.elementor-element-fd8e4ad .elementor-image-box-title {
   font-family: "Clash Display", Sans-serif;
   font-size: 24px;
   font-weight: 600;
@@ -608,15 +567,10 @@
   .elementor-image-box-img {
   width: 70px;
 }
-.elementor-40
-  .elementor-element.elementor-element-d6c94f8
-  .elementor-image-box-img
-  img {
+.elementor-40 .elementor-element.elementor-element-d6c94f8 .elementor-image-box-img img {
   transition-duration: 0.3s;
 }
-.elementor-40
-  .elementor-element.elementor-element-d6c94f8
-  .elementor-image-box-title {
+.elementor-40 .elementor-element.elementor-element-d6c94f8 .elementor-image-box-title {
   font-family: "Clash Display", Sans-serif;
   font-size: 24px;
   font-weight: 600;
@@ -642,15 +596,10 @@
   .elementor-image-box-img {
   width: 70px;
 }
-.elementor-40
-  .elementor-element.elementor-element-1a8afee
-  .elementor-image-box-img
-  img {
+.elementor-40 .elementor-element.elementor-element-1a8afee .elementor-image-box-img img {
   transition-duration: 0.3s;
 }
-.elementor-40
-  .elementor-element.elementor-element-1a8afee
-  .elementor-image-box-title {
+.elementor-40 .elementor-element.elementor-element-1a8afee .elementor-image-box-title {
   font-family: "Clash Display", Sans-serif;
   font-size: 24px;
   font-weight: 600;
@@ -676,15 +625,10 @@
   .elementor-image-box-img {
   width: 70px;
 }
-.elementor-40
-  .elementor-element.elementor-element-9a9f2be
-  .elementor-image-box-img
-  img {
+.elementor-40 .elementor-element.elementor-element-9a9f2be .elementor-image-box-img img {
   transition-duration: 0.3s;
 }
-.elementor-40
-  .elementor-element.elementor-element-9a9f2be
-  .elementor-image-box-title {
+.elementor-40 .elementor-element.elementor-element-9a9f2be .elementor-image-box-title {
   font-family: "Clash Display", Sans-serif;
   font-size: 24px;
   font-weight: 600;
@@ -748,9 +692,7 @@
 .elementor-40 .elementor-element.elementor-element-39fc898 {
   text-align: center;
 }
-.elementor-40
-  .elementor-element.elementor-element-39fc898
-  .elementor-heading-title {
+.elementor-40 .elementor-element.elementor-element-39fc898 .elementor-heading-title {
   font-family: "Clash Display", Sans-serif;
   font-size: 80px;
   font-weight: 700;
@@ -760,9 +702,7 @@
 .elementor-40 .elementor-element.elementor-element-55a4a63 {
   text-align: center;
 }
-.elementor-40
-  .elementor-element.elementor-element-55a4a63
-  .elementor-heading-title {
+.elementor-40 .elementor-element.elementor-element-55a4a63 .elementor-heading-title {
   font-family: "Clash Display", Sans-serif;
   font-size: 24px;
   font-weight: normal;
@@ -782,17 +722,13 @@
 .elementor-40 .elementor-element.elementor-element-232898d {
   --display: flex;
 }
-.elementor-40
-  .elementor-element.elementor-element-07e61ae
-  > .elementor-widget-container {
+.elementor-40 .elementor-element.elementor-element-07e61ae > .elementor-widget-container {
   background-color: #f7e4bf;
 }
 .elementor-40 .elementor-element.elementor-element-3e332eb {
   --display: flex;
 }
-.elementor-40
-  .elementor-element.elementor-element-e68d550
-  > .elementor-widget-container {
+.elementor-40 .elementor-element.elementor-element-e68d550 > .elementor-widget-container {
   background-color: #ff6514;
 }
 .elementor-40 .elementor-element.elementor-element-6be1e18 {
@@ -851,9 +787,7 @@
 .elementor-40 .elementor-element.elementor-element-308fa7f {
   --display: flex;
   --flex-direction: row;
-  --container-widget-width: calc(
-    (1 - var(--container-widget-flex-grow)) * 100%
-  );
+  --container-widget-width: calc((1 - var(--container-widget-flex-grow)) * 100%);
   --container-widget-height: 100%;
   --container-widget-flex-grow: 1;
   --container-widget-align-self: stretch;
@@ -885,9 +819,7 @@
   --divider-color: #ffbe41;
   --divider-border-width: 1px;
 }
-.elementor-40
-  .elementor-element.elementor-element-96b7ce3
-  .elementor-divider-separator {
+.elementor-40 .elementor-element.elementor-element-96b7ce3 .elementor-divider-separator {
   width: 100%;
 }
 .elementor-40 .elementor-element.elementor-element-249592a img {
@@ -898,17 +830,13 @@
   --divider-color: #ffbe41;
   --divider-border-width: 1px;
 }
-.elementor-40
-  .elementor-element.elementor-element-0631527
-  .elementor-divider-separator {
+.elementor-40 .elementor-element.elementor-element-0631527 .elementor-divider-separator {
   width: 100%;
 }
 .elementor-40 .elementor-element.elementor-element-f1a1152 {
   text-align: center;
 }
-.elementor-40
-  .elementor-element.elementor-element-f1a1152
-  .elementor-heading-title {
+.elementor-40 .elementor-element.elementor-element-f1a1152 .elementor-heading-title {
   font-family: "Clash Display", Sans-serif;
   font-size: 80px;
   font-weight: 700;
@@ -918,9 +846,7 @@
 .elementor-40 .elementor-element.elementor-element-c619e6f {
   text-align: center;
 }
-.elementor-40
-  .elementor-element.elementor-element-c619e6f
-  .elementor-heading-title {
+.elementor-40 .elementor-element.elementor-element-c619e6f .elementor-heading-title {
   font-family: "Rubik", Sans-serif;
   font-size: 18px;
   font-weight: normal;
@@ -958,77 +884,49 @@
     > .elementor-motion-effects-layer {
     background-image: url("../images/Uncle-cook.png");
   }
-  .elementor-40
-    .elementor-element.elementor-element-9c62114
-    .elementor-heading-title {
+  .elementor-40 .elementor-element.elementor-element-9c62114 .elementor-heading-title {
     line-height: 1.3em;
   }
   .elementor-40 .elementor-element.elementor-element-1c6e7d7 .ue-marquee {
     padding: 05px 0px 05px 0px;
   }
-  .elementor-40
-    .elementor-element.elementor-element-2d06221
-    > .elementor-widget-container {
+  .elementor-40 .elementor-element.elementor-element-2d06221 > .elementor-widget-container {
     margin: 0% -15% 0% 0%;
   }
-  .elementor-40
-    .elementor-element.elementor-element-3664315
-    .elementor-image-box-wrapper {
+  .elementor-40 .elementor-element.elementor-element-3664315 .elementor-image-box-wrapper {
     text-align: left;
   }
-  .elementor-40
-    .elementor-element.elementor-element-3664315
-    .elementor-image-box-img {
+  .elementor-40 .elementor-element.elementor-element-3664315 .elementor-image-box-img {
     margin-bottom: 15px;
   }
-  .elementor-40
-    .elementor-element.elementor-element-3e6a682
-    .elementor-image-box-wrapper {
+  .elementor-40 .elementor-element.elementor-element-3e6a682 .elementor-image-box-wrapper {
     text-align: left;
   }
-  .elementor-40
-    .elementor-element.elementor-element-3e6a682
-    .elementor-image-box-img {
+  .elementor-40 .elementor-element.elementor-element-3e6a682 .elementor-image-box-img {
     margin-bottom: 15px;
   }
-  .elementor-40
-    .elementor-element.elementor-element-fd8e4ad
-    .elementor-image-box-wrapper {
+  .elementor-40 .elementor-element.elementor-element-fd8e4ad .elementor-image-box-wrapper {
     text-align: left;
   }
-  .elementor-40
-    .elementor-element.elementor-element-fd8e4ad
-    .elementor-image-box-img {
+  .elementor-40 .elementor-element.elementor-element-fd8e4ad .elementor-image-box-img {
     margin-bottom: 15px;
   }
-  .elementor-40
-    .elementor-element.elementor-element-d6c94f8
-    .elementor-image-box-wrapper {
+  .elementor-40 .elementor-element.elementor-element-d6c94f8 .elementor-image-box-wrapper {
     text-align: left;
   }
-  .elementor-40
-    .elementor-element.elementor-element-d6c94f8
-    .elementor-image-box-img {
+  .elementor-40 .elementor-element.elementor-element-d6c94f8 .elementor-image-box-img {
     margin-bottom: 15px;
   }
-  .elementor-40
-    .elementor-element.elementor-element-1a8afee
-    .elementor-image-box-wrapper {
+  .elementor-40 .elementor-element.elementor-element-1a8afee .elementor-image-box-wrapper {
     text-align: left;
   }
-  .elementor-40
-    .elementor-element.elementor-element-1a8afee
-    .elementor-image-box-img {
+  .elementor-40 .elementor-element.elementor-element-1a8afee .elementor-image-box-img {
     margin-bottom: 15px;
   }
-  .elementor-40
-    .elementor-element.elementor-element-9a9f2be
-    .elementor-image-box-wrapper {
+  .elementor-40 .elementor-element.elementor-element-9a9f2be .elementor-image-box-wrapper {
     text-align: left;
   }
-  .elementor-40
-    .elementor-element.elementor-element-9a9f2be
-    .elementor-image-box-img {
+  .elementor-40 .elementor-element.elementor-element-9a9f2be .elementor-image-box-img {
     margin-bottom: 15px;
   }
 } /* Start JX Custom Fonts CSS */ /* End JX Custom Fonts CSS */
@@ -1291,17 +1189,11 @@
   margin-bottom: 0;
 }
 
-#why
-  .icon-wrap
-  .elementor-widget-image-box:nth-child(odd)
-  .elementor-image-box-img {
+#why .icon-wrap .elementor-widget-image-box:nth-child(odd) .elementor-image-box-img {
   background-color: #ff6514;
 }
 
-#why
-  .icon-wrap
-  .elementor-widget-image-box:nth-child(even)
-  .elementor-image-box-img {
+#why .icon-wrap .elementor-widget-image-box:nth-child(even) .elementor-image-box-img {
   background-color: #f7e4bf;
 }
 
@@ -1317,11 +1209,7 @@
   padding: 10px;
 }
 
-#why
-  .icon-wrap
-  .elementor-widget-image-box:nth-child(4)
-  .elementor-image-box-img
-  img {
+#why .icon-wrap .elementor-widget-image-box:nth-child(4) .elementor-image-box-img img {
   position: relative;
   left: -3px;
 }
@@ -1429,16 +1317,12 @@
   margin-top: 120px;
 }
 
-#recipes
-  .slick-slide[aria-hidden="true"]:not(.slick-cloned)
-  ~ .slick-cloned[aria-hidden="true"] {
+#recipes .slick-slide[aria-hidden="true"]:not(.slick-cloned) ~ .slick-cloned[aria-hidden="true"] {
   margin-top: 0;
   transition: all 0.5s ease;
 }
 
-#recipes
-  .slick-slide[aria-hidden="true"]:not([tabindex="-1"])
-  + .slick-cloned[aria-hidden="true"] {
+#recipes .slick-slide[aria-hidden="true"]:not([tabindex="-1"]) + .slick-cloned[aria-hidden="true"] {
   margin-top: 120px;
   transition: all 0.5s ease;
 }
@@ -2566,13 +2450,12 @@
   font-weight: normal;
   font-display: auto;
   src: url("../fonts/QuantaGroteskPro-Italic_1.eot");
-  src: url("../fonts/QuantaGroteskPro-Italic_1.eot#iefix")
-      format("embedded-opentype"),
+  src:
+    url("../fonts/QuantaGroteskPro-Italic_1.eot#iefix") format("embedded-opentype"),
     url("../fonts/QuantaGroteskPro-Italic_1.woff2") format("woff2"),
     url("../fonts/QuantaGroteskPro-Italic_1.woff") format("woff"),
     url("../fonts/QuantaGroteskPro-Italic_1.ttf") format("truetype"),
-    url("../images/QuantaGroteskPro-Italic_1.svg#QuantaGroteskPro")
-      format("svg");
+    url("../images/QuantaGroteskPro-Italic_1.svg#QuantaGroteskPro") format("svg");
 }
 /* End Custom Fonts CSS */
 /* Start Custom Fonts CSS */
@@ -2582,7 +2465,8 @@
   font-weight: bold;
   font-display: auto;
   src: url("../fonts/ClashDisplay-Bold_1.eot");
-  src: url("../fonts/ClashDisplay-Bold_1.eot#iefix") format("embedded-opentype"),
+  src:
+    url("../fonts/ClashDisplay-Bold_1.eot#iefix") format("embedded-opentype"),
     url("../fonts/ClashDisplay-Bold_1.woff2") format("woff2"),
     url("../fonts/ClashDisplay-Bold_1.woff") format("woff"),
     url("../fonts/ClashDisplay-Bold_1.ttf") format("truetype"),
@@ -2594,8 +2478,8 @@
   font-weight: 600;
   font-display: auto;
   src: url("../fonts/ClashDisplay-Semibold_1.eot");
-  src: url("../fonts/ClashDisplay-Semibold_1.eot#iefix")
-      format("embedded-opentype"),
+  src:
+    url("../fonts/ClashDisplay-Semibold_1.eot#iefix") format("embedded-opentype"),
     url("../fonts/ClashDisplay-Semibold_1.woff2") format("woff2"),
     url("../fonts/ClashDisplay-Semibold_1.woff") format("woff"),
     url("../fonts/ClashDisplay-Semibold_1.ttf") format("truetype"),
@@ -2607,8 +2491,8 @@
   font-weight: 400;
   font-display: auto;
   src: url("../fonts/ClashDisplay-Regular_1.eot");
-  src: url("../fonts/ClashDisplay-Regular_1.eot#iefix")
-      format("embedded-opentype"),
+  src:
+    url("../fonts/ClashDisplay-Regular_1.eot#iefix") format("embedded-opentype"),
     url("../fonts/ClashDisplay-Regular_1.woff2") format("woff2"),
     url("../fonts/ClashDisplay-Regular_1.woff") format("woff"),
     url("../fonts/ClashDisplay-Regular_1.ttf") format("truetype"),

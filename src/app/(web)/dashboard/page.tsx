@@ -27,7 +27,6 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { SiteHeader } from "@/components/site-header";
 import { DishInput as Dish } from "@/models/dish";
 import { Toggle } from "@/components/ui/toggle";
 
@@ -169,7 +168,6 @@ export default function DishesPage() {
 
   return (
     <>
-      <SiteHeader />
       <div className="min-h-screen flex flex-col items-center justify-center bg-gray-100 p-4">
         <motion.div
           initial={{ opacity: 0, y: -20 }}

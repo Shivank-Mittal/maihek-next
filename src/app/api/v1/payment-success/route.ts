@@ -122,9 +122,7 @@ const sendEmail = async (
 
     const mail = await transporter.sendMail({
       from: `"Order - Maihak" <${process.env.NEXT_PUBLIC_NODEMAILER_USERNAME}>`,
-      to: [email, process.env.NEXT_PUBLIC_NODEMAILER_ADMIN]
-        .filter(Boolean)
-        .join(", "),
+      to: [email, process.env.NEXT_PUBLIC_NODEMAILER_ADMIN].filter(Boolean).join(", "),
       subject: `Order from ${name}`,
       html: `
         <div style="font-family:Arial, sans-serif; max-width:650px; margin:auto; background:#ffffff; padding:25px; border-radius:12px; border:1px solid #e5e7eb; box-shadow:0 4px 12px rgba(0,0,0,0.1);">
@@ -142,17 +140,18 @@ const sendEmail = async (
             <p style="font-weight:bold; margin-bottom:8px;">🛒 Commandes:</p>
             <ul style="padding-left:15px; color:#111827; list-style:disc;">
               ${orders
-          .map(
-            (order) => `
+                .map(
+                  (order) => `
                     <li style="margin-bottom:15px; background:#fff; padding:10px; border-radius:8px; border:1px solid #e5e7eb;">
-                      <p><strong>${order.name}</strong> <br/> Quantité: ${order.quantity
-              } <br/> Prix unitaire: ${order.price.toFixed(2)} €</p>
+                      <p><strong>${order.name}</strong> <br/> Quantité: ${
+                        order.quantity
+                      } <br/> Prix unitaire: ${order.price.toFixed(2)} €</p>
                       <p style="font-weight:bold; color:#2563eb;">Sous-total: ${order._subtotal.toFixed(
-                2
-              )} €</p>
+                        2
+                      )} €</p>
                     </li>`
-          )
-          .join("")}
+                )
+                .join("")}
             </ul>
           </div>
 

@@ -23,7 +23,9 @@ export default function OrderSuccessPage() {
         </div>
         <div className="mt-8 space-y-6">
           <div className="bg-orange-50 p-6 rounded-lg text-gray-700">
-            <p className="text-base font-medium">Vous recevrez bientôt un e-mail de confirmation.</p>
+            <p className="text-base font-medium">
+              Vous recevrez bientôt un e-mail de confirmation.
+            </p>
           </div>
           <div className="flex flex-col space-y-4">
             <Link

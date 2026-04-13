@@ -9,10 +9,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useForm, SubmitHandler } from "react-hook-form";
 import { toast } from "sonner";
 import { DeliveryMinimumDialog } from "@/components/delivery-minimum-dialog";
-import {
-  DELIVERY_MINIMUM_ORDER_AMOUNT,
-  isDeliveryMinimumMet,
-} from "@/lib/checkout";
+import { DELIVERY_MINIMUM_ORDER_AMOUNT, isDeliveryMinimumMet } from "@/lib/checkout";
 
 const translations = {
   fr: {

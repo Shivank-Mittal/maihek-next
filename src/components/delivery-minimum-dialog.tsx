@@ -1,10 +1,7 @@
 "use client";
 
 import { AnimatePresence, motion } from "framer-motion";
-import {
-  DELIVERY_MINIMUM_ORDER_AMOUNT,
-  getDeliveryShortfall,
-} from "@/lib/checkout";
+import { DELIVERY_MINIMUM_ORDER_AMOUNT, getDeliveryShortfall } from "@/lib/checkout";
 
 type DeliveryMinimumDialogProps = {
   open: boolean;

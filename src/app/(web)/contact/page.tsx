@@ -1,64 +1,64 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { User, Mail } from 'lucide-react';
-import { useForm, SubmitHandler } from 'react-hook-form';
+import { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { User, Mail } from "lucide-react";
+import { useForm, SubmitHandler } from "react-hook-form";
 
 // Translation objects
 const translations = {
   en: {
-    title: 'Get in Touch',
-    subtitle: 'We’d love to hear from you. Send us a message!',
-    fullName: 'Full Name',
-    email: 'Email Address',
-    message: 'Your Message',
-    namePlaceholder: 'Enter your full name',
-    emailPlaceholder: 'Enter your email',
-    messagePlaceholder: 'What’s on your mind?',
-    submitButton: 'Send Message',
-    processing: 'Sending...',
-    errorSubmit: 'Failed to send message. Please try again.',
-    successMessage: 'Message sent successfully! We’ll get back to you soon.',
-    modalTitle: 'Message Sent',
+    title: "Get in Touch",
+    subtitle: "We’d love to hear from you. Send us a message!",
+    fullName: "Full Name",
+    email: "Email Address",
+    message: "Your Message",
+    namePlaceholder: "Enter your full name",
+    emailPlaceholder: "Enter your email",
+    messagePlaceholder: "What’s on your mind?",
+    submitButton: "Send Message",
+    processing: "Sending...",
+    errorSubmit: "Failed to send message. Please try again.",
+    successMessage: "Message sent successfully! We’ll get back to you soon.",
+    modalTitle: "Message Sent",
     modalThankYou: (name: string) => `Thank you, ${name}, for your message!`,
-    modalMessage: 'Message',
+    modalMessage: "Message",
     modalEmailConfirmation: (email: string) => `A confirmation has been sent to ${email}.`,
-    closeButton: 'Close',
-    languageToggle: 'Translate this site',
-    languageToggleTooltip: 'Switch language',
+    closeButton: "Close",
+    languageToggle: "Translate this site",
+    languageToggleTooltip: "Switch language",
     validation: {
-      nameRequired: 'Name is required',
-      emailRequired: 'Email is required',
-      emailInvalid: 'Invalid email address',
-      messageRequired: 'Message is required',
+      nameRequired: "Name is required",
+      emailRequired: "Email is required",
+      emailInvalid: "Invalid email address",
+      messageRequired: "Message is required",
     },
   },
   fr: {
-    title: 'Contactez-nous',
-    subtitle: 'Nous serions ravis d’avoir de vos nouvelles. Envoyez-nous un message !',
-    fullName: 'Nom complet',
-    email: 'Adresse e-mail',
-    message: 'Votre message',
-    namePlaceholder: 'Entrez votre nom complet',
-    emailPlaceholder: 'Entrez votre adresse e-mail',
-    messagePlaceholder: 'Qu’avez-vous à dire ?',
-    submitButton: 'Envoyer le message',
-    processing: 'Envoi en cours...',
-    errorSubmit: 'Échec de l’envoi du message. Veuillez réessayer.',
-    successMessage: 'Message envoyé avec succès ! Nous vous répondrons bientôt.',
-    modalTitle: 'Message envoyé',
+    title: "Contactez-nous",
+    subtitle: "Nous serions ravis d’avoir de vos nouvelles. Envoyez-nous un message !",
+    fullName: "Nom complet",
+    email: "Adresse e-mail",
+    message: "Votre message",
+    namePlaceholder: "Entrez votre nom complet",
+    emailPlaceholder: "Entrez votre adresse e-mail",
+    messagePlaceholder: "Qu’avez-vous à dire ?",
+    submitButton: "Envoyer le message",
+    processing: "Envoi en cours...",
+    errorSubmit: "Échec de l’envoi du message. Veuillez réessayer.",
+    successMessage: "Message envoyé avec succès ! Nous vous répondrons bientôt.",
+    modalTitle: "Message envoyé",
     modalThankYou: (name: string) => `Merci, ${name}, pour votre message !`,
-    modalMessage: 'Message',
+    modalMessage: "Message",
     modalEmailConfirmation: (email: string) => `Une confirmation a été envoyée à ${email}.`,
-    closeButton: 'Fermer',
-    languageToggle: 'Traduisez ce site',
-    languageToggleTooltip: 'Changer de langue',
+    closeButton: "Fermer",
+    languageToggle: "Traduisez ce site",
+    languageToggleTooltip: "Changer de langue",
     validation: {
-      nameRequired: 'Le nom est requis',
-      emailRequired: 'L’adresse e-mail est requise',
-      emailInvalid: 'Adresse e-mail non valide',
-      messageRequired: 'Le message est requis',
+      nameRequired: "Le nom est requis",
+      emailRequired: "L’adresse e-mail est requise",
+      emailInvalid: "Adresse e-mail non valide",
+      messageRequired: "Le message est requis",
     },
   },
 };
@@ -71,11 +71,11 @@ interface FormData {
 
 export default function ContactPage() {
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
-  const [successMessage, setSuccessMessage] = useState<string>('');
-  const [errorMessage, setErrorMessage] = useState<string>('');
+  const [successMessage, setSuccessMessage] = useState<string>("");
+  const [errorMessage, setErrorMessage] = useState<string>("");
   const [showModal, setShowModal] = useState<boolean>(false);
   const [submittedData, setSubmittedData] = useState<FormData | null>(null);
-  const [language, setLanguage] = useState<'en' | 'fr'>('fr');
+  const [language, setLanguage] = useState<"en" | "fr">("fr");
 
   const {
     register,
@@ -84,33 +84,33 @@ export default function ContactPage() {
     reset,
   } = useForm<FormData>({
     defaultValues: {
-      name: '',
-      email: '',
-      message: '',
+      name: "",
+      email: "",
+      message: "",
     },
   });
 
   useEffect(() => {
-    const storedLang = localStorage.getItem('language');
-    if (storedLang === 'en' || storedLang === 'fr') {
+    const storedLang = localStorage.getItem("language");
+    if (storedLang === "en" || storedLang === "fr") {
       setLanguage(storedLang);
     }
   }, []);
 
   useEffect(() => {
-    localStorage.setItem('language', language);
+    localStorage.setItem("language", language);
   }, [language]);
 
   const onSubmit: SubmitHandler<FormData> = async (data) => {
     setIsSubmitting(true);
-    setSuccessMessage('');
-    setErrorMessage('');
+    setSuccessMessage("");
+    setErrorMessage("");
 
     try {
-      const response = await fetch('/api/v1/contact', {
-        method: 'POST',
+      const response = await fetch("/api/v1/contact", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify(data),
       });
@@ -134,7 +134,7 @@ export default function ContactPage() {
   };
 
   const toggleLanguage = () => {
-    setLanguage((prev) => (prev === 'en' ? 'fr' : 'en'));
+    setLanguage((prev) => (prev === "en" ? "fr" : "en"));
   };
 
   const t = translations[language];
@@ -164,7 +164,7 @@ export default function ContactPage() {
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, ease: 'easeOut' }}
+            transition={{ duration: 0.8, ease: "easeOut" }}
           >
             <h2 className="text-5xl font-extrabold text-center mb-4 tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-amber-400 to-amber-600">
               {t.title}
@@ -188,7 +188,7 @@ export default function ContactPage() {
                   <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
                   <input
                     id="name"
-                    {...register('name', { required: t.validation.nameRequired })}
+                    {...register("name", { required: t.validation.nameRequired })}
                     className="w-full pl-10 pr-5 py-3 rounded-lg bg-gray-700/50 border border-gray-600 text-white focus:outline-none focus:ring-2 focus:ring-amber-400 transition duration-300"
                     placeholder={t.namePlaceholder}
                   />
@@ -205,7 +205,7 @@ export default function ContactPage() {
                   <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
                   <input
                     id="email"
-                    {...register('email', {
+                    {...register("email", {
                       required: t.validation.emailRequired,
                       pattern: {
                         value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
@@ -228,7 +228,7 @@ export default function ContactPage() {
               </label>
               <textarea
                 id="message"
-                {...register('message', { required: t.validation.messageRequired })}
+                {...register("message", { required: t.validation.messageRequired })}
                 rows={4}
                 className="w-full px-5 py-3 rounded-lg bg-gray-700/50 border border-gray-600 text-white focus:outline-none focus:ring-2 focus:ring-amber-400 transition duration-300"
                 placeholder={t.messagePlaceholder}
@@ -243,8 +243,8 @@ export default function ContactPage() {
               disabled={isSubmitting}
               className={`w-full py-4 px-6 rounded-lg text-white font-semibold transition duration-300 ${
                 isSubmitting
-                  ? 'bg-amber-600/50 cursor-not-allowed'
-                  : 'bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700'
+                  ? "bg-amber-600/50 cursor-not-allowed"
+                  : "bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700"
               }`}
               whileHover={{ scale: 1.03 }}
               whileTap={{ scale: 0.97 }}

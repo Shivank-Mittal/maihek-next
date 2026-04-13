@@ -1,15 +1,15 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { motion } from 'framer-motion';
-import Link from 'next/link';
-import Image from 'next/image';
-import { signIn } from 'next-auth/react';
-import { useRouter } from 'next/navigation';
+import { useState } from "react";
+import { motion } from "framer-motion";
+import Link from "next/link";
+import Image from "next/image";
+import { signIn } from "next-auth/react";
+import { useRouter } from "next/navigation";
 
 export default function AdminLoginPage() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
 
@@ -17,16 +17,16 @@ export default function AdminLoginPage() {
     e.preventDefault();
     setError(null);
 
-    const result = await signIn('credentials', {
+    const result = await signIn("credentials", {
       redirect: false,
       email,
       password,
     });
 
     if (result?.error) {
-      setError('Invalid email or password');
+      setError("Invalid email or password");
     } else {
-      router.push('/dashboard');
+      router.push("/dashboard");
     }
   };
 
@@ -35,7 +35,7 @@ export default function AdminLoginPage() {
       <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 0.6, ease: 'easeOut' }}
+        transition={{ duration: 0.6, ease: "easeOut" }}
         className="flex w-full max-w-5xl bg-white rounded-2xl shadow-2xl overflow-hidden"
       >
         {/* Left Side: Form */}
@@ -110,7 +110,7 @@ export default function AdminLoginPage() {
             </motion.button>
           </form>
           <p className="mt-6 text-center text-sm text-gray-600">
-            Not an admin?{' '}
+            Not an admin?{" "}
             <Link href="/" className="text-amber-600 hover:underline font-medium">
               Visit Restaurant Homepage
             </Link>

@@ -1,7 +1,7 @@
-import mongoose, { Schema, Document, Model } from 'mongoose';
+import mongoose, { Schema, Document, Model } from "mongoose";
 
 interface IReservationStatus extends Document {
-  status: 'paused' | 'resumed';
+  status: "paused" | "resumed";
   updatedAt: Date;
 }
 
@@ -12,9 +12,9 @@ interface ReservationStatusModel extends Model<IReservationStatus> {
 const ReservationStatusSchema: Schema = new Schema<IReservationStatus>({
   status: {
     type: String,
-    enum: ['paused', 'resumed'],
+    enum: ["paused", "resumed"],
     required: true,
-    default: 'resumed',
+    default: "resumed",
   },
   updatedAt: {
     type: Date,
@@ -23,9 +23,9 @@ const ReservationStatusSchema: Schema = new Schema<IReservationStatus>({
 });
 
 ReservationStatusSchema.statics.getStatus = async function () {
-  let status = await this.findOne({}).select('status');
+  let status = await this.findOne({}).select("status");
   if (!status) {
-    status = await this.create({ status: 'resumed' });
+    status = await this.create({ status: "resumed" });
     return { status: status.status };
   }
   return status;
@@ -34,7 +34,7 @@ ReservationStatusSchema.statics.getStatus = async function () {
 const ReservationStatus: ReservationStatusModel =
   (mongoose.models.ReservationStatus as ReservationStatusModel) ||
   mongoose.model<IReservationStatus, ReservationStatusModel>(
-    'ReservationStatus',
+    "ReservationStatus",
     ReservationStatusSchema
   );
 
