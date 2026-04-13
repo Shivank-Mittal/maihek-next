@@ -1,0 +1,287 @@
+.elementor-356 .elementor-element.elementor-element-5aca2f7{--display:flex;--position:absolute;--flex-direction:column;--container-widget-width:100%;--container-widget-height:initial;--container-widget-flex-grow:0;--container-widget-align-self:initial;--flex-wrap-mobile:wrap;top:0px;}body:not(.rtl) .elementor-356 .elementor-element.elementor-element-5aca2f7{left:0px;}body.rtl .elementor-356 .elementor-element.elementor-element-5aca2f7{right:0px;}.elementor-356 .elementor-element.elementor-element-8b62c96{--display:flex;--flex-direction:row;--container-widget-width:calc( ( 1 - var( --container-widget-flex-grow ) ) * 100% );--container-widget-height:100%;--container-widget-flex-grow:1;--container-widget-align-self:stretch;--flex-wrap-mobile:wrap;--align-items:center;--gap:0px 0px;--row-gap:0px;--column-gap:0px;}.elementor-356 .elementor-element.elementor-element-b35c63e{--display:flex;--align-items:flex-start;--container-widget-width:calc( ( 1 - var( --container-widget-flex-grow ) ) * 100% );}.elementor-widget-ucaddon_uc_liquid_full_screen_menu .menu-item a{font-family:var( --e-global-typography-text-font-family ), Sans-serif;font-weight:var( --e-global-typography-text-font-weight );}.elementor-widget-ucaddon_uc_liquid_full_screen_menu .sub-menu .menu-item a{font-family:var( --e-global-typography-text-font-family ), Sans-serif;font-weight:var( --e-global-typography-text-font-weight );}.elementor-356 .elementor-element.elementor-element-dc6e280 .uc_liquid_hamburger{width:60px;height:60px;--current-calc-size-value:60px;border-radius:80px;}.elementor-356 .elementor-element.elementor-element-dc6e280 .uc_liquid_hamburger::after{border-radius:80px;}.elementor-356 .elementor-element.elementor-element-dc6e280 .menu-item a{font-family:"Clash Display", Sans-serif;font-size:32px;font-weight:700;text-transform:uppercase;color:#FFBE41;}.elementor-356 .elementor-element.elementor-element-dc6e280 .menu-item:hover > a{color:#F7E4BF;}.elementor-356 .elementor-element.elementor-element-dc6e280 .menu-item.current_page_item a{color:#F7E4BF;}.elementor-356 .elementor-element.elementor-element-dc6e280 .uc-list-menu{gap:65px;}.elementor-356 .elementor-element.elementor-element-dc6e280 .sub-menu .menu-item{margin-top:5px;}.elementor-356 .elementor-element.elementor-element-171e175{--display:flex;}.elementor-widget-image .widget-image-caption{color:var( --e-global-color-text );font-family:var( --e-global-typography-text-font-family ), Sans-serif;font-weight:var( --e-global-typography-text-font-weight );}.elementor-356 .elementor-element.elementor-element-c8da9ca img{width:235px;}.elementor-356 .elementor-element.elementor-element-080df3f{--display:flex;}.elementor-theme-builder-content-area{height:400px;}.elementor-location-header:before, .elementor-location-footer:before{content:"";display:table;clear:both;}@media(max-width:1024px){.elementor-356 .elementor-element.elementor-element-dc6e280 .uc-list-menu{gap:55px;}}/* Start JX Custom Fonts CSS *//* End JX Custom Fonts CSS */
+/* Start custom CSS */body.menu-open{
+    position: fixed;
+    width: 100%;
+    overflow-y: scroll important;
+    overflow-x: hidden !important;
+    height: 100vh;
+}
+
+#header{
+    padding-top: 1rem;
+}
+
+#header .menu{
+    position: relative;
+    top: -20px;
+}
+
+#header .menu-item-1187{
+    display: none;
+}
+
+#menu-trupaste-menu .menu-item:before{
+    font-family: "Rubik", Sans-serif;
+    font-weight: 400;
+    font-size: 18px;
+    color: #FFBE41;
+    position: relative;
+    display: grid;
+    text-transform: uppercase;
+}
+
+#menu-trupaste-menu .menu-item-1184:before{
+    content: "About Us";
+}
+
+#menu-trupaste-menu .menu-item-1185:before{
+    content: "Order food";
+}
+
+#menu-trupaste-menu .menu-item-1418:before{
+    content: "Contact Us";
+}
+
+#menu-trupaste-menu .menu-item-329:before{
+    content: "Reserve your table";
+}
+
+#menu-trupaste-menu .uc_liquid_hamburger{
+    position: relative;
+}
+
+#header .uc_liquid_menu{
+    position: relative;
+}
+
+#header .uc_liquid_menu:before {
+    content: "Click for Menu";
+    background-color: #FF6514;
+    color: #F7E4BF;
+    text-align: center;
+    padding: 8px;
+    border-radius: 8px;
+    z-index: 1000;
+    font-size: 14px;
+    font-weight: 500;
+    font-family: "Clash Display", Sans-serif;
+    line-height: 1.25;
+    width: fit-content;
+    display: block;
+    position: absolute;
+    pointer-events: none;
+    white-space: nowrap;
+    opacity: 0;
+    transition: 0.4s;
+    left: 90px;
+    top: 50%;
+}
+
+#header .uc_liquid_menu:hover:before,
+#header .uc_liquid_menu:hover:after{
+    opacity: 1;
+}
+
+#header .uc_liquid_menu:after {
+    content: "";
+    position: absolute;
+    right: -30px;
+    top: 65%;
+    width: 0;
+    height: 0;
+    border-top: 7px solid transparent;
+    border-bottom: 7px solid transparent;
+    border-right: 10px solid #FF6514;
+    opacity: 0;
+    transition: 0.4s;
+}
+
+
+#menu-trupaste-menu .uc_liquid_hamburger:after {
+  /* triangle dimension */
+  --b: 1em; /* control the base */
+  --h: .7em; /* control the height */
+
+  --c:#cf9d38;
+
+  padding: 1em;
+  border-radius: 1.2em;
+  border-top-left-radius: 0;
+  clip-path: polygon(0 100%,100% 100%,100% 0,
+    var(--b) 0,
+    calc(-1*var(--h)) calc(-1*var(--h)),
+    0 var(--b));
+  background: var(--c);
+  border-image: conic-gradient(var(--c) 0 0) 999 0 0 999/
+    calc(var(--h) + var(--b)) 0 0 calc(var(--h) + var(--b))/var(--h) 0 0 var(--h);
+}
+
+/*Responsive*/
+@media (max-width: 1280px) {
+#header .header-wrap{
+    width: 90%;
+    margin: auto;
+}
+
+#header .middle-col .logo img{
+    width: 220px;
+}
+
+}
+
+@media (max-width: 1140px) {
+#header .middle-col .logo img{
+    width: 200px;
+}
+   
+}
+
+@media (max-width: 1080px) {
+
+  
+}
+
+@media (max-width: 980px) {
+
+
+}
+
+@media (max-width: 900px) {
+  
+  
+}
+
+@media (max-width: 800px) {
+  
+
+}
+
+@media (max-width: 767px) {
+#header .uc-list-menu .menu-item a{
+    font-size: 30px;
+}
+
+#header .header-wrap .left-col,
+#header .header-wrap .right-col{
+    width: 25%;
+}
+
+#header .header-wrap .middle-col{
+    width: 50%;
+}
+
+#header .middle-col .logo img{
+    width: 180px;
+}
+
+#header lottie-player{
+    width: 70px !important;
+    height: 70px !important;
+}
+
+#header .menu{
+    top: -10px;
+}
+
+#header .uc_liquid_menu:before {
+    content: "MENU";
+    background-color: transparent;
+    padding: 0;
+    border-radius: 0;
+    font-size: 15px;
+    font-weight: 600;
+    opacity: 1;
+    left: 60%;
+    transform: translateX(-50%);
+    top: unset;
+    bottom: -25px;
+    color: #FFBE41;
+}
+
+#header .uc_liquid_menu:after{
+    display: none;
+}
+  
+}
+
+@media (max-width: 700px) {
+
+   
+}
+
+@media (max-width: 600px) {
+
+
+}
+
+@media (max-width: 500px) {
+#header .uc-list-menu .menu-item a{
+    font-size: 28px;
+}
+
+#menu-trupaste-menu .menu-item:before{
+    font-size: 16px;    
+}
+
+#header .middle-col .logo img{
+    width: 160px;
+}
+
+#header lottie-player{
+    width: 60px !important;
+    height: 60px !important;
+}
+
+#header .menu{
+    top: 0;
+}
+
+#header .uc_liquid_menu:before {
+    left: 55%;
+    font-size: 14px;
+    bottom: -15px;
+}
+   
+}
+
+@media (max-width: 400px) {
+
+   
+}/* End custom CSS */
+/* Start Custom Fonts CSS */@font-face {
+	font-family: 'Clash Display';
+	font-style: normal;
+	font-weight: bold;
+	font-display: auto;
+	src: url('../fonts/ClashDisplay-Bold_1.eot');
+	src: url('../fonts/ClashDisplay-Bold_1.eot#iefix') format('embedded-opentype'),
+		url('../fonts/ClashDisplay-Bold_1.woff2') format('woff2'),
+		url('../fonts/ClashDisplay-Bold_1.woff') format('woff'),
+		url('../fonts/ClashDisplay-Bold_1.ttf') format('truetype'),
+		url('../images/ClashDisplay-Bold_1.svg#ClashDisplay') format('svg');
+}
+@font-face {
+	font-family: 'Clash Display';
+	font-style: normal;
+	font-weight: 600;
+	font-display: auto;
+	src: url('../fonts/ClashDisplay-Semibold_1.eot');
+	src: url('../fonts/ClashDisplay-Semibold_1.eot#iefix') format('embedded-opentype'),
+		url('../fonts/ClashDisplay-Semibold_1.woff2') format('woff2'),
+		url('../fonts/ClashDisplay-Semibold_1.woff') format('woff'),
+		url('../fonts/ClashDisplay-Semibold_1.ttf') format('truetype'),
+		url('../images/ClashDisplay-Semibold_1.svg#ClashDisplay') format('svg');
+}
+@font-face {
+	font-family: 'Clash Display';
+	font-style: normal;
+	font-weight: 400;
+	font-display: auto;
+	src: url('../fonts/ClashDisplay-Regular_1.eot');
+	src: url('../fonts/ClashDisplay-Regular_1.eot#iefix') format('embedded-opentype'),
+		url('../fonts/ClashDisplay-Regular_1.woff2') format('woff2'),
+		url('../fonts/ClashDisplay-Regular_1.woff') format('woff'),
+		url('../fonts/ClashDisplay-Regular_1.ttf') format('truetype'),
+		url('../images/ClashDisplay-Regular_1.svg#ClashDisplay') format('svg');
+}
+/* End Custom Fonts CSS */

@@ -1,0 +1,116 @@
+.elementor-469 .elementor-element.elementor-element-f2f2000{--display:flex;--min-height:90vh;--flex-direction:column;--container-widget-width:100%;--container-widget-height:initial;--container-widget-flex-grow:0;--container-widget-align-self:initial;--flex-wrap-mobile:wrap;--justify-content:center;--overflow:hidden;}.elementor-469 .elementor-element.elementor-element-f2f2000:not(.elementor-motion-effects-element-type-background), .elementor-469 .elementor-element.elementor-element-f2f2000 > .elementor-motion-effects-container > .elementor-motion-effects-layer{background-color:var( --e-global-color-primary );}.elementor-469 .elementor-element.elementor-element-e196568{--display:flex;}.elementor-widget-heading .elementor-heading-title{font-family:var( --e-global-typography-primary-font-family ), Sans-serif;font-weight:var( --e-global-typography-primary-font-weight );color:var( --e-global-color-primary );}.elementor-469 .elementor-element.elementor-element-dfbf1d0{text-align:center;}.elementor-469 .elementor-element.elementor-element-dfbf1d0 .elementor-heading-title{font-family:"Clash Display", Sans-serif;font-size:180px;font-weight:700;text-transform:uppercase;color:var( --e-global-color-secondary );}.elementor-469 .elementor-element.elementor-element-c5d608d{text-align:center;}.elementor-469 .elementor-element.elementor-element-c5d608d .elementor-heading-title{font-family:"Quanta Grotesk Pro", Sans-serif;font-size:40px;font-weight:normal;font-style:italic;letter-spacing:1px;color:#F7E4BF;}.elementor-469 .elementor-element.elementor-element-6d9fff3{text-align:center;}.elementor-469 .elementor-element.elementor-element-6d9fff3 .elementor-heading-title{font-family:"Rubik", Sans-serif;font-size:20px;font-weight:400;line-height:1.3em;color:#F7E4BF;}.elementor-widget-button .elementor-button{background-color:var( --e-global-color-accent );font-family:var( --e-global-typography-accent-font-family ), Sans-serif;font-weight:var( --e-global-typography-accent-font-weight );}.elementor-469 .elementor-element.elementor-element-b6a1708 .elementor-button{background-color:#FF651400;font-family:"Clash Display", Sans-serif;font-weight:500;border-radius:0px 0px 0px 0px;}@media(max-width:1024px){.elementor-469 .elementor-element.elementor-element-dfbf1d0 .elementor-heading-title{font-size:140px;}.elementor-469 .elementor-element.elementor-element-c5d608d .elementor-heading-title{font-size:32px;}.elementor-469 .elementor-element.elementor-element-6d9fff3 .elementor-heading-title{font-size:18px;}}@media(max-width:767px){.elementor-469 .elementor-element.elementor-element-dfbf1d0 .elementor-heading-title{font-size:100px;}.elementor-469 .elementor-element.elementor-element-c5d608d .elementor-heading-title{font-size:26px;}.elementor-469 .elementor-element.elementor-element-6d9fff3 .elementor-heading-title{font-size:16px;}}/* Start JX Custom Fonts CSS *//* End JX Custom Fonts CSS */
+/* Start JX Custom Fonts CSS *//* End JX Custom Fonts CSS */
+/* Start JX Custom Fonts CSS *//* End JX Custom Fonts CSS */
+/* Start custom CSS */#hero{
+    padding: 12rem 0 6rem 0;
+}
+
+#hero h1{
+    position: relative;
+    width: fit-content;
+    margin: auto;
+}
+
+#hero h1::before {
+  content: "404";
+    color: transparent;
+    -webkit-text-stroke: 1px #FFBE41;
+    position: absolute;
+    z-index: 0;
+    top: 15px;
+    left: 8px;
+    display: block;
+}
+
+#hero .elementor-button{
+    border-radius: 12px;
+    width: 265px;
+    height: 50px;
+    position: relative;
+    background: #FF6514;
+    border: 1px solid #FF6514;
+    margin-top: 20px;
+    cursor: pointer;
+}
+
+#hero .elementor-button .elementor-button-text{
+    width: 100%;
+}
+
+#hero .elementor-button .btn-link{
+    font-size: 24px;
+    font-weight: bold;
+    font-family: "Clash Display";
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-decoration: none;
+    position: relative;
+    color: #F7E4BF;
+    overflow: hidden;
+    letter-spacing: 1px;
+}
+
+#hero .elementor-button .btn-link div{
+    transition: all .3s ease-in-out;
+    position: relative;
+    color: #FFF6EF;
+    overflow: hidden;
+}
+
+#hero .elementor-button:hover .btn-link div{
+    opacity: 0;
+    transform: translate(0, -100%);
+}
+
+#hero .elementor-button .btn-link:before{
+    content: attr(data-hover);
+    width: 100%;
+    opacity: 0;
+    transform: translate(0, 100%);
+    transition: all .3s ease-in-out;
+    color: #FFF6EF;
+    position: absolute;
+    white-space: nowrap;
+}
+
+#hero .elementor-button:hover .btn-link:before{
+    opacity: 1;
+    transform: translate(0, 0);
+}
+
+@media (max-width: 980px) {
+#hero h1::before {
+    top: 10px;
+    left: 6px;
+}
+
+}
+
+@media (max-width: 767px) {
+#hero .hero-wrap{
+    width: 85%;
+    margin: auto;
+}    
+    
+#hero .elementor-button{
+    width: 240px;
+}
+
+#hero .elementor-button .btn-link{
+    font-size: 20px;
+}
+}/* End custom CSS */
+/* Start Custom Fonts CSS */@font-face {
+	font-family: 'Quanta Grotesk Pro';
+	font-style: italic;
+	font-weight: normal;
+	font-display: auto;
+	src: url('../fonts/QuantaGroteskPro-Italic_1.eot');
+	src: url('../fonts/QuantaGroteskPro-Italic_1.eot#iefix') format('embedded-opentype'),
+		url('../fonts/QuantaGroteskPro-Italic_1.woff2') format('woff2'),
+		url('../fonts/QuantaGroteskPro-Italic_1.woff') format('woff'),
+		url('../fonts/QuantaGroteskPro-Italic_1.ttf') format('truetype'),
+		url('../images/QuantaGroteskPro-Italic_1.svg#QuantaGroteskPro') format('svg');
+}
+/* End Custom Fonts CSS */

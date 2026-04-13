@@ -1,0 +1,428 @@
+[
+  {
+    "title": "ENTRÉE  FOOD /  FOOD STARTERS",
+    "items": [
+      {
+        "name": "Baingan Pakora",
+        "eng_desc": "Crispy eggplant fritters dipped in spiced chickpea flour batter and deep-fried. Crunchy on the outside, soft on the inside.",
+        "fr_desc": "Beignets d’aubergines enrobés de pâte de pois chiches, frits à la perfection.",
+        "price": 6.0,
+        "includes": []
+      },
+      {
+        "name": "Spring Rolls Masala",
+        "eng_desc": "Crispy mini rolls filled with crunchy, mildly spiced vegetables, served with our homemade chutneys.",
+        "fr_desc": "Mini rouleaux croustillants farcis de légumes croquants et légèrement épicés, servis avec nos chutneys maison.",
+        "price": 6.5,
+        "includes": []
+      },
+      {
+        "name": "Dahi Bhalla",
+        "eng_desc": "Soft lentil dumplings soaked in creamy yogurt, topped with homemade mint and tamarind chutneys, and finished with a sprinkle of mild Indian spices.",
+        "fr_desc": "Boulettes moelleuses de lentilles trempées dans un yaourt nappé de chutneys maison à la menthe et du tamarin, et saupoudrées d’épices douces.",
+        "price": 7.9,
+        "includes": []
+      },
+      {
+        "name": "Raita Maison",
+        "eng_desc": "Creamy yogurt mixed with fresh cucumbers, tomatoes, red onions, and mild spices (cumin, coriander).",
+        "fr_desc": "Yaourt mélangé à des concombres frais, tomates, oignons rouges et épices (cumin, coriandre).",
+        "price": 4.5,
+        "includes": []
+      },
+      {
+        "name": "Honey Chilli Potato",
+        "eng_desc": "Potato fingers tossed in a sweet and spicy honey chilli glaze, garnished with sesame seeds.",
+        "fr_desc": "Frites de pommes de terre enrobées d’une sauce sucrée-piquante au miel et piment, garnies de graines de sésame.",
+        "price": 8.0,
+        "includes": []
+      },
+      {
+        "name": "Samosa Nature & Chutney",
+        "eng_desc": "Crispy pastry filled with mildly spiced vegetables, served with mint and tamarind chutneys.",
+        "fr_desc": "Samosa croustillant farci de légumes légèrement épicés, servi avec un duo de chutneys (menthe et tamarin).",
+        "price": 3.5,
+        "includes": []
+      },
+      {
+        "name": " Street Samosa",
+        "eng_desc": "Crispy crushed samosa topped with spiced chickpeas, fresh yogurt, tamarind sauce, mint sauce and red onions.",
+        "fr_desc": "Un samosa croustillant, nappé de pois chiches épicés et yaourt frais, servi avec nos chutneys maison et oignons rouges.",
+        "price": 5.5,
+        "includes": []
+      },
+      {
+        "name": "Tikki Chaat Royale",
+        "eng_desc": "Golden crispy potato patty served with spiced chickpeas, creamy yogurt, tamarind and mint sauces and red onions.",
+        "fr_desc": "Une délicieuse galette de pomme de terre dorée, accompagnée de pois chiches mijotés, nappée de yaourt onctueux, de sauces à la menthe et d’oignons rouges.",
+        "price": 5.5,
+        "includes": []
+      },
+      {
+        "name": "Puri Shots (Pani Puri)",
+        "eng_desc": "Five crispy puris filled with spiced mashed potatoes, served with their mint and spice-flavored water.",
+        "fr_desc": "Cinq puris croustillants garnis de pommes de terre épicées, accompagnées de leur eau parfumée à la menthe aux épices.",
+        "price": 6.0,
+        "includes": []
+      },
+      {
+        "name": "Dahi Shots (Dahi Puri)",
+        "eng_desc": "Five crispy puris filled with spiced mashed potatoes, fresh herbs, topped with yogurt.",
+        "fr_desc": "Cinq puris croustillants garnis de pommes de terre épicées et herbes fraiches, nappées de yaourt doux et de chutneys.",
+        "price": 6.5,
+        "includes": []
+      },
+      {
+        "name": "Trio Pakora ",
+        "eng_desc": "Three types of crispy homemade fritters: vegetable pakora, fried cauliflower pieces, and paneer fritters. Served with our signature chutneys.",
+        "fr_desc": "Trois types de beignets croustillants des pokoras aux légumes, des pièces de chou-fleur et des pokoras paneer garnies de légumes. Servis avec nos chutneys signature.",
+        "price": 8.0,
+        "includes": []
+      }
+    ]
+  },
+  {
+    "title": "SALADE",
+    "items": [
+      {
+        "name": "Signature Vegan Salad",
+        "eng_desc": "Baby greens, cherry tomatoes, bell peppers, avocado, red onions, cucumber, coriander or parsley, served with our faux poulet ou saumon végétal grillé et notre sauce Chutney .",
+        "fr_desc": "Jeunes pousses, tomates cerises, poivrons, avocat, oignons rouges, concombre, coriandre ou persil, servis avec notre faux poulet ou saumon végétal grillé et notre sauce Chutney .",
+        "price": 10.0,
+        "includes": ["faux poulet ou saumon végétal grillé", "sauce Chutney "]
+      },
+      {
+        "name": " Paneer Salad",
+        "eng_desc": "Fresh spinach, mint, coriander or parsley, red onion, cucumber, black olives, avocado, bell pepper, shredded carrot and grilled paneer cubes.",
+        "fr_desc": "Salade verte, menthe, coriandre ou persil, oignon rouge, concombre, olives noires, avocat, poivron, carotte râpée et cubes de paneer grillé.",
+        "price": 11.0,
+        "includes": []
+      },
+      {
+        "name": " Fresh Garden Salad",
+        "eng_desc": "Crisp green lettuce, cherry tomatoes, cucumber, shredded carrots, red onions, bell peppers, avocado, and fresh herbs, topped with lemony vinaigrette and our  Chutney.",
+        "fr_desc": "Salade verte croquante, tomates cerises, concombre, carottes râpées, oignons rouges, poivrons, avocat et herbes fraîches, le tout assaisonné d’une vinaigrette citronnée et notre sauce Chutney .",
+        "price": 9.0,
+        "includes": ["lemony vinaigrette", " Chutney"]
+      }
+    ]
+  },
+  {
+    "title": "SPÉCIALITÉS DU PUNJAB / PUNJAB HOUSE CLASSICS",
+    "items": [
+      {
+        "name": "Chole Bhature",
+        "eng_desc": "A North Indian street food staple: chickpeas simmered in a spiced, aromatic curry, served with a fluffy golden bhatura (deep-fried bread).",
+        "fr_desc": "Un grand classique de la street food indienne : pois chiches mijotés dans une sauce épicée et parfumée, servis avec un bhatura: naan frit moelleux.",
+        "price": 12.0,
+        "includes": ["bhatura"]
+      },
+      {
+        "name": "Amritsari Kulcha & Chole",
+        "eng_desc": "Crispy Amritsari-style flatbread stuffed with spiced mashed potatoes, served with fragrant chickpea curry and a side of homemade raita.",
+        "fr_desc": "Pain plat farci à l’Amritsari, garni de pommes de terre épicées, servi croustillant avec un curry de pois chiches parfumé et une portion de raita maison.",
+        "price": 13.0,
+        "includes": ["homemade raita"]
+      },
+      {
+        "name": "Makki Di Roti & Sarson Da Saag",
+        "eng_desc": "Rustic corn flatbread paired with creamy mustard greens cooked in ghee, garlic and gentle spices. (Available on weekends only).",
+        "fr_desc": "Galette rustique de farine de maïs accompagnée d’une purée onctueuse de feuilles de moutarde, mijotée au ghee, à l’ail et aux épices douces. (Disponible uniquement le week-end).",
+        "price": 14.0,
+        "includes": []
+      }
+    ]
+  },
+  {
+    "title": "NAAN’WICHS ",
+    "items": [
+      {
+        "name": "Cheese Chilli Wrap (Paneer Ou Poulet Végétal)",
+        "eng_desc": "Grilled cheese naan rolled and filled with your choice of paneer or our plant-based chicken, served with bell peppers.",
+        "fr_desc": "Naan au fromage grillé, roulé et garni au choix de paneer ou de notre poulet végétal, accompagné de poivrons légèrement sautés.",
+        "price": 11.0,
+        "includes": []
+      },
+      {
+        "name": "Creamy Malai Wrap",
+        "eng_desc": "Soft cheese naan wrap filled with grilled paneer cubes or plant-based chick’n, crunchy vegetables and a creamy malai sauce made with cream and cashew.",
+        "fr_desc": "Wrap de naan au fromage moelleux garni de cubes de paneer grillés ou poulet végétal, légumes croquants et sauce malai à base de crème et noix de cajou.",
+        "price": 11.0,
+        "includes": []
+      }
+    ]
+  },
+  {
+    "title": "GRILLADES TANDOORI VÉGÉTARIENNES / VEGETARIAN TANDOORI GRILLS",
+    "items": [
+      {
+        "name": "Afghani Chaap",
+        "eng_desc": "Tender soy chaap marinated in a cream and grilled for a soft and elegant finish.",
+        "fr_desc": "Brochette de soja végétale tendre, marinée dans une crème onctueuse, grillée au tandoor.",
+        "price": 10.0,
+        "includes": []
+      },
+      {
+        "name": "Paneer Tikka ",
+        "eng_desc": "Spiced paneer cubes grilled until golden outside and soft inside.",
+        "fr_desc": "Cubes de paneer marinés dans des épices maison, grillés jusqu’à l’obtention d’une belle croûte dorée et d’un cœur moelleux.",
+        "price": 10.0,
+        "includes": []
+      },
+      {
+        "name": "Tikka Saumon Végétal",
+        "eng_desc": "Marinated plant-based salmon grilled in the tandoor.",
+        "fr_desc": "Alternative végétale bluffante du saumon, marinée aux épices douces et grillée au tandoor.",
+        "price": 10.0,
+        "includes": []
+      },
+      {
+        "name": "Champignons Masala Grillés / Grilled Masala Mushrooms",
+        "eng_desc": "Fresh mushrooms marinated in tandoori spices, yogurt, and lemon.",
+        "fr_desc": "Champignons frais marinés dans un mélange d’épices tandoori, de yaourt et de citron, puis grillés au tandoor.",
+        "price": 9.5,
+        "includes": []
+      },
+      {
+        "name": "Vegetarian Kebab Duo",
+        "eng_desc": "Vegetarian Kebab Duo Two pieces of Dahi Kebab creamy yogurt croquettes with mild spices and two pieces of Hara Bhara Kebab spinach, peas and fresh herb patties.",
+        "fr_desc": "Deux pièces de Dahi Kebab croquettes fondantes au yaourt et épices douces et deux pièces de Hara Bhara Kebab galettes aux épinards, pois et herbes fraîches.",
+        "price": 10.0,
+        "includes": []
+      },
+      {
+        "name": "Vegetal Chick’n Tikka",
+        "eng_desc": "Tandoori-marinated plant-based chick’n grilled to juicy, charred perfection.",
+        "fr_desc": "Notre poulet végétal mariné aux épices tandoori, grillé au tandoor pour un extérieur caramélisé et un cœur juteux.",
+        "price": 11.5,
+        "includes": []
+      },
+      {
+        "name": " Tandoori Platter",
+        "eng_desc": "Enjoy a curated selection of our signature grills tender vegan chick’n, golden marinated paneer, smoky mushrooms and veggie kebab. Served with house chutneys for a vibrant, shareable feast of flavor.",
+        "fr_desc": "Savourez nos grillades emblématiques poulet végétal fondant, paneer mariné tikka, champignons fumés et kebab végétal. Le tout accompagné de nos chutneys maison pour un festival de textures et d’épices à partager.",
+        "price": 18.0,
+        "includes": ["house chutneys"]
+      }
+    ]
+  },
+  {
+    "title": "RIZ & BIRYANI",
+    "items": [
+      {
+        "name": "Biryani Légumes",
+        "eng_desc": "Aromatic basmati rice with fresh vegetables, whole spices and herbs for a refined vegetarian explosion of flavors. Supplément paneer ou poulet végétal : +2€",
+        "fr_desc": "Riz basmati aux légumes frais, épices entières et herbes fraîches.",
+        "price": 12.0,
+        "includes": []
+      },
+      {
+        "name": "Jeera Mattar Rice",
+        "eng_desc": "Basmati rice with peas and cumin seeds.",
+        "fr_desc": "Riz basmati aux petits pois et graines de cumin.",
+        "price": 3.5,
+        "includes": []
+      },
+      {
+        "name": "Riz Au Safran",
+        "eng_desc": "Fragrant basmati rice infused with saffron and mild spices, lightly buttered.",
+        "fr_desc": "Riz basmati parfumé au safran, subtilement épicé, légèrement beurré.",
+        "price": 5.5,
+        "includes": []
+      }
+    ]
+  },
+  {
+    "title": "L’UNIVERS DU PANEER / PANEER LOVERS",
+    "items": [
+      {
+        "name": "Paneer Bhurji",
+        "eng_desc": "Crumbled paneer stir-fried with onions, tomatoes, green peas and spices.",
+        "fr_desc": "Paneer émietté avec oignons, tomates, petits pois et épices douces.",
+        "price": 13.5,
+        "includes": []
+      },
+      {
+        "name": "Palak Paneer",
+        "eng_desc": "Indian cottage cheese cubes simmered in a creamy spinach gravy, relevé d’épices douces.",
+        "fr_desc": "Curry d’épinards onctueux mijoté avec des cubes de paneer, relevé d’épices douces.",
+        "price": 13.5,
+        "includes": []
+      },
+      {
+        "name": "Matar Paneer",
+        "eng_desc": "Tomato-based curry with paneer, green peas and garam masala.",
+        "fr_desc": "Curry à base de tomates, garam masala, paneer et petits pois.",
+        "price": 13.5,
+        "includes": []
+      },
+      {
+        "name": "Shahi Paneer",
+        "eng_desc": "Paneer in a royal creamy sauce of cashews, tomatoes and cardamom.",
+        "fr_desc": "Paneer dans une sauce royale à base de noix de cajou, tomates et cardamome.",
+        "price": 14.0,
+        "includes": []
+      },
+      {
+        "name": "Paneer Tikka Masala",
+        "eng_desc": "Tandoori-marinated paneer cubes grilled with bell peppers, then simmered in a rich, creamy tomato-based sauce infused with Indian spices.",
+        "fr_desc": "Morceaux de paneer marinés aux épices tandoori, grillés avec des poivrons, puis mijotés dans une sauce onctueuse à base de tomates, de crème et d’épices indiennes.",
+        "price": 14.5,
+        "includes": []
+      }
+    ]
+  },
+  {
+    "title": "CURRYS SIGNATURE AU POULET VÉGÉTAL / SIGNATURE PLANT-BASED CHICK’N CURRIES",
+    "items": [
+      {
+        "name": "Madras Végétal",
+        "eng_desc": "Plant-based chick’n simmered in a spicy South Indian-style curry with tomato, garlic, onion and chili.",
+        "fr_desc": "Poulet végétal mijoté dans une sauce relevée aux tomates, ail, oignon et piment. Inspirée du sud de l’Inde.",
+        "price": 14.5,
+        "includes": []
+      },
+      {
+        "name": "Korma Poulet Végétal",
+        "eng_desc": "Plant-based chick’n simmered in a creamy cashew and spice sauce.",
+        "fr_desc": "Poulet végétal mijoté dans une sauce onctueuse à base de crème, noix de cajou et épices douces.",
+        "price": 13.5,
+        "includes": []
+      },
+      {
+        "name": "Poulet Vindaloo Végétal",
+        "eng_desc": "Plant-based vindaloo, made with tender chick’n simmered in a spicy, tangy sauce with vinegar, garlic, ginger, and chili.",
+        "fr_desc": "Notre alternative végétale au poulet vindaloo, cuisinée avec une sauce piquante et épicée, à base de vinaigre, ail, gingembre et piment.",
+        "price": 13.5,
+        "includes": []
+      },
+      {
+        "name": " Butter Végétal",
+        "eng_desc": "Our house signature: 100% plant-based version of butter chicken with tender chick’n in a creamy tomato, butter cream sauce.",
+        "fr_desc": "Le fameux butter chicken en version 100 % végétale morceaux de chick’n végétal fondants dans une sauce à la tomate, beurre et à la crème.",
+        "price": 15.0,
+        "includes": []
+      },
+      {
+        "name": "Tikka Masala Végétal",
+        "eng_desc": "Tandoori grilled plant-based chick’n in a creamy tomato sauce with mild spices.",
+        "fr_desc": "Poulet végétal grillé au tandoor, nappé d’une sauce crémeuse à base de tomates, crème et épices douces.",
+        "price": 15.0,
+        "includes": []
+      },
+      {
+        "name": "Palak Végétal",
+        "eng_desc": "Plant-based chick’n simmered in a fragrant spinach curry with cumin and mild spices.",
+        "fr_desc": "Morceaux de poulet végétal mijotés dans une purée d’épinards parfumée au cumin et aux épices douces.",
+        "price": 14.0,
+        "includes": []
+      }
+    ]
+  },
+  {
+    "title": "CURRYS SIGNATURE AU POULET VÉGÉTAL / SIGNATURE PLANT-BASED CHICK’N CURRIES",
+    "items": [
+      {
+        "name": "Saumon Végétal Tikka Masala",
+        "eng_desc": "Our plant-based salmon simmered in a creamy cashew and spice sauce.",
+        "fr_desc": "Filets de saumon végétal marinés aux épices tandoori, cuits avec des poivrons colorés et nappés d’une sauce tikka masala à base de tomates, crème et garam masala.",
+        "price": 15.0,
+        "includes": []
+      },
+      {
+        "name": "Saumon Curry Végétal",
+        "eng_desc": "Bold plant-based salmon in a tomato, onion, garlic and ginger curry.",
+        "fr_desc": "Une version généreuse et parfumée de curry indien : saumon végétal dans une sauce aux tomates, oignons, ail, gingembre et épices.",
+        "price": 15.0,
+        "includes": []
+      }
+    ]
+  },
+  {
+    "title": "DESSERTS MAISON / HOMEMADE DESSERTS",
+    "items": [
+      {
+        "name": "Rasmalai",
+        "eng_desc": "Soft cheese dumplings served in a fragrant cardamom and rose milk.",
+        "fr_desc": "Boules de fromage tendre servies dans un lait parfumé à la cardamome et à la rose.",
+        "price": 6.0,
+        "includes": []
+      },
+      {
+        "name": "Gulab Jamun",
+        "eng_desc": "Soft doughnuts soaked in rose and cardamom syrup.",
+        "fr_desc": "Beignets moelleux imbibés de sirop de rose et cardamome.",
+        "price": 5.5,
+        "includes": []
+      },
+      {
+        "name": "Halwa Du Chef",
+        "eng_desc": "A delightful traditional halwa prepared seasonally – either with semolina or grated carrots, slowly cooked with ghee, sugar, and crushed nuts.",
+        "fr_desc": "Délicieux halwa traditionnel préparé selon la saison : à base de semoule ou de carottes râpées, cuitée lentement avec du ghee, du sucre et des éclats de noix.",
+        "price": 6.0,
+        "includes": []
+      },
+      {
+        "name": "Kulfi Maison",
+        "eng_desc": "Traditional Indian ice cream flavored with cardamom and pistachio.",
+        "fr_desc": "Glace indienne traditionnelle parfumée à la cardamome et à la pistache.",
+        "price": 6.5,
+        "includes": []
+      }
+    ]
+  },
+  {
+    "title": "NAANS & PAINS MAISON / HOMEMADE NAANS & BREADS",
+    "items": [
+      {
+        "name": "Naan Au Beurre",
+        "eng_desc": "Soft tandoori bread brushed with melted butter.",
+        "fr_desc": "Pain tandoori moelleux, nappé de beurre fondu.",
+        "price": 3.0,
+        "includes": []
+      },
+      {
+        "name": "Naan À L’ail",
+        "eng_desc": "Tandoori bread with fresh garlic and melted butter.",
+        "fr_desc": "Pain tandoori à l’ail frais et beurre fondu.",
+        "price": 3.5,
+        "includes": []
+      },
+      {
+        "name": "Naan Fromage",
+        "eng_desc": "Tandoori bread stuffed with melted cheese (La Vache qui rit).",
+        "fr_desc": "Pain tandoori farci de fromage fondu à la Vache qui rit.",
+        "price": 4.0,
+        "includes": []
+      },
+      {
+        "name": "Naan Fromage & Ail",
+        "eng_desc": "Tandoori bread filled with melted cheese and golden garlic.",
+        "fr_desc": "Pain tandoori garni de fromage fondu et d’ail doré.",
+        "price": 4.5,
+        "includes": []
+      },
+      {
+        "name": "Naan Mozzarella Mix",
+        "eng_desc": "Tandoori bread filled with La Vache qui rit and melted mozzarella.",
+        "fr_desc": "Pain tandoori garni de Vache qui rit et mozzarella fondante.",
+        "price": 5.5,
+        "includes": []
+      },
+      {
+        "name": "Amritsari Kulcha",
+        "eng_desc": "Stuffed flatbread with spiced potatoes, onions, and herbs. A Punjabi favorite.",
+        "fr_desc": "Pain farci d’oignons, pommes de terre épicées et aromatisée aux herbes.",
+        "price": 5.5,
+        "includes": []
+      },
+      {
+        "name": "Chapatti",
+        "eng_desc": "Whole wheat flatbread cooked on tawa.",
+        "fr_desc": "Galette fine de blé complet cuit au tandoor.",
+        "price": 2.0,
+        "includes": []
+      }
+    ]
+  }
+]
