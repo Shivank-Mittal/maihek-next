@@ -51,11 +51,15 @@ export interface DishCategory {
   dishes: MenuDish[];
 }
 
+export interface DishCategoryOption {
+  name: string;
+}
+
 export interface AdminDish extends MenuDish {
   category: string;
 }
 
-export type UpdateDishInput = {
+export type CreateDishInput = {
   name: string;
   price: number;
   description: string;
@@ -64,4 +68,4 @@ export type UpdateDishInput = {
   active: boolean;
 };
 
-export type PatchDishInput = Partial<UpdateDishInput>;
+export type PatchDishInput = Partial<CreateDishInput>;

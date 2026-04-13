@@ -1,7 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Pause, Play, SquarePen, Trash2 } from "lucide-react";
+import { Pause, Play, Plus, SquarePen, Trash2 } from "lucide-react";
 import {
   Table,
   TableBody,
@@ -29,37 +29,70 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Toggle } from "@/components/ui/toggle";
 import {
+  createDish,
   deleteDish,
   listAdminDishes,
+  listCategoryOptions,
   updateDish,
   updateDishSellingStatus,
 } from "@/services/dishes-service";
-import type { AdminDish } from "@repo-types/dishes";
+import type { AdminDish, DishCategoryOption } from "@repo-types/dishes";
 
 export default function DishesPage() {
   const [dishes, setDishes] = useState<AdminDish[]>([]);
+  const [categories, setCategories] = useState<DishCategoryOption[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(10);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [editingDish, setEditingDish] = useState<AdminDish | null>(null);
+  const [isCreateMode, setIsCreateMode] = useState(false);
+
+  const createEmptyDish = (): AdminDish => {
+    const defaultCategory = categories[0]?.name ?? "";
+
+    return {
+      _id: "",
+      name: "",
+      price: 0,
+      description: "",
+      image: "",
+      active: true,
+      includes: [],
+      sizes: [],
+      variations: [],
+      category: defaultCategory,
+    };
+  };
+
+  const loadDashboardData = async () => {
+    try {
+      const [adminDishes, categoryOptions] = await Promise.all([
+        listAdminDishes(),
+        listCategoryOptions(),
+      ]);
+
+      setDishes(adminDishes);
+      setCategories(categoryOptions);
+    } catch {
+      setError("Error fetching dishes");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    async function fetchDishes() {
-      try {
-        const adminDishes = await listAdminDishes();
-        setDishes(adminDishes);
-      } catch {
-        setError("Error fetching dishes");
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    fetchDishes();
+    loadDashboardData();
   }, []);
 
   // Handle delete dish
@@ -82,7 +115,14 @@ export default function DishesPage() {
 
   // Handle edit dish
   const handleEdit = (dish: AdminDish) => {
+    setIsCreateMode(false);
     setEditingDish(dish);
+    setIsEditModalOpen(true);
+  };
+
+  const handleAddDish = () => {
+    setIsCreateMode(true);
+    setEditingDish(createEmptyDish());
     setIsEditModalOpen(true);
   };
 
@@ -121,22 +161,44 @@ export default function DishesPage() {
   const handleSave = async () => {
     if (!editingDish) return;
 
+    if (!editingDish.category) {
+      alert("Please select a category");
+      return;
+    }
+
     try {
-      await updateDish(editingDish._id, {
-        name: editingDish.name,
-        price: editingDish.price,
-        description: editingDish.description,
-        image: editingDish.image,
-        category: editingDish.category,
-        active: editingDish.active,
-      });
-      setDishes((currentDishes) =>
-        currentDishes.map((dish) => (dish._id === editingDish._id ? { ...dish, ...editingDish } : dish))
-      );
+      if (isCreateMode) {
+        await createDish({
+          name: editingDish.name,
+          price: editingDish.price,
+          description: editingDish.description,
+          image: editingDish.image,
+          category: editingDish.category,
+          active: editingDish.active,
+        });
+
+        setCurrentPage(1);
+        await loadDashboardData();
+      } else {
+        await updateDish(editingDish._id, {
+          name: editingDish.name,
+          price: editingDish.price,
+          description: editingDish.description,
+          image: editingDish.image,
+          category: editingDish.category,
+          active: editingDish.active,
+        });
+        setDishes((currentDishes) =>
+          currentDishes.map((dish) =>
+            dish._id === editingDish._id ? { ...dish, ...editingDish } : dish
+          )
+        );
+      }
+
       setIsEditModalOpen(false);
       setEditingDish(null);
     } catch {
-      alert("Error updating dish");
+      alert(isCreateMode ? "Error creating dish" : "Error updating dish");
     }
   };
 
@@ -149,6 +211,15 @@ export default function DishesPage() {
     setEditingDish({
       ...editingDish,
       [name]: name === "price" ? parseFloat(value) || 0 : value,
+    });
+  };
+
+  const handleCategoryChange = (category: string) => {
+    if (!editingDish) return;
+
+    setEditingDish({
+      ...editingDish,
+      category,
     });
   };
 
@@ -185,7 +256,13 @@ export default function DishesPage() {
           transition={{ duration: 0.5 }}
           className="bg-white p-8 rounded-xl shadow-lg w-full"
         >
-          <h1 className="text-3xl font-bold text-gray-800 mb-6 text-center">Restaurant Menu</h1>
+          <div className="mb-6 flex items-center justify-between gap-4">
+            <h1 className="text-3xl font-bold text-gray-800">Restaurant Menu</h1>
+            <Button onClick={handleAddDish} disabled={categories.length === 0 && !loading}>
+              <Plus />
+              Add Dish
+            </Button>
+          </div>
           {
           loading 
           ? <p className="text-gray-600 text-center">Loading dishes...</p>
@@ -340,7 +417,7 @@ export default function DishesPage() {
             <Dialog open={isEditModalOpen} onOpenChange={setIsEditModalOpen}>
               <DialogContent>
                 <DialogHeader>
-                  <DialogTitle>Edit Dish</DialogTitle>
+                  <DialogTitle>{isCreateMode ? "Add Dish" : "Edit Dish"}</DialogTitle>
                 </DialogHeader>
                 <div className="grid gap-4 py-4">
                   <div className="grid grid-cols-4 items-center gap-4">
@@ -397,13 +474,18 @@ export default function DishesPage() {
                     <Label htmlFor="category" className="text-right">
                       Category
                     </Label>
-                    <Input
-                      id="category"
-                      name="category"
-                      value={editingDish.category}
-                      onChange={handleInputChange}
-                      className="col-span-3"
-                    />
+                    <Select value={editingDish.category} onValueChange={handleCategoryChange}>
+                      <SelectTrigger className="col-span-3 w-full">
+                        <SelectValue placeholder="Select a category" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {categories.map((category) => (
+                          <SelectItem key={category.name} value={category.name}>
+                            {category.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
                   {/* toggle button */}
                   <div className="grid grid-cols-4 items-center gap-4">
@@ -434,10 +516,17 @@ export default function DishesPage() {
                   </div>
                 </div>
                 <DialogFooter>
-                  <Button variant="outline" onClick={() => setIsEditModalOpen(false)}>
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      setIsEditModalOpen(false);
+                      setEditingDish(null);
+                      setIsCreateMode(false);
+                    }}
+                  >
                     Cancel
                   </Button>
-                  <Button onClick={handleSave}>Save</Button>
+                  <Button onClick={handleSave}>{isCreateMode ? "Create" : "Save"}</Button>
                 </DialogFooter>
               </DialogContent>
             </Dialog>

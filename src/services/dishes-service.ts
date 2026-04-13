@@ -3,12 +3,22 @@ import type {
   ApiDish,
   ApiDishCategory,
   ApiResponse,
+  CreateDishInput,
+  DishCategoryOption,
   DishCategory,
   MenuDish,
   PatchDishInput,
 } from "@repo-types/dishes";
 
 const DISHES_ENDPOINT = "/api/v1/dishes";
+
+export async function listCategoryOptions(): Promise<DishCategoryOption[]> {
+  const categories = await listDishCategories();
+
+  return categories.map((category) => ({
+    name: category.name,
+  }));
+}
 
 export async function listDishCategories(): Promise<DishCategory[]> {
   const response = await fetch(DISHES_ENDPOINT);
@@ -26,6 +36,18 @@ export async function listAdminDishes(): Promise<AdminDish[]> {
       category: category.name,
     }))
   );
+}
+
+export async function createDish(input: CreateDishInput): Promise<void> {
+  const response = await fetch(DISHES_ENDPOINT, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(input),
+  });
+
+  await parseResponse<{ message: string }>(response);
 }
 
 export async function updateDish(id: string, input: PatchDishInput): Promise<void> {

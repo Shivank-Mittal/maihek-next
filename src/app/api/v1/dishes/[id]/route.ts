@@ -8,6 +8,18 @@ interface Params {
   id: string;
 }
 
+async function resolveCategory(categoryName?: string, categoryId?: string) {
+  if (categoryName) {
+    return Category.findOne({ name: categoryName });
+  }
+
+  if (categoryId) {
+    return Category.findById(categoryId);
+  }
+
+  return null;
+}
+
 export async function DELETE(req: NextRequest, context: { params: Promise<Params> }) {
   try {
     await connectDB();
@@ -37,7 +49,7 @@ export async function PATCH(req: NextRequest, context: { params: Promise<Params>
     if (!dish) return ApiResponse.notFound("Dish not found");
 
     const body = await req.json();
-    const { name, price, image, description, active, category } = body;
+    const { name, price, image, description, active, category, categoryId } = body;
 
     if (!body || typeof body !== "object" || Object.keys(body).length === 0) {
       return ApiResponse.badRequest("At least one field is required");
@@ -51,8 +63,8 @@ export async function PATCH(req: NextRequest, context: { params: Promise<Params>
     if (description !== undefined) updateFields.description = description;
     if (active !== undefined) updateFields.active = active;
 
-    if (category !== undefined) {
-      const existingCategory = await Category.findOne({ name: category });
+    if (category !== undefined || categoryId !== undefined) {
+      const existingCategory = await resolveCategory(category, categoryId);
 
       if (!existingCategory) {
         return ApiResponse.badRequest("Category not found");
