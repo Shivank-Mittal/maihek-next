@@ -6,44 +6,24 @@ import { useCart } from "@/hooks/use-cart";
 import { toast } from "sonner";
 import CartDrawer from "@/components/cart-drawer";
 import DishCard from "@/components/dish-card";
-import { Category, Dish } from "./types";
+import { listDishCategories } from "@/services/dishes-service";
+import type { DishCategory, MenuDish } from "@repo-types/dishes";
 
 export default function Menu() {
   const { addToCart, setIsDrawerOpen } = useCart();
   const [isClient, setIsClient] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  const [menuItems, setMenuItems] = useState<Category[]>([]);
-  const [categories, setCategories] = useState<Category[]>([]);
+  const [menuItems, setMenuItems] = useState<DishCategory[]>([]);
   const [error, setError] = useState<string | null>(null);
 
   const fetchMenuItems = async () => {
     try {
-      const response = await fetch("/api/v1/dishes");
-      if (!response.ok) throw new Error("Failed to fetch menu items");
-      const data = await response.json();
-      console.log(data, "data");
-      // Validate and normalize the fetched data
-      const normalizedData = (data?.data || []).map((category: Category) => ({
-        ...category,
-        dishes: (category.dishes || []).map((dish: Dish) => ({
-          ...dish,
-          includes: Array.isArray(dish.includes) ? dish.includes : [],
-        })),
-      }));
-      const uniqueCategories = data.data.map((category: Category) => {
-        return {
-          _id: category._id,
-          name: category.name,
-        };
-      });
-      console.log(uniqueCategories, "uniqueCategories");
-      setCategories(uniqueCategories);
-      setMenuItems(normalizedData.length > 0 ? normalizedData : []);
-      setIsLoading(false);
+      const categories = await listDishCategories();
+      setMenuItems(categories);
     } catch (error) {
       console.error("Error fetching menu items:", error);
       setError("Failed to load menu items. Displaying default menu.");
-
+    } finally {
       setIsLoading(false);
     }
   };
@@ -96,8 +76,8 @@ export default function Menu() {
         <div className="p-6">
           <h1 className="text-2xl font-bold text-gray-800 mb-6 ">Menu Categories</h1>
           <ul className="space-y-4">
-            {categories.length > 0 &&
-              categories.map((category) => (
+            {menuItems.length > 0 &&
+              menuItems.map((category) => (
                 <li key={category._id}>
                   <a
                     href={`#${category._id}`}
@@ -165,7 +145,7 @@ const CategoryBlock = ({
 }: {
   _id: string;
   title: string;
-  dishes: Dish[];
+  dishes: MenuDish[];
   addToCart: (
     item: { _id: string; name: string; price: number; image?: string },
     quantity: number

@@ -1,5 +1,6 @@
 import connectDB from "@/lib/db";
 import { Dish } from "@/models/dish";
+import Category from "@/models/category";
 import ApiResponse from "@/lib/response";
 import { NextRequest } from "next/server";
 
@@ -36,22 +37,38 @@ export async function PATCH(req: NextRequest, context: { params: Promise<Params>
     if (!dish) return ApiResponse.notFound("Dish not found");
 
     const body = await req.json();
-    const { name, price, image, description, active } = body;
+    const { name, price, image, description, active, category } = body;
 
-    if (!name || !price || !image || !description) {
-      return ApiResponse.badRequest("All fields are required including 'active'");
+    if (!body || typeof body !== "object" || Object.keys(body).length === 0) {
+      return ApiResponse.badRequest("At least one field is required");
+    }
+
+    const updateFields: Record<string, unknown> = {};
+
+    if (name !== undefined) updateFields.name = name;
+    if (price !== undefined) updateFields.price = price;
+    if (image !== undefined) updateFields.image = image;
+    if (description !== undefined) updateFields.description = description;
+    if (active !== undefined) updateFields.active = active;
+
+    if (category !== undefined) {
+      const existingCategory = await Category.findOne({ name: category });
+
+      if (!existingCategory) {
+        return ApiResponse.badRequest("Category not found");
+      }
+
+      updateFields.category = existingCategory._id;
+    }
+
+    if (Object.keys(updateFields).length === 0) {
+      return ApiResponse.badRequest("No valid fields provided for update");
     }
 
     await Dish.updateOne(
       { _id: id },
       {
-        $set: {
-          name,
-          price,
-          image,
-          description,
-          active: active === undefined ? dish.active : active,
-        },
+        $set: updateFields,
       }
     );
 

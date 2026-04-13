@@ -1,6 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
+import { Pause, Play, SquarePen, Trash2 } from "lucide-react";
 import {
   Table,
   TableBody,
@@ -25,115 +26,124 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
+import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { DishInput as Dish } from "@/models/dish";
 import { Toggle } from "@/components/ui/toggle";
-
-interface Category {
-  _id: string;
-  name: string;
-  dishes: Dish[];
-}
+import {
+  deleteDish,
+  listAdminDishes,
+  updateDish,
+  updateDishSellingStatus,
+} from "@/services/dishes-service";
+import type { AdminDish } from "@repo-types/dishes";
 
 export default function DishesPage() {
-  const [dishes, setDishes] = useState<Dish[]>([]);
+  const [dishes, setDishes] = useState<AdminDish[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage] = useState(5);
+  const [itemsPerPage] = useState(10);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [editingDish, setEditingDish] = useState<Dish | null>(null);
+  const [editingDish, setEditingDish] = useState<AdminDish | null>(null);
 
   useEffect(() => {
     async function fetchDishes() {
       try {
-        const response = await fetch("/api/v1/dishes/");
-        if (!response.ok) {
-          throw new Error("Failed to fetch dishes");
-        }
-        const { data } = await response.json();
-        const flattenedDishes: Dish[] = data.flatMap((category: Category) =>
-          category.dishes.map((dish) => ({
-            _id: dish._id,
-            name: dish.name,
-            price: dish.price,
-            category: category.name,
-            description: dish.description,
-            image: dish.image,
-            active: dish.active,
-          }))
-        );
-        setDishes(flattenedDishes);
-        setLoading(false);
-      } catch (err) {
+        const adminDishes = await listAdminDishes();
+        setDishes(adminDishes);
+      } catch {
         setError("Error fetching dishes");
+      } finally {
         setLoading(false);
       }
     }
+
     fetchDishes();
   }, []);
 
   // Handle delete dish
   const handleDelete = async (id: string) => {
     if (!confirm("Are you sure you want to delete this dish?")) return;
+
+    const isLastItemOnPage = currentDishes.length === 1 && currentPage > 1;
+
     try {
-      const response = await fetch(`/api/v1/dishes/${id}`, {
-        method: "DELETE",
-      });
-      if (!response.ok) {
-        throw new Error("Failed to delete dish");
-      }
-      setDishes(dishes.filter((dish) => dish._id !== id));
-      // Reset to first page if current page becomes empty
-      if (currentDishes.length === 1 && currentPage > 1) {
+      await deleteDish(id);
+      setDishes((currentDishes) => currentDishes.filter((dish) => dish._id !== id));
+
+      if (isLastItemOnPage) {
         setCurrentPage(currentPage - 1);
       }
-    } catch (err) {
+    } catch {
       alert("Error deleting dish");
     }
   };
 
   // Handle edit dish
-  const handleEdit = (dish: Dish) => {
+  const handleEdit = (dish: AdminDish) => {
     setEditingDish(dish);
     setIsEditModalOpen(true);
+  };
+
+  const handleSellingStatusChange = async (dish: AdminDish) => {
+    const nextSellingState = !dish.active;
+
+    setDishes((currentDishes) =>
+      currentDishes.map((currentDish) =>
+        currentDish._id === dish._id
+          ? { ...currentDish, active: nextSellingState }
+          : currentDish
+      )
+    );
+    setEditingDish((currentDish) =>
+      currentDish && currentDish._id === dish._id
+        ? { ...currentDish, active: nextSellingState }
+        : currentDish
+    );
+
+    try {
+      await updateDishSellingStatus(dish._id, nextSellingState);
+    } catch {
+      setDishes((currentDishes) =>
+        currentDishes.map((currentDish) =>
+          currentDish._id === dish._id ? { ...currentDish, active: dish.active } : currentDish
+        )
+      );
+      setEditingDish((currentDish) =>
+        currentDish && currentDish._id === dish._id ? { ...currentDish, active: dish.active } : currentDish
+      );
+      alert("Error updating selling status");
+    }
   };
 
   // Handle save changes
   const handleSave = async () => {
     if (!editingDish) return;
+
     try {
-      console.log(editingDish);
-      const response = await fetch(`/api/v1/dishes/${editingDish._id}`, {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          name: editingDish.name,
-          price: editingDish.price,
-          description: editingDish.description,
-          image: editingDish.image,
-          category: editingDish.category,
-          active: editingDish.active,
-        }),
+      await updateDish(editingDish._id, {
+        name: editingDish.name,
+        price: editingDish.price,
+        description: editingDish.description,
+        image: editingDish.image,
+        category: editingDish.category,
+        active: editingDish.active,
       });
-      if (!response.ok) {
-        throw new Error("Failed to update dish");
-      }
-      setDishes(
-        dishes.map((dish) => (dish._id === editingDish._id ? { ...dish, ...editingDish } : dish))
+      setDishes((currentDishes) =>
+        currentDishes.map((dish) => (dish._id === editingDish._id ? { ...dish, ...editingDish } : dish))
       );
       setIsEditModalOpen(false);
       setEditingDish(null);
-    } catch (err) {
+    } catch {
       alert("Error updating dish");
     }
   };
 
   // Handle input changes in modal
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
     if (!editingDish) return;
     const { name, value } = e.target;
     setEditingDish({
@@ -168,21 +178,22 @@ export default function DishesPage() {
 
   return (
     <>
-      <div className="min-h-screen flex flex-col items-center justify-center bg-gray-100 p-4">
+      <div className="min-h-screen flex flex-col items-center bg-gray-100 p-4">
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
-          className="bg-white p-8 rounded-xl shadow-lg max-w-4xl w-full"
+          className="bg-white p-8 rounded-xl shadow-lg w-full"
         >
           <h1 className="text-3xl font-bold text-gray-800 mb-6 text-center">Restaurant Menu</h1>
-          {loading ? (
-            <p className="text-gray-600 text-center">Loading dishes...</p>
-          ) : error ? (
-            <p className="text-red-500 text-center">{error}</p>
-          ) : dishes.length === 0 ? (
-            <p className="text-gray-600 text-center">No dishes available.</p>
-          ) : (
+          {
+          loading 
+          ? <p className="text-gray-600 text-center">Loading dishes...</p>
+          : error 
+            ? <p className="text-red-500 text-center">{error}</p>
+            : dishes.length === 0 
+              ? <p className="text-gray-600 text-center">No dishes available.</p>
+              : (
             <>
               <div className="overflow-x-auto">
                 <Table>
@@ -199,33 +210,85 @@ export default function DishesPage() {
                   </TableHeader>
                   <TableBody>
                     {currentDishes.map((dish) => (
-                      <TableRow key={dish._id}>
+                      <TableRow
+                        key={dish._id}
+                        className={dish.active ? "" : "bg-stone-50/80 text-stone-500"}
+                      >
                         <TableCell>
-                          <img
-                            src={
-                              dish.image ||
-                              "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQIeqZ7XgBsSFoHfg6AqYO8DArUUDCdrJEorw&s"
-                            }
-                            alt={dish.name}
-                            className="w-16 h-16 object-cover"
-                          />
+                          <div className="relative w-16 h-16">
+                            <img
+                              src={
+                                dish.image ||
+                                "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQIeqZ7XgBsSFoHfg6AqYO8DArUUDCdrJEorw&s"
+                              }
+                              alt={dish.name}
+                              className={`w-16 h-16 object-cover rounded-md transition-opacity ${
+                                dish.active ? "opacity-100" : "opacity-55"
+                              }`}
+                            />
+                            {!dish.active && (
+                              <Badge className="absolute -top-2 -right-2 border-amber-200 bg-amber-100 text-amber-800 shadow-sm">
+                                Off
+                              </Badge>
+                            )}
+                          </div>
                         </TableCell>
-                        <TableCell>{dish.name}</TableCell>
-                        <TableCell>€{dish.price.toFixed(2)}</TableCell>
-                        <TableCell>{dish.active ? "Yes" : "No"}</TableCell>
+                        <TableCell>
+                          <div className="flex flex-col gap-1">
+                            <span className={dish.active ? "text-foreground" : "text-stone-600"}>
+                              {dish.name}
+                            </span>
+                            {!dish.active && (
+                              <span className="text-xs font-medium uppercase tracking-wide text-amber-700">
+                                Currently not selling
+                              </span>
+                            )}
+                          </div>
+                        </TableCell>
+                        <TableCell className={dish.active ? "" : "text-stone-500"}>
+                          €{dish.price.toFixed(2)}
+                        </TableCell>
+                        <TableCell>
+                          <Badge
+                            variant="outline"
+                            className={
+                              dish.active
+                                ? "border-emerald-200 bg-emerald-50 text-emerald-700"
+                                : "border-amber-200 bg-amber-50 text-amber-700"
+                            }
+                          >
+                            {dish.active ? "Selling" : "Not Selling"}
+                          </Badge>
+                        </TableCell>
                         <TableCell>{dish.category}</TableCell>
                         <TableCell>{dish.description}</TableCell>
                         <TableCell>
                           <div className="flex space-x-2">
-                            <Button variant="outline" size="sm" onClick={() => handleEdit(dish)}>
-                              Edit
+                            <Button
+                              variant="secondary"
+                              size="icon"
+                              onClick={() => handleSellingStatusChange(dish)}
+                              aria-label={
+                                dish.active ? "Stop selling this dish" : "Activate selling this dish"
+                              }
+                            >
+                              {dish.active ? <Pause /> : <Play />}
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="icon"
+                              onClick={() => handleEdit(dish)}
+                              aria-label="Edit dish"
+                            >
+                              <SquarePen />
                             </Button>
                             <Button
                               variant="destructive"
-                              size="sm"
+                              size="icon"
                               onClick={() => handleDelete(dish._id as string)}
+                              aria-label="Delete dish"
                             >
-                              Delete
+                              <Trash2 />
                             </Button>
                           </div>
                         </TableCell>
@@ -307,16 +370,15 @@ export default function DishesPage() {
                     />
                   </div>
                   <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor="en_desc" className="text-right">
+                    <Label htmlFor="description" className="text-right">
                       Description
                     </Label>
-                    <Input
-                      id="en_desc"
-                      name="en_desc"
+                    <textarea
+                      id="description"
+                      name="description"
                       value={editingDish.description || ""}
-                      type="textarea"
                       onChange={handleInputChange}
-                      className="col-span-3"
+                      className="col-span-3 min-h-24 rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs outline-none transition-[color,box-shadow] placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px]"
                     />
                   </div>
                   <div className="grid grid-cols-4 items-center gap-4">
@@ -354,7 +416,7 @@ export default function DishesPage() {
                             ({
                               ...prev,
                               active: pressed,
-                            }) as Dish
+                            }) as AdminDish
                         )
                       }
                       className={`col-span-3 relative w-14 h-8 rounded-full cursor-pointer transition-colors ${

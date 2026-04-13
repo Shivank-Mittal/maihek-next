@@ -7,6 +7,7 @@ type DishCardItem = {
   name: string;
   price: number;
   description: string;
+  active?: boolean;
   includes?: string[];
   image?: string;
 };
@@ -21,6 +22,7 @@ type DishCardProps = {
 
 export default function DishCard({ dish, addToCart }: DishCardProps) {
   const [quantity, setQuantity] = useState(0);
+  const isDisabled = dish.active === false;
 
   const handleIncrement = () => setQuantity((current) => current + 1);
   const handleDecrement = () => setQuantity((current) => Math.max(0, current - 1));
@@ -44,7 +46,14 @@ export default function DishCard({ dish, addToCart }: DishCardProps) {
   };
 
   return (
-    <div className="bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow duration-200">
+    <div className="relative bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow duration-200">
+      {isDisabled && (
+        <div className="absolute inset-0 bg-white/70 rounded-lg flex items-center justify-center z-10">
+          <span className="bg-stone-900/90 text-stone-50 text-sm font-semibold px-4 py-2 rounded-full shadow-sm">
+            Off the Menu Today
+          </span>
+        </div>
+      )}
       <h3 className="text-xl font-semibold text-gray-800">{dish.name}</h3>
       <p className="text-gray-600 mt-2">{dish.description}</p>
       {dish.includes && dish.includes.length > 0 && (
@@ -61,26 +70,27 @@ export default function DishCard({ dish, addToCart }: DishCardProps) {
       )}
 
       <div className="flex justify-between items-center mt-4">
-        <p className="text-black font-bold">€{dish.price}</p>
+        <p className={`font-bold ${isDisabled ? "text-gray-400" : "text-black"}`}>€{dish.price}</p>
         <div className="flex items-center space-x-2">
           <button
             className="decrease-qty bg-gray-200 text-gray-700 px-2 py-1 rounded hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed"
             onClick={handleDecrement}
-            disabled={quantity === 0}
+            disabled={quantity === 0 || isDisabled}
           >
             -
           </button>
           <span className="text-gray-700 qty-display">{quantity}</span>
           <button
-            className="increase-qty bg-gray-200 text-gray-700 px-2 py-1 rounded hover:bg-gray-300"
+            className="increase-qty bg-gray-200 text-gray-700 px-2 py-1 rounded hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed"
             onClick={handleIncrement}
+            disabled={isDisabled}
           >
             +
           </button>
           <button
             className="add-to-cart bg-black text-white px-4 py-2 rounded-lg hover:bg-gray-800 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
             onClick={handleAddToCart}
-            disabled={quantity === 0}
+            disabled={quantity === 0 || isDisabled}
           >
             Add to Cart
           </button>
