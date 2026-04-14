@@ -49,7 +49,7 @@ export default function Menu() {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center h-screen w-full ">
+      <div className="flex items-center justify-center h-screen w-full bg-stone-50">
         <motion.div
           className="flex flex-col items-center gap-4"
           initial={{ opacity: 0 }}
@@ -57,7 +57,7 @@ export default function Menu() {
           transition={{ duration: 0.5 }}
         >
           <svg
-            className="animate-spin h-10 w-10 text-gray-600"
+            className="animate-spin h-8 w-8 text-stone-400"
             xmlns="http://www.w3.org/2000/svg"
             fill="none"
             viewBox="0 0 24 24"
@@ -76,47 +76,56 @@ export default function Menu() {
               d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
             ></path>
           </svg>
-          <p className="text-black text-lg font-semibold">Loading Menu...</p>
+          <p className="text-stone-500 text-sm font-medium tracking-wide">Loading Menu…</p>
         </motion.div>
       </div>
     );
   }
 
   return (
-    <div className="bg-gray-100 min-h-screen flex">
-      <div className="hidden xl:block w-fit p-4 bg-white shadow-lg fixed h-screen overflow-y-auto">
-        <div className="p-6">
-          <h1 className="text-2xl font-bold text-gray-800 mb-6 ">Menu Categories</h1>
-          <ul className="space-y-4">
-            {menuItems.length > 0 &&
-              menuItems.map((category) => (
-                <li key={category._id}>
-                  <a
-                    href={`#${category._id}`}
-                    className="block text-lg font-semibold text-gray-700 hover:text-indigo-600 transition-colors duration-200 category-link"
-                  >
-                    {category.name}
-                  </a>
-                </li>
-              ))}
+    <div className="bg-stone-50 min-h-screen flex">
+      {/* Left sidebar — category nav */}
+      <div className="hidden xl:flex flex-col w-56 shrink-0 fixed h-screen bg-white border-r border-stone-100 overflow-y-auto">
+        <div className="px-6 pt-8 pb-4">
+          <p className="text-[10px] font-semibold uppercase tracking-widest text-stone-400 mb-5">
+            Categories
+          </p>
+          <ul className="space-y-1">
+            {menuItems.map((category) => (
+              <li key={category._id}>
+                <a
+                  href={`#${category._id}`}
+                  className="block text-sm font-medium text-stone-600 hover:text-stone-900 hover:bg-stone-50 px-3 py-2 rounded-lg transition-colors duration-150 category-link"
+                >
+                  {category.name}
+                </a>
+              </li>
+            ))}
           </ul>
         </div>
       </div>
-      <div className="lg:ml-[20%] w-full lg:w-[60%] p-4 lg:p-8">
-        <div>
-          <h1 className="text-3xl md:text-5xl font-extrabold text-center mb-16  ">
-            Notre Menu Exquis
+
+      {/* Main content */}
+      <div className="xl:ml-56 w-full xl:w-[calc(100%-56*4px-20%)] px-4 sm:px-8 py-10 max-w-4xl mx-auto">
+        <div className="mb-12 text-center">
+          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-stone-400 mb-3">
+            Restaurant Maihak
+          </p>
+          <h1 className="text-4xl md:text-5xl font-bold text-stone-900 tracking-tight">
+            Notre Menu
           </h1>
-          {takeawayNotice && (
-            <div className="mx-auto mb-10 max-w-3xl rounded-2xl border border-emerald-200 bg-emerald-50 px-5 py-4 text-center text-sm font-medium text-emerald-800 shadow-sm">
-              {takeawayNotice}
-            </div>
-          )}
+          <div className="mt-3 w-12 h-0.5 bg-stone-300 mx-auto rounded-full" />
         </div>
+
+        {takeawayNotice && (
+          <div className="mx-auto mb-10 rounded-2xl border border-emerald-100 bg-emerald-50 px-5 py-3.5 text-center text-sm font-medium text-emerald-700">
+            {takeawayNotice}
+          </div>
+        )}
 
         {error && (
           <motion.p
-            className="text-red-400 text-center mb-8"
+            className="text-red-400 text-center mb-8 text-sm"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.5 }}
@@ -125,7 +134,7 @@ export default function Menu() {
           </motion.p>
         )}
 
-        <div className="space-y-16">
+        <div className="space-y-14">
           {menuItems.length > 0 &&
             menuItems.map((category) => (
               <CategoryBlock
@@ -138,9 +147,9 @@ export default function Menu() {
                   toast.success(`${item.name} added to cart!`, {
                     duration: 2000,
                     style: {
-                      background: "#15803d",
-                      color: "#fff",
-                      border: "1px solid #16a34a",
+                      background: "#1c1917",
+                      color: "#fafaf9",
+                      border: "1px solid #44403c",
                     },
                   });
                   setTimeout(() => setIsDrawerOpen(true), 100);
@@ -177,12 +186,17 @@ const CategoryBlock = ({
   ) => void;
 }) => {
   return (
-    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.6 }}>
-      <h2 className="text-3xl font-bold text-gray-800 mb-6" id={_id}>
-        {title}
-      </h2>
+    <motion.div
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5 }}
+    >
+      <div className="flex items-center gap-4 mb-5" id={_id}>
+        <h2 className="text-xl font-bold text-stone-800 whitespace-nowrap">{title}</h2>
+        <div className="flex-1 h-px bg-stone-200" />
+      </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {dishes.map((dish) => (
           <DishCard key={dish._id} dish={dish} categoryName={title} addToCart={addToCart} />
         ))}

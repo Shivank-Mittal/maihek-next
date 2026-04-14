@@ -167,151 +167,144 @@ export default function CartDrawer() {
         )}
       </button>
 
-      <div className="hidden xl:block w-1/5 bg-white shadow-lg fixed right-0 h-screen">
-        <div className="p-6 h-full flex flex-col justify-between">
-          <div className="flex-1 overflow-y-auto pr-2 scrollbar-hidden">
-            <h2 className="text-2xl font-semibold text-gray-900 mb-4">Your Cart</h2>
-            <div id="cart-items-desktop" className="space-y-4">
-              {cart.map((item) => {
-                const pricing = calculateCartItemPricing(item, {
-                  orderType,
-                  takeawayDiscount: discountSettings.takeawayDiscount,
-                });
+      <div className="hidden xl:flex xl:flex-col w-[22%] bg-white border-l border-stone-100 fixed right-0 h-screen">
+        <div className="px-5 pt-7 pb-4 border-b border-stone-100">
+          <p className="text-[10px] font-semibold uppercase tracking-widest text-stone-400 mb-1">
+            Your Order
+          </p>
+          <h2 className="text-lg font-bold text-stone-900">Cart</h2>
+        </div>
 
-                return (
-                  <div key={item.id} className="flex items-center p-4 bg-gray-50 rounded-lg">
-                    <img
-                      src={item.image}
-                      alt={item.name}
-                      className="w-16 h-16 object-cover rounded mr-4"
-                    />
-                    <div className="flex-1">
-                      <h3 className="cart-item-heading text-base font-medium text-gray-900">
-                        {item.name}
-                      </h3>
-                      <p className="text-sm text-gray-500">
-                        {pricing.lineDiscount > 0 ? (
-                          <>
-                            <span className="line-through">
-                              EUR {pricing.unitBasePrice.toFixed(2)}
-                            </span>
-                            <span className="ml-2 font-medium text-emerald-700">
-                              EUR {pricing.unitTotal.toFixed(2)}
-                            </span>
-                          </>
-                        ) : (
-                          <>EUR {pricing.unitBasePrice.toFixed(2)}</>
-                        )}
-                      </p>
-                      {pricing.lineDiscount > 0 && (
-                        <p className="mt-1 text-xs text-emerald-700">
-                          {pricing.appliedDiscountLabels.join(" + ")} : -EUR{" "}
-                          {pricing.lineDiscount.toFixed(2)}
-                        </p>
-                      )}
-                      <div className="flex items-center mt-2">
-                        <button
-                          className="decreaseQty text-gray-500 hover:text-gray-700 cursor-pointer"
-                          onClick={() => handleUpdateQuantity(item.id, item.quantity - 1)}
-                        >
-                          -
-                        </button>
-                        <span className="mx-2 text-sm font-medium">{item.quantity}</span>
-                        <button
-                          className="increaseQty text-gray-500 hover:text-gray-700 cursor-pointer"
-                          onClick={() => handleUpdateQuantity(item.id, item.quantity + 1)}
-                        >
-                          +
-                        </button>
-                        <button
-                          className="removeItem ml-4 text-red-500 hover:text-red-700"
-                          onClick={() => handleRemoveFromCart(item.id, item.name)}
-                        >
-                          Remove
-                        </button>
-                      </div>
-                    </div>
-                    <p className="text-sm font-semibold text-gray-900 text-right">
-                      EUR {pricing.lineTotal.toFixed(2)}
+        <div className="flex-1 overflow-y-auto px-5 py-4 scrollbar-hidden space-y-3">
+          {cart.length === 0 && (
+            <p className="text-sm text-stone-400 text-center mt-10">Your cart is empty.</p>
+          )}
+          {cart.map((item) => {
+            const pricing = calculateCartItemPricing(item, {
+              orderType,
+              takeawayDiscount: discountSettings.takeawayDiscount,
+            });
+
+            return (
+              <div key={item.id} className="flex items-start gap-3 p-3 bg-stone-50 rounded-xl">
+                <img
+                  src={item.image}
+                  alt={item.name}
+                  className="w-12 h-12 object-cover rounded-lg shrink-0"
+                />
+                <div className="flex-1 min-w-0">
+                  <h3 className="cart-item-heading text-sm font-semibold text-stone-800 truncate">
+                    {item.name}
+                  </h3>
+                  <p className="text-xs text-stone-500 mt-0.5">
+                    {pricing.lineDiscount > 0 ? (
+                      <>
+                        <span className="line-through">EUR {pricing.unitBasePrice.toFixed(2)}</span>
+                        <span className="ml-1.5 text-emerald-600 font-medium">
+                          EUR {pricing.unitTotal.toFixed(2)}
+                        </span>
+                      </>
+                    ) : (
+                      <>EUR {pricing.unitBasePrice.toFixed(2)}</>
+                    )}
+                  </p>
+                  {pricing.lineDiscount > 0 && (
+                    <p className="mt-0.5 text-xs text-emerald-600">
+                      -{pricing.appliedDiscountLabels.join(" + ")} −EUR{" "}
+                      {pricing.lineDiscount.toFixed(2)}
                     </p>
+                  )}
+                  <div className="flex items-center gap-2 mt-2">
+                    <button
+                      className="decreaseQty w-6 h-6 flex items-center justify-center rounded-full bg-stone-200 text-stone-600 hover:bg-stone-300 text-sm transition-colors"
+                      onClick={() => handleUpdateQuantity(item.id, item.quantity - 1)}
+                    >
+                      −
+                    </button>
+                    <span className="text-sm font-semibold text-stone-700">{item.quantity}</span>
+                    <button
+                      className="increaseQty w-6 h-6 flex items-center justify-center rounded-full bg-stone-200 text-stone-600 hover:bg-stone-300 text-sm transition-colors"
+                      onClick={() => handleUpdateQuantity(item.id, item.quantity + 1)}
+                    >
+                      +
+                    </button>
+                    <button
+                      className="removeItem ml-auto text-xs text-stone-400 hover:text-red-500 transition-colors"
+                      onClick={() => handleRemoveFromCart(item.id, item.name)}
+                    >
+                      Remove
+                    </button>
                   </div>
-                );
-              })}
+                </div>
+                <p className="text-sm font-semibold text-stone-800 shrink-0">
+                  EUR {pricing.lineTotal.toFixed(2)}
+                </p>
+              </div>
+            );
+          })}
+        </div>
+
+        <div className="px-5 py-5 border-t border-stone-100 space-y-4">
+          <div>
+            <p className="text-[10px] font-semibold uppercase tracking-widest text-stone-400 mb-3">
+              Order type
+            </p>
+            <div className="flex gap-3">
+              {(["emporter", "livraison"] as const).map((type) => (
+                <button
+                  key={type}
+                  onClick={() => handleOrderTypeChange(type)}
+                  className={`flex-1 py-2 rounded-xl text-xs font-semibold border transition-all duration-150 ${
+                    orderType === type
+                      ? "bg-stone-900 text-white border-stone-900"
+                      : "bg-white text-stone-600 border-stone-200 hover:border-stone-400"
+                  }`}
+                >
+                  {type === "emporter" ? "Take away" : "Delivery"}
+                </button>
+              ))}
             </div>
+            {orderType === "emporter" && takeawayNotice && (
+              <p className="mt-2 text-xs text-emerald-600">{takeawayNotice}</p>
+            )}
+            {!deliveryMinimumReached && orderType === "livraison" && (
+              <p className="mt-2 text-xs text-red-500">
+                Min. {DELIVERY_MINIMUM_ORDER_AMOUNT} EUR for delivery.
+              </p>
+            )}
           </div>
 
-          <div className="border-t pt-6 mt-6">
-            <div className="mb-6">
-              <h3 className="text-lg font-semibold text-gray-800 mb-4">Order type</h3>
-              <div className="flex flex-col gap-3">
-                <label className="flex items-center gap-2 cursor-pointer text-gray-700">
-                  <input
-                    type="radio"
-                    name="order-type-desktop"
-                    className="w-4 h-4 text-indigo-600 focus:ring-indigo-500"
-                    checked={orderType === "emporter"}
-                    onChange={() => handleOrderTypeChange("emporter")}
-                  />
-                  Take away
-                </label>
-                <label className="flex items-center gap-2 cursor-pointer text-gray-700">
-                  <input
-                    type="radio"
-                    name="order-type-desktop"
-                    className="w-4 h-4 text-indigo-600 focus:ring-indigo-500"
-                    checked={orderType === "livraison"}
-                    onChange={() => handleOrderTypeChange("livraison")}
-                  />
-                  Delivery
-                </label>
-              </div>
-              {orderType === "emporter" && takeawayNotice && (
-                <p className="mt-3 text-sm text-emerald-700">{takeawayNotice}</p>
-              )}
-              {!deliveryMinimumReached && orderType === "livraison" && (
-                <p className="mt-3 text-sm text-red-600">
-                  Delivery requires a minimum of {DELIVERY_MINIMUM_ORDER_AMOUNT} EUR.
-                </p>
-              )}
-            </div>
-
-            <div className="flex justify-between items-center mb-4">
-              <span className="text-lg font-medium text-gray-900">Subtotal</span>
-              <span id="cart-total-desktop" className="text-lg font-semibold text-gray-900">
-                EUR {pricingSummary.subtotal.toFixed(2)}
-              </span>
+          <div className="space-y-1.5 text-sm">
+            <div className="flex justify-between text-stone-500">
+              <span>Subtotal</span>
+              <span id="cart-total-desktop">EUR {pricingSummary.subtotal.toFixed(2)}</span>
             </div>
             {pricingSummary.dishDiscountTotal > 0 && (
-              <div className="flex justify-between items-center mb-4 text-emerald-700">
-                <span className="text-lg font-medium">Item discounts</span>
-                <span className="text-lg font-semibold">
-                  -EUR {pricingSummary.dishDiscountTotal.toFixed(2)}
-                </span>
+              <div className="flex justify-between text-emerald-600">
+                <span>Item discounts</span>
+                <span>−EUR {pricingSummary.dishDiscountTotal.toFixed(2)}</span>
               </div>
             )}
             {pricingSummary.takeawayDiscountTotal > 0 && (
-              <div className="flex justify-between items-center mb-4 text-emerald-700">
-                <span className="text-lg font-medium">Takeaway discount</span>
-                <span className="text-lg font-semibold">
-                  -EUR {pricingSummary.takeawayDiscountTotal.toFixed(2)}
-                </span>
+              <div className="flex justify-between text-emerald-600">
+                <span>Takeaway discount</span>
+                <span>−EUR {pricingSummary.takeawayDiscountTotal.toFixed(2)}</span>
               </div>
             )}
-            <div className="flex justify-between items-center mb-4">
-              <span className="text-lg font-medium text-gray-900">Total</span>
-              <span className="text-lg font-semibold text-gray-900">
-                EUR {pricingSummary.total.toFixed(2)}
-              </span>
+            <div className="flex justify-between font-bold text-stone-900 pt-1 border-t border-stone-100">
+              <span>Total</span>
+              <span>EUR {pricingSummary.total.toFixed(2)}</span>
             </div>
-            <button
-              id="checkoutButtonDesktop"
-              className="w-full bg-black text-white py-3 rounded-lg font-medium hover:bg-gray-800 transition duration-300 disabled:bg-gray-400 disabled:cursor-not-allowed"
-              onClick={handleCheckout}
-              disabled={loading || cart.length === 0}
-            >
-              {loading ? "Loading..." : "Proceed to Checkout"}
-            </button>
           </div>
+
+          <button
+            id="checkoutButtonDesktop"
+            className="w-full bg-stone-900 text-white py-3 rounded-xl text-sm font-semibold hover:bg-stone-700 transition-colors duration-200 disabled:bg-stone-200 disabled:text-stone-400 disabled:cursor-not-allowed"
+            onClick={handleCheckout}
+            disabled={loading || cart.length === 0}
+          >
+            {loading ? "Loading…" : "Proceed to Checkout"}
+          </button>
         </div>
       </div>
 

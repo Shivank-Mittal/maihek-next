@@ -67,72 +67,76 @@ export default function DishCard({ dish, categoryName, addToCart }: DishCardProp
   };
 
   return (
-    <div className="relative bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow duration-200">
+    <div className="relative bg-white rounded-2xl border border-stone-100 hover:border-stone-200 hover:shadow-md transition-all duration-300 overflow-hidden">
       {isDisabled && (
-        <div className="absolute inset-0 bg-white/70 rounded-lg flex items-center justify-center z-10">
-          <span className="bg-stone-900/90 text-stone-50 text-sm font-semibold px-4 py-2 rounded-full shadow-sm">
+        <div className="absolute inset-0 bg-white/80 backdrop-blur-[2px] rounded-2xl flex items-center justify-center z-10">
+          <span className="bg-stone-800 text-stone-50 text-xs font-semibold px-4 py-2 rounded-full tracking-wide uppercase">
             Off the Menu Today
           </span>
         </div>
       )}
-      <div className="flex items-start justify-between gap-3">
-        <h3 className="text-xl font-semibold text-gray-800">{dish.name}</h3>
-        {dish.discount && dish.discount.percentage > 0 && (
-          <Badge className="border-emerald-200 bg-emerald-50 text-emerald-700">
-            -{dish.discount.percentage}%
-          </Badge>
-        )}
-      </div>
-      <p className="text-gray-600 mt-2">{dish.description}</p>
-      {dish.includes && dish.includes.length > 0 && (
-        <div>
-          <h4 className="text-sm font-semibold text-gray-400 uppercase tracking-wider">
-            Included Items
-          </h4>
-          <ul className="list-disc list-inside text-gray-400 text-sm mt-2">
-            {dish.includes.map((item, index) => (
-              <li key={index}>{item}</li>
-            ))}
-          </ul>
-        </div>
-      )}
-
-      <div className="flex justify-between items-center mt-4">
-        <div className={`font-bold ${isDisabled ? "text-gray-400" : "text-black"}`}>
-          {hasDishDiscount ? (
-            <div className="flex flex-col">
-              <span className="text-sm font-medium text-gray-400 line-through">
-                €{pricing.unitBasePrice.toFixed(2)}
-              </span>
-              <span>€{pricing.unitTotal.toFixed(2)}</span>
-            </div>
-          ) : (
-            <span>€{pricing.unitBasePrice.toFixed(2)}</span>
+      <div className="p-5">
+        <div className="flex items-start justify-between gap-3 mb-2">
+          <h3 className="text-base font-semibold text-stone-800 leading-snug">{dish.name}</h3>
+          {dish.discount && dish.discount.percentage > 0 && (
+            <span className="shrink-0 text-xs font-semibold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-100">
+              -{dish.discount.percentage}%
+            </span>
           )}
         </div>
-        <div className="flex items-center space-x-2">
-          <button
-            className="decrease-qty bg-gray-200 text-gray-700 px-2 py-1 rounded hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed"
-            onClick={handleDecrement}
-            disabled={quantity === 0 || isDisabled}
-          >
-            -
-          </button>
-          <span className="text-gray-700 qty-display">{quantity}</span>
-          <button
-            className="increase-qty bg-gray-200 text-gray-700 px-2 py-1 rounded hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed"
-            onClick={handleIncrement}
-            disabled={isDisabled}
-          >
-            +
-          </button>
-          <button
-            className="add-to-cart bg-black text-white px-4 py-2 rounded-lg hover:bg-gray-800 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-            onClick={handleAddToCart}
-            disabled={quantity === 0 || isDisabled}
-          >
-            Add to Cart
-          </button>
+        <p className="text-sm text-stone-500 leading-relaxed">{dish.description}</p>
+        {dish.includes && dish.includes.length > 0 && (
+          <ul className="mt-3 flex flex-wrap gap-1.5">
+            {dish.includes.map((item, index) => (
+              <li
+                key={index}
+                className="text-xs text-stone-400 bg-stone-50 border border-stone-100 px-2 py-0.5 rounded-full"
+              >
+                {item}
+              </li>
+            ))}
+          </ul>
+        )}
+
+        <div className="flex justify-between items-center mt-4">
+          <div className={`${isDisabled ? "text-stone-300" : "text-stone-800"}`}>
+            {hasDishDiscount ? (
+              <div className="flex flex-col">
+                <span className="text-xs text-stone-400 line-through">
+                  €{pricing.unitBasePrice.toFixed(2)}
+                </span>
+                <span className="text-lg font-bold">€{pricing.unitTotal.toFixed(2)}</span>
+              </div>
+            ) : (
+              <span className="text-lg font-bold">€{pricing.unitBasePrice.toFixed(2)}</span>
+            )}
+          </div>
+          <div className="flex items-center gap-1.5">
+            <button
+              className="decrease-qty w-8 h-8 flex items-center justify-center rounded-full bg-stone-100 text-stone-600 hover:bg-stone-200 disabled:opacity-30 disabled:cursor-not-allowed transition-colors text-lg font-medium"
+              onClick={handleDecrement}
+              disabled={quantity === 0 || isDisabled}
+            >
+              −
+            </button>
+            <span className="w-6 text-center text-sm font-semibold text-stone-700 qty-display">
+              {quantity}
+            </span>
+            <button
+              className="increase-qty w-8 h-8 flex items-center justify-center rounded-full bg-stone-100 text-stone-600 hover:bg-stone-200 disabled:opacity-30 disabled:cursor-not-allowed transition-colors text-lg font-medium"
+              onClick={handleIncrement}
+              disabled={isDisabled}
+            >
+              +
+            </button>
+            <button
+              className="add-to-cart ml-1.5 bg-stone-900 text-white text-sm px-4 py-2 rounded-full hover:bg-stone-700 transition-colors duration-200 disabled:opacity-30 disabled:cursor-not-allowed font-medium"
+              onClick={handleAddToCart}
+              disabled={quantity === 0 || isDisabled}
+            >
+              Add To Cart
+            </button>
+          </div>
         </div>
       </div>
     </div>
