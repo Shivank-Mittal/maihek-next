@@ -72,9 +72,7 @@ export async function POST(req: any) {
       );
 
       if (invalidDish) {
-        return ApiResponse.badRequest(
-          "Each dish must include 'name', 'price', and 'description'"
-        );
+        return ApiResponse.badRequest("Each dish must include 'name', 'price', and 'description'");
       }
 
       const dishesWithCategory = dishesArray.map((dish: DishInput) => ({

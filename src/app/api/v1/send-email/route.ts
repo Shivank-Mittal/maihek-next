@@ -25,6 +25,7 @@ interface RequestBody {
   address?: string;
   zipcode?: string;
   orderType?: string;
+  instructions?: string;
 }
 
 // Configure nodemailer transporter
@@ -62,7 +63,7 @@ type SafeOrder = CartItem & {
 export async function POST(request: NextRequest) {
   try {
     const body: RequestBody = await request.json();
-    const { name, orders, phone, email, address, zipcode, orderType } = body;
+    const { name, orders, phone, email, address, zipcode, orderType, instructions } = body;
 
     // Validate/normalize orders deterministically
     if (!Array.isArray(orders) || orders.length === 0) {
@@ -90,7 +91,16 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const response = await sendEmail(name, safeOrders, phone, email, address, zipcode, orderType);
+    const response = await sendEmail(
+      name,
+      safeOrders,
+      phone,
+      email,
+      address,
+      zipcode,
+      orderType,
+      instructions
+    );
     return NextResponse.json({ message: "Email sent successfully!", response });
   } catch (error: any) {
     console.error("Error in API route:", error);
@@ -109,7 +119,8 @@ const sendEmail = async (
   email: string,
   address?: string,
   zipcode?: string,
-  orderType?: string
+  orderType?: string,
+  instructions?: string
 ) => {
   console.log("Sending email to:", email); // Log the recipient's email
 
@@ -173,6 +184,7 @@ const sendEmail = async (
 
           ${address ? `<p><strong>Adresse:</strong> ${address}</p>` : ""}
           ${zipcode ? `<p><strong>Code postal:</strong> ${zipcode}</p>` : ""}
+          ${instructions ? `<p><strong>Instructions:</strong> ${instructions}</p>` : ""}
           ${orderType ? `<p><strong>Type de commande:</strong> ${orderType}</p>` : ""}
           <p><strong>Mode de paiement:</strong> Espèces (Cash)</p>
 

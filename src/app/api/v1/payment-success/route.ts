@@ -72,14 +72,20 @@ export async function POST(req: NextRequest) {
         return new NextResponse(getDeliveryMinimumMessage("EUR"), { status: 400 });
       }
 
+      const meta = session.metadata ?? {};
+      const fullAddress = [meta.addressLine, meta.addressFloor, meta.addressCity]
+        .filter(Boolean)
+        .join(", ");
+
       const response = await sendEmail(
-        customer?.name ?? "Anonymous",
+        meta.customerName || customer?.name || "Anonymous",
         order,
-        customer?.phone ?? "",
-        customer?.email ?? "",
-        customer?.address?.line1 ?? "",
-        customer?.address?.postal_code ?? "",
-        orderType
+        meta.customerPhone || customer?.phone || "",
+        meta.customerEmail || customer?.email || "",
+        fullAddress || customer?.address?.line1 || "",
+        meta.addressPincode || customer?.address?.postal_code || "",
+        orderType,
+        meta.addressInstructions || ""
       );
       console.log(response, "response");
 
@@ -103,7 +109,8 @@ const sendEmail = async (
   email: string,
   address?: string,
   zipcode?: string,
-  orderType?: string
+  orderType?: string,
+  instructions?: string
 ) => {
   console.log("Sending email to:", email);
 
@@ -161,6 +168,7 @@ const sendEmail = async (
 
           ${address ? `<p><strong>Adresse:</strong> ${address}</p>` : ""}
           ${zipcode ? `<p><strong>Code postal:</strong> ${zipcode}</p>` : ""}
+          ${instructions ? `<p><strong>Instructions:</strong> ${instructions}</p>` : ""}
           ${orderType ? `<p><strong>Type de commande:</strong> ${orderType}</p>` : ""}
           <p><strong>Mode de paiement:</strong> en ligne (Online)</p>
 

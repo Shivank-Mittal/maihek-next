@@ -131,9 +131,7 @@ export default function DishesPage() {
 
     setDishes((currentDishes) =>
       currentDishes.map((currentDish) =>
-        currentDish._id === dish._id
-          ? { ...currentDish, active: nextSellingState }
-          : currentDish
+        currentDish._id === dish._id ? { ...currentDish, active: nextSellingState } : currentDish
       )
     );
     setEditingDish((currentDish) =>
@@ -151,7 +149,9 @@ export default function DishesPage() {
         )
       );
       setEditingDish((currentDish) =>
-        currentDish && currentDish._id === dish._id ? { ...currentDish, active: dish.active } : currentDish
+        currentDish && currentDish._id === dish._id
+          ? { ...currentDish, active: dish.active }
+          : currentDish
       );
       alert("Error updating selling status");
     }
@@ -203,9 +203,7 @@ export default function DishesPage() {
   };
 
   // Handle input changes in modal
-  const handleInputChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-  ) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     if (!editingDish) return;
     const { name, value } = e.target;
     setEditingDish({
@@ -263,14 +261,13 @@ export default function DishesPage() {
               Add Dish
             </Button>
           </div>
-          {
-          loading 
-          ? <p className="text-gray-600 text-center">Loading dishes...</p>
-          : error 
-            ? <p className="text-red-500 text-center">{error}</p>
-            : dishes.length === 0 
-              ? <p className="text-gray-600 text-center">No dishes available.</p>
-              : (
+          {loading ? (
+            <p className="text-gray-600 text-center">Loading dishes...</p>
+          ) : error ? (
+            <p className="text-red-500 text-center">{error}</p>
+          ) : dishes.length === 0 ? (
+            <p className="text-gray-600 text-center">No dishes available.</p>
+          ) : (
             <>
               <div className="overflow-x-auto">
                 <Table>
@@ -346,7 +343,9 @@ export default function DishesPage() {
                               size="icon"
                               onClick={() => handleSellingStatusChange(dish)}
                               aria-label={
-                                dish.active ? "Stop selling this dish" : "Activate selling this dish"
+                                dish.active
+                                  ? "Stop selling this dish"
+                                  : "Activate selling this dish"
                               }
                             >
                               {dish.active ? <Pause /> : <Play />}

@@ -2,7 +2,22 @@
 
 import { Suspense, useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { User, Phone, Mail, MapPin, Landmark, ShoppingCart, Trash2, X } from "lucide-react";
+import {
+  User,
+  Phone,
+  Mail,
+  ShoppingCart,
+  Trash2,
+  X,
+  Navigation,
+  Building2,
+  Hash,
+  MapPin,
+  FileText,
+  CreditCard,
+  Banknote,
+  CheckCircle2,
+} from "lucide-react";
 import { useCart } from "@/hooks/use-cart";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -10,71 +25,23 @@ import { useForm, SubmitHandler } from "react-hook-form";
 import { toast } from "sonner";
 import { DeliveryMinimumDialog } from "@/components/delivery-minimum-dialog";
 import { DELIVERY_MINIMUM_ORDER_AMOUNT, isDeliveryMinimumMet } from "@/lib/checkout";
-
-const translations = {
-  fr: {
-    title: "Finalisez Votre Commande",
-    subtitle: "Complétez vos sélections culinaires avec facilité.",
-    orderTitle: "Votre Commande",
-    product: "Produit",
-    quantity: "Quantité",
-    price: "Prix (€)",
-    details: "Détails",
-    total: "Total",
-    billingTitle: "Informations de Facturation",
-    fullName: "Nom Complet",
-    fullNamePlaceholder: "Entrez votre nom",
-    fullNameRequired: "Le nom est requis",
-    fullNameMinLength: "Le nom doit avoir 2 caractères minimum",
-    phone: "Numéro de Téléphone",
-    phonePlaceholder: "1234567890",
-    phoneRequired: "Numéro requis",
-    phoneInvalid: "Entrez un numéro valide à 10 chiffres",
-    email: "Adresse E-mail",
-    emailPlaceholder: "exemple@domaine.com",
-    emailRequired: "E-mail requis",
-    emailInvalid: "Entrez un e-mail valide",
-    address: "Adresse",
-    addressPlaceholder: "123 Rue Principale",
-    addressRequired: "Adresse requise",
-    addressMinLength: "Adresse doit avoir 5 caractères minimum",
-    zipcode: "Code Postal",
-    zipcodePlaceholder: "12345",
-    zipcodeRequired: "Code postal requis",
-    zipcodeInvalid: "Entrez un code postal valide à 5 chiffres",
-    placeOrder: "Passer la Commande",
-    processing: "Traitement...",
-    clearCart: "Vider le Panier",
-    cartEmpty: "Votre panier est vide !",
-    goToHome: "Retour à l’Accueil",
-    modalTitle: "Commande Confirmée",
-    modalThankYou: "Merci pour votre commande !",
-    modalTotal: "Total",
-    modalItems: "Articles",
-    modalEmailConfirmation: "E-mail de confirmation envoyé.",
-    modalClose: "Fermer",
-    toastSuccess: "Commande réussie !",
-    toastError: "Erreur, réessayez.",
-    toastCartCleared: "Panier vidé !",
-    orderTypeTitle: "Type de Commande",
-    emporter: "À emporter",
-    livraison: "Livraison",
-    orderTypeRequired: "Sélectionnez un type de commande",
-    removeItem: "Supprimer",
-  },
-};
+import { fetchAllowedPincodes } from "@/services/delivery-zones-service";
 
 interface FormData {
   name: string;
   phone: string;
   email: string;
-  address?: string;
-  zipcode?: string;
   orderType: "emporter" | "livraison";
+  paymentMethod: "online" | "cod";
+  addressLine?: string;
+  floor?: string;
+  city?: string;
+  pincode?: string;
+  instructions?: string;
 }
 
 interface CartItem {
-  id: string; // Added id for unique identification
+  id: string;
   name: string;
   quantity: number;
   price: number;
@@ -85,11 +52,11 @@ interface CartItem {
 function CheckoutContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { cart, removeFromCart } = useCart(); // Assumes useCart provides removeFromCart
-  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
-  const [showModal, setShowModal] = useState<boolean>(false);
-  const [showDeliveryMinimumDialog, setShowDeliveryMinimumDialog] = useState<boolean>(false);
-  const [language] = useState<"fr">("fr");
+  const { cart, removeFromCart } = useCart();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showModal, setShowModal] = useState(false);
+  const [showDeliveryMinimumDialog, setShowDeliveryMinimumDialog] = useState(false);
+  const [allowedPincodes, setAllowedPincodes] = useState<string[]>([]);
 
   const {
     register,
@@ -104,26 +71,30 @@ function CheckoutContent() {
       phone: "",
       email: "",
       orderType: "livraison",
+      paymentMethod: "online",
+      addressLine: "",
+      floor: "",
+      city: "",
+      pincode: "",
+      instructions: "",
     },
   });
 
   useEffect(() => {
-    localStorage.setItem("language", language);
-  }, [language]);
-
-  useEffect(() => {
     const searchOrderType = searchParams.get("orderType");
     if (searchOrderType === "emporter" || searchOrderType === "livraison") {
-      setValue("orderType", searchOrderType, {
-        shouldValidate: true,
-      });
+      setValue("orderType", searchOrderType, { shouldValidate: true });
     }
   }, [searchParams, setValue]);
 
-  const t = translations[language];
+  useEffect(() => {
+    fetchAllowedPincodes().then(setAllowedPincodes);
+  }, []);
+
   const orderType = watch("orderType");
+  const paymentMethod = watch("paymentMethod");
   const totalAmount = cart.reduce(
-    (total: number, order: CartItem) => total + (order.quantity || 1) * order.price,
+    (total: number, item: CartItem) => total + (item.quantity || 1) * item.price,
     0
   );
   const totalPrice = totalAmount.toFixed(2);
@@ -144,23 +115,64 @@ function CheckoutContent() {
 
     setIsSubmitting(true);
     try {
-      const response = await fetch("/api/v1/send-email", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...data, orders: cart, language }),
-      });
+      if (data.orderType === "livraison" && data.paymentMethod === "online") {
+        const response = await fetch("/api/v1/create-checkout-session", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            items: cart.map((item: CartItem) => ({
+              name: item.name,
+              price: item.price,
+              quantity: item.quantity || 1,
+            })),
+            orderType: data.orderType,
+            customerInfo: {
+              name: data.name,
+              phone: data.phone,
+              email: data.email,
+            },
+            address: {
+              addressLine: data.addressLine,
+              floor: data.floor,
+              city: data.city,
+              pincode: data.pincode,
+              instructions: data.instructions,
+            },
+          }),
+        });
 
-      if (!response.ok) throw new Error((await response.json()).message);
+        const json = await response.json();
+        if (!response.ok) throw new Error(json.error || "Erreur, réessayez.");
+        window.location.href = json.url;
+      } else {
+        const fullAddress = [data.addressLine, data.floor, data.city].filter(Boolean).join(", ");
+        const response = await fetch("/api/v1/send-email", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            name: data.name,
+            phone: data.phone,
+            email: data.email,
+            address: fullAddress,
+            zipcode: data.pincode,
+            instructions: data.instructions,
+            orderType: data.orderType,
+            orders: cart,
+          }),
+        });
 
-      localStorage.removeItem("cartItems");
-      toast.success(t.toastSuccess, {
-        duration: 3000,
-        style: { background: "#1a1a1a", color: "#fff", border: "1px solid #333" },
-      });
-      setShowModal(true);
-      reset();
+        if (!response.ok) throw new Error((await response.json()).message);
+
+        localStorage.removeItem("cartItems");
+        toast.success("Commande réussie !", {
+          duration: 3000,
+          style: { background: "#1a1a1a", color: "#fff", border: "1px solid #333" },
+        });
+        setShowModal(true);
+        reset();
+      }
     } catch (error: any) {
-      toast.error(error.message || t.toastError, {
+      toast.error(error.message || "Erreur, réessayez.", {
         duration: 3000,
         style: { background: "#fff", color: "#000", border: "1px solid #ccc" },
       });
@@ -169,319 +181,413 @@ function CheckoutContent() {
     }
   };
 
-  const closeModal = () => {
-    setShowModal(false);
-    router.push("/");
-  };
+  const inputClass =
+    "w-full pl-10 pr-3 py-2.5 rounded-lg border border-gray-200 bg-white text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-black focus:border-black transition duration-200 text-sm";
 
   return (
-    <section className="bg-gray-50 min-h-screen py-12 px-4 sm:px-6 lg:px-8">
+    <section className="bg-gray-100 min-h-screen py-10 px-4 sm:px-6 lg:px-8">
       <div className="max-w-5xl mx-auto">
-        {/* Progress Indicator */}
-        <div className="flex justify-center mb-8">
-          <div className="flex items-center space-x-4">
-            <div className="flex items-center">
-              <div className="w-8 h-8 bg-black text-white rounded-full flex items-center justify-center">
-                1
-              </div>
-              <span className="ml-2 text-sm font-medium text-gray-700">Panier</span>
-            </div>
-            <div className="w-12 h-1 bg-black"></div>
-            <div className="flex items-center">
-              <div className="w-8 h-8 bg-black text-white rounded-full flex items-center justify-center">
-                2
-              </div>
-              <span className="ml-2 text-sm font-medium text-gray-700">Paiement</span>
-            </div>
-          </div>
-        </div>
-
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
+          transition={{ duration: 0.5 }}
+          className="mb-8"
         >
-          <h2 className="text-3xl md:text-4xl font-bold text-gray-900 text-center mb-4">
-            {t.title}
-          </h2>
-          <p className="text-center text-gray-600 mb-10 text-lg">{t.subtitle}</p>
+          <h1 className="text-3xl md:text-4xl font-extrabold text-gray-900 text-center mb-2">
+            Finaliser la commande
+          </h1>
+          <p className="text-center text-gray-500 text-base">
+            Vérifiez votre panier et complétez vos informations.
+          </p>
         </motion.div>
 
         {cart.length ? (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            {/* Order Summary */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
+            {/* Order summary */}
             <motion.div
-              className="bg-white/80 backdrop-blur-md p-6 rounded-xl shadow-lg border border-gray-100"
-              initial={{ opacity: 0, x: -20 }}
+              className="bg-white p-6 rounded-lg shadow-md"
+              initial={{ opacity: 0, x: -16 }}
               animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.6 }}
+              transition={{ duration: 0.5 }}
             >
-              <h3 className="text-xl font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                <ShoppingCart className="h-6 w-6" />
-                {t.orderTitle}
-              </h3>
+              <h2 className="text-xl font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                <ShoppingCart className="h-5 w-5 text-gray-700" />
+                Votre Commande
+              </h2>
               <div className="overflow-x-auto">
                 <table className="w-full text-left">
                   <thead>
                     <tr className="border-b border-gray-200">
-                      <th className="py-3 px-4 text-sm font-medium text-gray-700">{t.product}</th>
-                      <th className="py-3 px-4 text-sm font-medium text-gray-700">{t.quantity}</th>
-                      <th className="py-3 px-4 text-sm font-medium text-gray-700">{t.price}</th>
-                      <th className="py-3 px-4 text-sm font-medium text-gray-700">{t.details}</th>
-                      <th className="py-3 px-4 text-sm font-medium text-gray-700"></th>
+                      <th className="py-2 px-2 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                        Produit
+                      </th>
+                      <th className="py-2 px-2 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                        Qté
+                      </th>
+                      <th className="py-2 px-2 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                        Prix
+                      </th>
+                      <th className="py-2 px-2" />
                     </tr>
                   </thead>
                   <tbody>
-                    {cart.map((order: CartItem, index: number) => (
-                      <tr key={order.id} className="border-b border-gray-100">
-                        <td className="py-3 px-4">{order.name}</td>
-                        <td className="py-3 px-4">{order.quantity || 1}</td>
-                        <td className="py-3 px-4">
-                          {((order.quantity || 1) * order.price).toFixed(2)} €
-                        </td>
-                        <td className="py-3 px-4">
-                          {order.option && <span>{order.option}</span>}
-                          {order.selectedItems && (
-                            <ul className="list-disc list-inside text-sm text-gray-600">
-                              {Object.entries(order.selectedItems).map(([key, value]) => (
-                                <li key={key}>
-                                  {key}: {value}
+                    {cart.map((item: CartItem) => (
+                      <tr key={item.id} className="border-b border-gray-100">
+                        <td className="py-3 px-2 text-sm">
+                          <div className="font-medium text-gray-900">{item.name}</div>
+                          {item.option && (
+                            <div className="text-xs text-gray-500 mt-0.5">{item.option}</div>
+                          )}
+                          {item.selectedItems && (
+                            <ul className="text-xs text-gray-500 mt-0.5">
+                              {Object.entries(item.selectedItems).map(([k, v]) => (
+                                <li key={k}>
+                                  {k}: {v}
                                 </li>
                               ))}
                             </ul>
                           )}
                         </td>
-                        <td className="py-3 px-4">
+                        <td className="py-3 px-2 text-sm text-gray-600">{item.quantity || 1}</td>
+                        <td className="py-3 px-2 text-sm font-medium text-gray-900">
+                          {((item.quantity || 1) * item.price).toFixed(2)} €
+                        </td>
+                        <td className="py-3 px-2">
                           <button
-                            onClick={() => removeFromCart(order.id)}
-                            className="text-red-500 hover:text-red-700"
-                            aria-label={`Remove ${order.name} from cart`}
+                            onClick={() => removeFromCart(item.id)}
+                            className="text-gray-400 hover:text-red-500 transition-colors"
+                            aria-label={`Supprimer ${item.name}`}
                           >
-                            <X className="h-5 w-5" />
+                            <X className="h-4 w-4" />
                           </button>
                         </td>
                       </tr>
                     ))}
                     <tr>
-                      <td colSpan={4} className="py-3 px-4 font-semibold text-right text-gray-700">
-                        {t.total}:
+                      <td
+                        colSpan={2}
+                        className="py-3 px-2 text-sm font-semibold text-gray-700 text-right"
+                      >
+                        Total :
                       </td>
-                      <td className="py-3 px-4 font-semibold text-gray-900">{totalPrice} €</td>
+                      <td colSpan={2} className="py-3 px-2 text-base font-bold text-gray-900">
+                        {totalPrice} €
+                      </td>
                     </tr>
                   </tbody>
                 </table>
               </div>
-              <motion.button
+              <button
                 onClick={() => {
                   localStorage.removeItem("cartItems");
-                  toast.success(t.toastCartCleared, {
+                  toast.success("Panier vidé !", {
                     duration: 3000,
                     style: { background: "#1a1a1a", color: "#fff", border: "1px solid #333" },
                   });
                   router.push("/");
                 }}
-                className="w-full mt-6 bg-gray-600 text-white py-2.5 rounded-lg hover:bg-gray-700 transition flex items-center justify-center gap-2"
-                whileHover={{ scale: 1.03 }}
-                whileTap={{ scale: 0.97 }}
+                className="w-full mt-5 flex items-center justify-center gap-2 py-2.5 rounded-lg border border-gray-200 text-gray-600 text-sm hover:bg-gray-50 hover:text-red-500 transition duration-200"
               >
-                <Trash2 className="h-5 w-5" />
-                {t.clearCart}
-              </motion.button>
+                <Trash2 className="h-4 w-4" />
+                Vider le panier
+              </button>
             </motion.div>
 
-            {/* Checkout Form */}
+            {/* Checkout form */}
             <motion.div
-              className="bg-white/80 backdrop-blur-md p-6 rounded-xl shadow-lg border border-gray-100"
-              initial={{ opacity: 0, x: 20 }}
+              className="bg-white p-6 rounded-lg shadow-md"
+              initial={{ opacity: 0, x: 16 }}
               animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.6, delay: 0.2 }}
+              transition={{ duration: 0.5, delay: 0.1 }}
             >
-              <h3 className="text-xl font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                <User className="h-6 w-6" />
-                {t.billingTitle}
-              </h3>
-              <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
-                <div className="relative">
+              <h2 className="text-xl font-semibold text-gray-800 mb-5 flex items-center gap-2">
+                <User className="h-5 w-5 text-gray-700" />
+                Informations
+              </h2>
+
+              <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+                {/* Order type */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Type de commande
+                  </label>
+                  <div className="flex gap-3">
+                    {(["emporter", "livraison"] as const).map((type) => (
+                      <label
+                        key={type}
+                        className={`flex-1 flex items-center gap-2 p-3 rounded-lg border cursor-pointer transition-all text-sm ${
+                          orderType === type
+                            ? "border-black bg-black text-white"
+                            : "border-gray-200 bg-white text-gray-700 hover:border-gray-400"
+                        }`}
+                      >
+                        <input
+                          type="radio"
+                          value={type}
+                          {...register("orderType", { required: true })}
+                          checked={orderType === type}
+                          onChange={() => handleOrderTypeChange(type)}
+                          className="sr-only"
+                        />
+                        <span className="font-medium">
+                          {type === "emporter" ? "À emporter" : "Livraison"}
+                        </span>
+                      </label>
+                    ))}
+                  </div>
+                  {orderType === "livraison" && !deliveryMinimumReached && (
+                    <p className="mt-1.5 text-xs text-red-500">
+                      Minimum de {DELIVERY_MINIMUM_ORDER_AMOUNT} € requis pour la livraison.
+                    </p>
+                  )}
+                </div>
+
+                <hr className="border-gray-100" />
+
+                {/* Name */}
+                <div>
                   <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1.5">
-                    {t.fullName}
+                    Nom Complet <span className="text-red-500">*</span>
                   </label>
                   <div className="relative">
-                    <User className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+                    <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
                     <input
                       type="text"
                       id="name"
+                      className={inputClass}
+                      placeholder="Entrez votre nom"
                       {...register("name", {
-                        required: t.fullNameRequired,
-                        minLength: { value: 2, message: t.fullNameMinLength },
+                        required: "Le nom est requis",
+                        minLength: { value: 2, message: "2 caractères minimum" },
                       })}
-                      className="w-full pl-10 pr-3 py-2.5 rounded-lg border border-gray-200 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white text-gray-900 transition-all duration-200"
-                      placeholder={t.fullNamePlaceholder}
-                      aria-invalid={errors.name ? "true" : "false"}
                     />
-                    {errors.name && (
-                      <p className="mt-1 text-sm text-red-500">{errors.name.message}</p>
-                    )}
                   </div>
+                  {errors.name && (
+                    <p className="mt-1 text-xs text-red-500">{errors.name.message}</p>
+                  )}
                 </div>
 
-                <div className="relative">
+                {/* Phone */}
+                <div>
                   <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-1.5">
-                    {t.phone}
+                    Téléphone <span className="text-red-500">*</span>
                   </label>
                   <div className="relative">
-                    <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+                    <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
                     <input
                       type="tel"
                       id="phone"
+                      className={inputClass}
+                      placeholder="0612345678"
                       {...register("phone", {
-                        required: t.phoneRequired,
-                        pattern: { value: /^[0-9]{10}$/, message: t.phoneInvalid },
+                        required: "Numéro requis",
+                        pattern: { value: /^[0-9]{10}$/, message: "10 chiffres requis" },
                       })}
-                      className="w-full pl-10 pr-3 py-2.5 rounded-lg border border-gray-200 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white text-gray-900 transition-all duration-200"
-                      placeholder={t.phonePlaceholder}
                     />
-                    {errors.phone && (
-                      <p className="mt-1 text-sm text-red-500">{errors.phone.message}</p>
-                    )}
                   </div>
+                  {errors.phone && (
+                    <p className="mt-1 text-xs text-red-500">{errors.phone.message}</p>
+                  )}
                 </div>
 
-                <div className="relative">
+                {/* Email */}
+                <div>
                   <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1.5">
-                    {t.email}
+                    E-mail <span className="text-red-500">*</span>
                   </label>
                   <div className="relative">
-                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
                     <input
                       type="email"
                       id="email"
+                      className={inputClass}
+                      placeholder="exemple@domaine.com"
                       {...register("email", {
-                        required: t.emailRequired,
-                        pattern: { value: /\S+@\S+\.\S+/, message: t.emailInvalid },
+                        required: "E-mail requis",
+                        pattern: { value: /\S+@\S+\.\S+/, message: "E-mail invalide" },
                       })}
-                      className="w-full pl-10 pr-3 py-2.5 rounded-lg border border-gray-200 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white text-gray-900 transition-all duration-200"
-                      placeholder={t.emailPlaceholder}
                     />
-                    {errors.email && (
-                      <p className="mt-1 text-sm text-red-500">{errors.email.message}</p>
-                    )}
                   </div>
-                </div>
-
-                <AnimatePresence>
-                  {orderType === "livraison" && (
-                    <motion.div
-                      initial={{ height: 0, opacity: 0 }}
-                      animate={{ height: "auto", opacity: 1 }}
-                      exit={{ height: 0, opacity: 0 }}
-                      transition={{ duration: 0.3 }}
-                    >
-                      <div className="relative">
-                        <label
-                          htmlFor="address"
-                          className="block text-sm font-medium text-gray-700 mb-1.5"
-                        >
-                          {t.address}
-                        </label>
-                        <div className="relative">
-                          <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
-                          <input
-                            type="text"
-                            id="address"
-                            {...register("address", {
-                              required: t.addressRequired,
-                              minLength: { value: 5, message: t.addressMinLength },
-                            })}
-                            className="w-full pl-10 pr-3 py-2.5 rounded-lg border border-gray-200 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white text-gray-900 transition-all duration-200"
-                            placeholder={t.addressPlaceholder}
-                          />
-                          {errors.address && (
-                            <p className="mt-1 text-sm text-red-500">{errors.address.message}</p>
-                          )}
-                        </div>
-                      </div>
-
-                      <div className="relative mt-5">
-                        <label
-                          htmlFor="zipcode"
-                          className="block text-sm font-medium text-gray-700 mb-1.5"
-                        >
-                          {t.zipcode}
-                        </label>
-                        <div className="relative">
-                          <Landmark className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
-                          <input
-                            type="text"
-                            id="zipcode"
-                            {...register("zipcode", {
-                              required: t.zipcodeRequired,
-                              pattern: { value: /^[0-9]{5}$/, message: t.zipcodeInvalid },
-                            })}
-                            className="w-full pl-10 pr-3 py-2.5 rounded-lg border border-gray-200 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white text-gray-900 transition-all duration-200"
-                            placeholder={t.zipcodePlaceholder}
-                          />
-                          {errors.zipcode && (
-                            <p className="mt-1 text-sm text-red-500">{errors.zipcode.message}</p>
-                          )}
-                        </div>
-                      </div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-
-                <div className="relative">
-                  <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                    {t.orderTypeTitle}
-                  </label>
-                  <div className="flex gap-6">
-                    <label className="flex items-center cursor-pointer">
-                      <input
-                        type="radio"
-                        value="emporter"
-                        {...register("orderType", { required: t.orderTypeRequired })}
-                        checked={orderType === "emporter"}
-                        onChange={() => handleOrderTypeChange("emporter")}
-                        className="mr-2 text-indigo-600 focus:ring-indigo-500 cursor-pointer"
-                      />
-                      {t.emporter}
-                    </label>
-                    <label className="flex items-center cursor-pointer">
-                      <input
-                        type="radio"
-                        value="livraison"
-                        {...register("orderType", { required: t.orderTypeRequired })}
-                        checked={orderType === "livraison"}
-                        onChange={() => handleOrderTypeChange("livraison")}
-                        className="mr-2 text-indigo-600 focus:ring-indigo-500 cursor-pointer"
-                      />
-                      {t.livraison}
-                    </label>
-                  </div>
-                  {!deliveryMinimumReached && orderType === "livraison" && (
-                    <p className="mt-2 text-sm text-red-500">
-                      Delivery requires a minimum order of {DELIVERY_MINIMUM_ORDER_AMOUNT} EUR.
-                    </p>
-                  )}
-                  {errors.orderType && (
-                    <p className="mt-1 text-sm text-red-500">{errors.orderType.message}</p>
+                  {errors.email && (
+                    <p className="mt-1 text-xs text-red-500">{errors.email.message}</p>
                   )}
                 </div>
 
+                {/* Address — livraison only */}
+                {orderType === "livraison" && (
+                  <>
+                    <hr className="border-gray-100" />
+                    <div>
+                      <p className="text-sm font-medium text-gray-700 mb-3 flex items-center gap-1.5">
+                        <MapPin className="h-4 w-4 text-gray-500" />
+                        Adresse de livraison <span className="text-red-500">*</span>
+                      </p>
+
+                      <div className="space-y-3">
+                        <div>
+                          <label htmlFor="addressLine" className="block text-xs text-gray-500 mb-1">
+                            Rue et numéro *
+                          </label>
+                          <div className="relative">
+                            <Navigation className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                            <input
+                              type="text"
+                              id="addressLine"
+                              className={inputClass}
+                              placeholder="12 Rue de la Paix"
+                              {...register("addressLine", {
+                                required: "L'adresse est requise",
+                                minLength: { value: 5, message: "Adresse trop courte" },
+                              })}
+                            />
+                          </div>
+                          {errors.addressLine && (
+                            <p className="mt-1 text-xs text-red-500">
+                              {errors.addressLine.message}
+                            </p>
+                          )}
+                        </div>
+
+                        <div>
+                          <label htmlFor="floor" className="block text-xs text-gray-500 mb-1">
+                            Étage / Appartement (optionnel)
+                          </label>
+                          <div className="relative">
+                            <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                            <input
+                              type="text"
+                              id="floor"
+                              className={inputClass}
+                              placeholder="Bât. B, 3ème étage, Apt. 12"
+                              {...register("floor")}
+                            />
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-3">
+                          <div>
+                            <label htmlFor="city" className="block text-xs text-gray-500 mb-1">
+                              Ville *
+                            </label>
+                            <input
+                              type="text"
+                              id="city"
+                              className="w-full px-3 py-2.5 rounded-lg border border-gray-200 bg-white text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-black focus:border-black transition duration-200 text-sm"
+                              placeholder="Paris"
+                              {...register("city", { required: "Ville requise" })}
+                            />
+                            {errors.city && (
+                              <p className="mt-1 text-xs text-red-500">{errors.city.message}</p>
+                            )}
+                          </div>
+                          <div>
+                            <label htmlFor="pincode" className="block text-xs text-gray-500 mb-1">
+                              Code postal *
+                            </label>
+                            <div className="relative">
+                              <Hash className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
+                              <select
+                                id="pincode"
+                                className="w-full pl-10 pr-3 py-2.5 rounded-lg border border-gray-200 bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-black focus:border-black transition duration-200 text-sm appearance-none"
+                                {...register("pincode", {
+                                  required: "Sélectionnez un code postal",
+                                })}
+                              >
+                                <option value="">-- Sélectionner --</option>
+                                {allowedPincodes.map((code) => (
+                                  <option key={code} value={code}>
+                                    {code}
+                                  </option>
+                                ))}
+                              </select>
+                            </div>
+                            {errors.pincode && (
+                              <p className="mt-1 text-xs text-red-500">{errors.pincode.message}</p>
+                            )}
+                          </div>
+                        </div>
+
+                        <div>
+                          <label
+                            htmlFor="instructions"
+                            className="block text-xs text-gray-500 mb-1"
+                          >
+                            Instructions de livraison (optionnel)
+                          </label>
+                          <div className="relative">
+                            <FileText className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                            <textarea
+                              id="instructions"
+                              rows={2}
+                              className="w-full pl-10 pr-3 py-2.5 rounded-lg border border-gray-200 bg-white text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-black focus:border-black transition duration-200 text-sm resize-none"
+                              placeholder="Code d'entrée, instructions particulières…"
+                              {...register("instructions")}
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </>
+                )}
+
+                {/* Payment method — livraison only */}
+                {orderType === "livraison" && (
+                  <>
+                    <hr className="border-gray-100" />
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Mode de paiement
+                      </label>
+                      <div className="flex gap-3">
+                        {(["online", "cod"] as const).map((method) => (
+                          <label
+                            key={method}
+                            className={`flex-1 flex items-center gap-2 p-3 rounded-lg border cursor-pointer transition-all text-sm ${
+                              paymentMethod === method
+                                ? "border-black bg-black text-white"
+                                : "border-gray-200 bg-white text-gray-700 hover:border-gray-400"
+                            }`}
+                          >
+                            <input
+                              type="radio"
+                              value={method}
+                              {...register("paymentMethod")}
+                              className="sr-only"
+                            />
+                            {method === "online" ? (
+                              <CreditCard className="h-4 w-4 shrink-0" />
+                            ) : (
+                              <Banknote className="h-4 w-4 shrink-0" />
+                            )}
+                            <div>
+                              <p className="font-medium leading-tight">
+                                {method === "online" ? "En ligne" : "À la livraison"}
+                              </p>
+                              <p
+                                className={`text-xs leading-tight mt-0.5 ${paymentMethod === method ? "text-gray-300" : "text-gray-400"}`}
+                              >
+                                {method === "online" ? "Carte via Stripe" : "Espèces"}
+                              </p>
+                            </div>
+                          </label>
+                        ))}
+                      </div>
+                    </div>
+                  </>
+                )}
+
+                {/* Submit */}
                 <motion.button
                   type="submit"
-                  disabled={
-                    isSubmitting ||
-                    (orderType === "livraison" &&
-                      (!watch("address") || !watch("zipcode") || !deliveryMinimumReached))
-                  }
-                  className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white py-3 rounded-lg font-semibold flex items-center justify-center gap-2 disabled:bg-gray-400 disabled:cursor-not-allowed hover:from-indigo-700 hover:to-purple-700 transition-all duration-200"
-                  whileHover={{ scale: 1.03 }}
+                  disabled={isSubmitting || (orderType === "livraison" && !deliveryMinimumReached)}
+                  className="w-full bg-black text-white py-3 rounded-lg font-medium flex items-center justify-center gap-2 hover:bg-gray-800 transition duration-300 disabled:bg-gray-400 disabled:cursor-not-allowed mt-2"
+                  whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.97 }}
                 >
                   {isSubmitting ? (
                     <>
                       <svg
-                        className="animate-spin h-5 w-5 text-white"
+                        className="animate-spin h-5 w-5"
                         xmlns="http://www.w3.org/2000/svg"
                         fill="none"
                         viewBox="0 0 24 24"
@@ -493,17 +599,19 @@ function CheckoutContent() {
                           r="10"
                           stroke="currentColor"
                           strokeWidth="4"
-                        ></circle>
+                        />
                         <path
                           className="opacity-75"
                           fill="currentColor"
                           d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                        ></path>
+                        />
                       </svg>
-                      {t.processing}
+                      Traitement...
                     </>
+                  ) : orderType === "livraison" && paymentMethod === "online" ? (
+                    "Payer en ligne →"
                   ) : (
-                    t.placeOrder
+                    "Confirmer la commande →"
                   )}
                 </motion.button>
               </form>
@@ -514,60 +622,57 @@ function CheckoutContent() {
             className="flex flex-col items-center justify-center h-[50vh] gap-6"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ duration: 0.6 }}
+            transition={{ duration: 0.5 }}
           >
-            <h3 className="text-2xl md:text-3xl font-semibold text-gray-900">{t.cartEmpty}</h3>
+            <ShoppingCart className="h-14 w-14 text-gray-300" />
+            <h3 className="text-2xl font-semibold text-gray-700">Votre panier est vide !</h3>
             <Link
               href="/"
-              className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white py-2.5 px-6 rounded-lg hover:from-indigo-700 hover:to-purple-700 transition-all duration-200"
+              className="bg-black text-white py-2.5 px-6 rounded-lg hover:bg-gray-800 transition duration-300"
             >
-              {t.goToHome}
+              Retour à l'accueil
             </Link>
           </motion.div>
         )}
 
+        {/* Success modal */}
         <AnimatePresence>
           {showModal && (
             <motion.div
-              className="fixed inset-0 bg-black/60 flex items-center justify-center z-50"
+              className="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
             >
               <motion.div
-                className="bg-white/90 backdrop-blur-md p-8 rounded-xl shadow-lg max-w-md w-full"
-                initial={{ scale: 0.8, opacity: 0 }}
+                className="bg-white p-8 rounded-lg shadow-lg max-w-md w-full mx-4"
+                initial={{ scale: 0.85, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
-                exit={{ scale: 0.8, opacity: 0 }}
-                transition={{ duration: 0.4 }}
+                exit={{ scale: 0.85, opacity: 0 }}
+                transition={{ duration: 0.3 }}
               >
-                <h3 className="text-2xl font-bold text-gray-900 mb-4">{t.modalTitle}</h3>
-                <p className="text-gray-700 mb-6">
-                  {t.modalThankYou} <br />
-                  <strong>{t.modalTotal}:</strong> {totalPrice} € <br />
-                  <strong>{t.modalItems}:</strong> <br />
-                  <ul className="list-disc list-inside text-sm text-gray-600">
-                    {cart.map((order: CartItem) => (
-                      <li key={order.id}>
-                        {order.name} (x{order.quantity || 1}) -{" "}
-                        {((order.quantity || 1) * order.price).toFixed(2)} €
-                      </li>
-                    ))}
-                  </ul>
-                </p>
-                <p className="text-gray-600 mb-6">{t.modalEmailConfirmation}</p>
-                <motion.button
-                  onClick={closeModal}
-                  className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white py-2.5 rounded-lg hover:from-indigo-700 hover:to-purple-700 transition-all duration-200"
-                  whileHover={{ scale: 1.03 }}
-                  whileTap={{ scale: 0.97 }}
-                >
-                  {t.modalClose}
-                </motion.button>
+                <div className="flex flex-col items-center text-center">
+                  <CheckCircle2 className="h-12 w-12 text-green-500 mb-4" />
+                  <h3 className="text-xl font-bold text-gray-900 mb-2">Commande Confirmée</h3>
+                  <p className="text-gray-600 mb-1">Merci pour votre commande !</p>
+                  <p className="text-gray-400 text-sm mb-6">
+                    Un e-mail de confirmation vous a été envoyé.
+                  </p>
+                  <button
+                    onClick={() => {
+                      setShowModal(false);
+                      router.push("/");
+                    }}
+                    className="w-full bg-black text-white py-2.5 rounded-lg hover:bg-gray-800 transition duration-300 font-medium"
+                  >
+                    Fermer
+                  </button>
+                </div>
               </motion.div>
             </motion.div>
           )}
         </AnimatePresence>
+
         <DeliveryMinimumDialog
           open={showDeliveryMinimumDialog}
           onClose={() => setShowDeliveryMinimumDialog(false)}
@@ -581,7 +686,7 @@ function CheckoutContent() {
 
 export default function Checkout() {
   return (
-    <Suspense fallback={<section className="min-h-screen bg-gray-50" />}>
+    <Suspense fallback={<section className="min-h-screen bg-gray-100" />}>
       <CheckoutContent />
     </Suspense>
   );

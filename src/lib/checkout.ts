@@ -1,5 +1,11 @@
 export const DELIVERY_MINIMUM_ORDER_AMOUNT = 20;
 
+// Pincodes eligible for delivery — add or remove as needed
+export const ALLOWED_DELIVERY_PINCODES = ["75001", "75002", "75003"];
+
+export const isPincodeAllowed = (pincode: string) =>
+  ALLOWED_DELIVERY_PINCODES.includes(pincode.trim());
+
 type PricedCartItem = {
   price: number;
   quantity?: number;

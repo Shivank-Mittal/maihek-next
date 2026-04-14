@@ -27,8 +27,8 @@ type OrderType = "emporter" | "livraison";
 export default function CartDrawer() {
   const isMobile = useIsMobile();
   const [loading, setLoading] = useState(false);
-  const [isCOD, setIsCOD] = useState(false);
   const [orderType, setOrderType] = useState<OrderType>("emporter");
+  const [isCOD, setIsCOD] = useState(false);
   const [showDeliveryMinimumDialog, setShowDeliveryMinimumDialog] = useState(false);
   const { cart, updateQuantity, removeFromCart, getTotal, isDrawerOpen, setIsDrawerOpen } =
     useCart();
@@ -116,30 +116,8 @@ export default function CartDrawer() {
         return;
       }
 
-      if (isCOD === true) {
-        router.push(`/checkout?orderType=${orderType}`);
-        return;
-      }
-
-      const response = await fetch("/api/v1/create-checkout-session", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          items: cart,
-          orderType,
-        }),
-      });
-
-      const session = await response.json();
-      if (!response.ok) {
-        throw new Error(session.error || "Unable to start checkout.");
-      }
-
-      if (session.url) {
-        window.location.href = session.url;
-      }
+      // Both COD and online payment go through /checkout so address is always collected
+      router.push(`/checkout?orderType=${orderType}`);
     } catch (error) {
       const message = error instanceof Error ? error.message : "Something went wrong.";
       toast.error(message, {
@@ -177,7 +155,7 @@ export default function CartDrawer() {
         <div className="p-6 h-full flex flex-col justify-between">
           <div className="flex-1 overflow-y-auto pr-2 scrollbar-hidden">
             <h2 className="text-2xl font-semibold text-gray-900 mb-4">Your Cart</h2>
-            <div id="cart-items-desktop" className="space-y-4 ">
+            <div id="cart-items-desktop" className="space-y-4  ">
               {cart.map((item) => (
                 <div key={item.id} className="flex items-center p-4 bg-gray-50 rounded-lg">
                   <img
@@ -221,79 +199,23 @@ export default function CartDrawer() {
           </div>
 
           <div className="border-t pt-6 mt-6">
-            <div className="mb-6">
-              <h3 className="text-lg font-semibold text-gray-800 mb-4">Order Type</h3>
-              <div className="flex flex-col gap-3 text-gray-700">
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <input
-                    type="radio"
-                    name="order-type-desktop"
-                    className="w-4 h-4 text-black"
-                    checked={orderType === "emporter"}
-                    onChange={() => handleOrderTypeChange("emporter")}
-                  />
-                  Takeaway
-                </label>
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <input
-                    type="radio"
-                    name="order-type-desktop"
-                    className="w-4 h-4 text-black"
-                    checked={orderType === "livraison"}
-                    onChange={() => handleOrderTypeChange("livraison")}
-                  />
-                  Delivery
-                </label>
-              </div>
-              {!deliveryMinimumReached && orderType === "livraison" && (
-                <p className="mt-3 text-sm text-red-600">
-                  Delivery requires a minimum order of {DELIVERY_MINIMUM_ORDER_AMOUNT} EUR.
-                </p>
-              )}
-            </div>
-
-            <div className="mb-6">
-              <h3 className="text-lg font-semibold text-gray-800 mb-4">Select Payment Method</h3>
-              <div className="flex flex-col sm:flex-row sm:items-center gap-4">
-                <label className="flex items-center gap-2 cursor-pointer text-gray-700">
-                  <input
-                    type="radio"
-                    name="payment-method"
-                    className="w-4 h-4 text-black"
-                    checked={!isCOD}
-                    onChange={() => setIsCOD(false)}
-                  />
-                  Online Payment
-                </label>
-
-                <label className="flex items-center gap-2 cursor-pointer text-gray-700">
-                  <input
-                    type="radio"
-                    name="payment-method"
-                    className="w-4 h-4 text-black"
-                    checked={isCOD}
-                    onChange={() => setIsCOD(true)}
-                  />
-                  Cash on Delivery (COD)
-                </label>
-              </div>
-            </div>
-
             <div className="flex justify-between items-center mb-4">
-              <span className="text-lg font-medium text-gray-900">Subtotal</span>
+              {" "}
+              <span className="text-lg font-medium text-gray-900">Subtotal</span>{" "}
               <span id="cart-total-desktop" className="text-lg font-semibold text-gray-900">
-                EUR {getTotal()}
-              </span>
-            </div>
-
+                {" "}
+                EUR {getTotal()}{" "}
+              </span>{" "}
+            </div>{" "}
             <button
               id="checkoutButtonDesktop"
               className="w-full bg-black text-white py-3 rounded-lg font-medium hover:bg-gray-800 transition duration-300 disabled:bg-gray-400 disabled:cursor-not-allowed"
               onClick={handleStripeCheckout}
               disabled={loading || cart.length === 0}
             >
-              {loading ? "Loading..." : "Proceed to Checkout"}
-            </button>
+              {" "}
+              {loading ? "Loading..." : "Proceed to Checkout"}{" "}
+            </button>{" "}
           </div>
         </div>
       </div>
