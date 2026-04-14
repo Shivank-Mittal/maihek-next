@@ -45,6 +45,7 @@ import {
   updateDish,
   updateDishSellingStatus,
 } from "@/services/dishes-service";
+import { calculateCartItemPricing, sanitizeDishDiscount } from "@/lib/checkout";
 import type { AdminDish, DishCategoryOption } from "@repo-types/dishes";
 
 export default function DishesPage() {
@@ -68,6 +69,7 @@ export default function DishesPage() {
       description: "",
       image: "",
       active: true,
+      discount: null,
       includes: [],
       sizes: [],
       variations: [],
@@ -175,6 +177,7 @@ export default function DishesPage() {
           image: editingDish.image,
           category: editingDish.category,
           active: editingDish.active,
+          discount: sanitizeDishDiscount(editingDish.discount),
         });
 
         setCurrentPage(1);
@@ -187,6 +190,7 @@ export default function DishesPage() {
           image: editingDish.image,
           category: editingDish.category,
           active: editingDish.active,
+          discount: sanitizeDishDiscount(editingDish.discount),
         });
         setDishes((currentDishes) =>
           currentDishes.map((dish) =>
@@ -218,6 +222,17 @@ export default function DishesPage() {
     setEditingDish({
       ...editingDish,
       category,
+    });
+  };
+
+  const handleDiscountChange = (value: string) => {
+    if (!editingDish) return;
+
+    const percentage = Number.parseFloat(value);
+
+    setEditingDish({
+      ...editingDish,
+      discount: Number.isFinite(percentage) && percentage > 0 ? { percentage } : null,
     });
   };
 
@@ -276,6 +291,7 @@ export default function DishesPage() {
                       <TableHead>Image</TableHead>
                       <TableHead>Name</TableHead>
                       <TableHead>Price</TableHead>
+                      <TableHead>Discount</TableHead>
                       <TableHead>Active</TableHead>
                       <TableHead>Category</TableHead>
                       <TableHead>Description</TableHead>
@@ -283,93 +299,116 @@ export default function DishesPage() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {currentDishes.map((dish) => (
-                      <TableRow
-                        key={dish._id}
-                        className={dish.active ? "" : "bg-stone-50/80 text-stone-500"}
-                      >
-                        <TableCell>
-                          <div className="relative w-16 h-16">
-                            <img
-                              src={
-                                dish.image ||
-                                "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQIeqZ7XgBsSFoHfg6AqYO8DArUUDCdrJEorw&s"
-                              }
-                              alt={dish.name}
-                              className={`w-16 h-16 object-cover rounded-md transition-opacity ${
-                                dish.active ? "opacity-100" : "opacity-55"
-                              }`}
-                            />
-                            {!dish.active && (
-                              <Badge className="absolute -top-2 -right-2 border-amber-200 bg-amber-100 text-amber-800 shadow-sm">
-                                Off
-                              </Badge>
-                            )}
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex flex-col gap-1">
-                            <span className={dish.active ? "text-foreground" : "text-stone-600"}>
-                              {dish.name}
-                            </span>
-                            {!dish.active && (
-                              <span className="text-xs font-medium uppercase tracking-wide text-amber-700">
-                                Currently not selling
+                    {currentDishes.map((dish) => {
+                      const pricing = calculateCartItemPricing({
+                        price: dish.price,
+                        dishDiscount: dish.discount,
+                      });
+
+                      return (
+                        <TableRow
+                          key={dish._id}
+                          className={dish.active ? "" : "bg-stone-50/80 text-stone-500"}
+                        >
+                          <TableCell>
+                            <div className="relative w-16 h-16">
+                              <img
+                                src={
+                                  dish.image ||
+                                  "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQIeqZ7XgBsSFoHfg6AqYO8DArUUDCdrJEorw&s"
+                                }
+                                alt={dish.name}
+                                className={`w-16 h-16 object-cover rounded-md transition-opacity ${
+                                  dish.active ? "opacity-100" : "opacity-55"
+                                }`}
+                              />
+                              {!dish.active && (
+                                <Badge className="absolute -top-2 -right-2 border-amber-200 bg-amber-100 text-amber-800 shadow-sm">
+                                  Off
+                                </Badge>
+                              )}
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex flex-col gap-1">
+                              <span className={dish.active ? "text-foreground" : "text-stone-600"}>
+                                {dish.name}
                               </span>
+                              {!dish.active && (
+                                <span className="text-xs font-medium uppercase tracking-wide text-amber-700">
+                                  Currently not selling
+                                </span>
+                              )}
+                            </div>
+                          </TableCell>
+                          <TableCell className={dish.active ? "" : "text-stone-500"}>
+                            <div className="flex flex-col gap-1">
+                              <span>€{dish.price.toFixed(2)}</span>
+                              {pricing.unitDishDiscount > 0 && (
+                                <span className="text-xs font-medium text-emerald-700">
+                                  Now €{pricing.unitTotal.toFixed(2)}
+                                </span>
+                              )}
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            {dish.discount ? (
+                              <Badge className="border-emerald-200 bg-emerald-50 text-emerald-700">
+                                -{dish.discount.percentage}%
+                              </Badge>
+                            ) : (
+                              <span className="text-sm text-muted-foreground">-</span>
                             )}
-                          </div>
-                        </TableCell>
-                        <TableCell className={dish.active ? "" : "text-stone-500"}>
-                          €{dish.price.toFixed(2)}
-                        </TableCell>
-                        <TableCell>
-                          <Badge
-                            variant="outline"
-                            className={
-                              dish.active
-                                ? "border-emerald-200 bg-emerald-50 text-emerald-700"
-                                : "border-amber-200 bg-amber-50 text-amber-700"
-                            }
-                          >
-                            {dish.active ? "Selling" : "Not Selling"}
-                          </Badge>
-                        </TableCell>
-                        <TableCell>{dish.category}</TableCell>
-                        <TableCell>{dish.description}</TableCell>
-                        <TableCell>
-                          <div className="flex space-x-2">
-                            <Button
-                              variant="secondary"
-                              size="icon"
-                              onClick={() => handleSellingStatusChange(dish)}
-                              aria-label={
+                          </TableCell>
+                          <TableCell>
+                            <Badge
+                              variant="outline"
+                              className={
                                 dish.active
-                                  ? "Stop selling this dish"
-                                  : "Activate selling this dish"
+                                  ? "border-emerald-200 bg-emerald-50 text-emerald-700"
+                                  : "border-amber-200 bg-amber-50 text-amber-700"
                               }
                             >
-                              {dish.active ? <Pause /> : <Play />}
-                            </Button>
-                            <Button
-                              variant="outline"
-                              size="icon"
-                              onClick={() => handleEdit(dish)}
-                              aria-label="Edit dish"
-                            >
-                              <SquarePen />
-                            </Button>
-                            <Button
-                              variant="destructive"
-                              size="icon"
-                              onClick={() => handleDelete(dish._id as string)}
-                              aria-label="Delete dish"
-                            >
-                              <Trash2 />
-                            </Button>
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    ))}
+                              {dish.active ? "Selling" : "Not Selling"}
+                            </Badge>
+                          </TableCell>
+                          <TableCell>{dish.category}</TableCell>
+                          <TableCell>{dish.description}</TableCell>
+                          <TableCell>
+                            <div className="flex space-x-2">
+                              <Button
+                                variant="secondary"
+                                size="icon"
+                                onClick={() => handleSellingStatusChange(dish)}
+                                aria-label={
+                                  dish.active
+                                    ? "Stop selling this dish"
+                                    : "Activate selling this dish"
+                                }
+                              >
+                                {dish.active ? <Pause /> : <Play />}
+                              </Button>
+                              <Button
+                                variant="outline"
+                                size="icon"
+                                onClick={() => handleEdit(dish)}
+                                aria-label="Edit dish"
+                              >
+                                <SquarePen />
+                              </Button>
+                              <Button
+                                variant="destructive"
+                                size="icon"
+                                onClick={() => handleDelete(dish._id as string)}
+                                aria-label="Delete dish"
+                              >
+                                <Trash2 />
+                              </Button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })}
                   </TableBody>
                 </Table>
               </div>
@@ -455,6 +494,23 @@ export default function DishesPage() {
                       value={editingDish.description || ""}
                       onChange={handleInputChange}
                       className="col-span-3 min-h-24 rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs outline-none transition-[color,box-shadow] placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px]"
+                    />
+                  </div>
+                  <div className="grid grid-cols-4 items-center gap-4">
+                    <Label htmlFor="discountPercentage" className="text-right">
+                      Discount %
+                    </Label>
+                    <Input
+                      id="discountPercentage"
+                      name="discountPercentage"
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      max="100"
+                      value={editingDish.discount?.percentage ?? ""}
+                      onChange={(event) => handleDiscountChange(event.target.value)}
+                      className="col-span-3"
+                      placeholder="Leave empty for no dish discount"
                     />
                   </div>
                   <div className="grid grid-cols-4 items-center gap-4">

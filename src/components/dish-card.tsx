@@ -1,6 +1,9 @@
 "use client";
 
 import { useState } from "react";
+import { Badge } from "@/components/ui/badge";
+import { calculateCartItemPricing } from "@/lib/checkout";
+import type { DishDiscount } from "@repo-types/dishes";
 
 type DishCardItem = {
   _id: string;
@@ -8,21 +11,36 @@ type DishCardItem = {
   price: number;
   description: string;
   active?: boolean;
+  discount?: DishDiscount | null;
   includes?: string[];
   image?: string;
 };
 
 type DishCardProps = {
   dish: DishCardItem;
+  categoryName: string;
   addToCart: (
-    item: { _id: string; name: string; price: number; image?: string },
+    item: {
+      _id: string;
+      name: string;
+      price: number;
+      basePrice?: number;
+      image?: string;
+      category?: string;
+      dishDiscount?: DishDiscount | null;
+    },
     quantity: number
   ) => void;
 };
 
-export default function DishCard({ dish, addToCart }: DishCardProps) {
+export default function DishCard({ dish, categoryName, addToCart }: DishCardProps) {
   const [quantity, setQuantity] = useState(0);
   const isDisabled = dish.active === false;
+  const pricing = calculateCartItemPricing({
+    price: dish.price,
+    dishDiscount: dish.discount,
+  });
+  const hasDishDiscount = pricing.unitDishDiscount > 0;
 
   const handleIncrement = () => setQuantity((current) => current + 1);
   const handleDecrement = () => setQuantity((current) => Math.max(0, current - 1));
@@ -37,7 +55,10 @@ export default function DishCard({ dish, addToCart }: DishCardProps) {
         _id: dish._id,
         name: dish.name,
         price: dish.price,
+        basePrice: dish.price,
         image: dish.image,
+        category: categoryName,
+        dishDiscount: dish.discount ?? null,
       },
       quantity
     );
@@ -54,7 +75,14 @@ export default function DishCard({ dish, addToCart }: DishCardProps) {
           </span>
         </div>
       )}
-      <h3 className="text-xl font-semibold text-gray-800">{dish.name}</h3>
+      <div className="flex items-start justify-between gap-3">
+        <h3 className="text-xl font-semibold text-gray-800">{dish.name}</h3>
+        {dish.discount && dish.discount.percentage > 0 && (
+          <Badge className="border-emerald-200 bg-emerald-50 text-emerald-700">
+            -{dish.discount.percentage}%
+          </Badge>
+        )}
+      </div>
       <p className="text-gray-600 mt-2">{dish.description}</p>
       {dish.includes && dish.includes.length > 0 && (
         <div>
@@ -70,7 +98,18 @@ export default function DishCard({ dish, addToCart }: DishCardProps) {
       )}
 
       <div className="flex justify-between items-center mt-4">
-        <p className={`font-bold ${isDisabled ? "text-gray-400" : "text-black"}`}>€{dish.price}</p>
+        <div className={`font-bold ${isDisabled ? "text-gray-400" : "text-black"}`}>
+          {hasDishDiscount ? (
+            <div className="flex flex-col">
+              <span className="text-sm font-medium text-gray-400 line-through">
+                €{pricing.unitBasePrice.toFixed(2)}
+              </span>
+              <span>€{pricing.unitTotal.toFixed(2)}</span>
+            </div>
+          ) : (
+            <span>€{pricing.unitBasePrice.toFixed(2)}</span>
+          )}
+        </div>
         <div className="flex items-center space-x-2">
           <button
             className="decrease-qty bg-gray-200 text-gray-700 px-2 py-1 rounded hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed"

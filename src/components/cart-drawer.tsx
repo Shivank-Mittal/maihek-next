@@ -3,44 +3,59 @@
 import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ShoppingCart } from "lucide-react";
-import { useCart } from "@/hooks/use-cart";
+import { useCart, type CartItem } from "@/hooks/use-cart";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { DeliveryMinimumDialog } from "@/components/delivery-minimum-dialog";
 import {
+  DEFAULT_TAKEAWAY_DISCOUNT_SETTINGS,
   DELIVERY_MINIMUM_ORDER_AMOUNT,
+  calculateCartItemPricing,
+  calculateCartPricing,
   getDeliveryMinimumMessage,
+  getTakeawayDiscountSummary,
   isDeliveryMinimumMet,
 } from "@/lib/checkout";
-
-interface CartItem {
-  id: string | number;
-  name: string;
-  price: number;
-  quantity: number;
-  image?: string;
-}
+import { getDiscountSettings } from "@/services/discount-settings-service";
+import type { DiscountSettingsResponse } from "@repo-types/discounts";
 
 type OrderType = "emporter" | "livraison";
 
 export default function CartDrawer() {
   const isMobile = useIsMobile();
+  const router = useRouter();
+  const { cart, updateQuantity, removeFromCart, isDrawerOpen, setIsDrawerOpen } = useCart();
+
   const [loading, setLoading] = useState(false);
   const [orderType, setOrderType] = useState<OrderType>("emporter");
   const [isCOD, setIsCOD] = useState(false);
   const [showDeliveryMinimumDialog, setShowDeliveryMinimumDialog] = useState(false);
-  const { cart, updateQuantity, removeFromCart, getTotal, isDrawerOpen, setIsDrawerOpen } =
-    useCart();
   const [totalItems, setTotalItems] = useState<number>(0);
-  const router = useRouter();
-  const totalAmount = Number.parseFloat(getTotal());
+  const [discountSettings, setDiscountSettings] = useState<DiscountSettingsResponse>({
+    takeawayDiscount: DEFAULT_TAKEAWAY_DISCOUNT_SETTINGS,
+  });
+
+  const pricingSummary = calculateCartPricing(cart, {
+    orderType,
+    takeawayDiscount: discountSettings.takeawayDiscount,
+  });
+  const totalAmount = pricingSummary.total;
   const deliveryMinimumReached = isDeliveryMinimumMet(orderType, totalAmount);
+  const takeawayNotice = getTakeawayDiscountSummary(discountSettings.takeawayDiscount);
 
   useEffect(() => {
-    const total = cart.reduce((sum: number, item: CartItem) => sum + item.quantity, 0);
+    const total = cart.reduce((sum, item) => sum + item.quantity, 0);
     setTotalItems(total);
   }, [cart]);
+
+  useEffect(() => {
+    getDiscountSettings()
+      .then(setDiscountSettings)
+      .catch(() => {
+        setDiscountSettings({ takeawayDiscount: DEFAULT_TAKEAWAY_DISCOUNT_SETTINGS });
+      });
+  }, []);
 
   const openDeliveryMinimumDialog = useCallback(() => {
     setShowDeliveryMinimumDialog(true);
@@ -89,6 +104,7 @@ export default function CartDrawer() {
   const handleOrderTypeChange = useCallback(
     (value: OrderType) => {
       setOrderType(value);
+
       if (value === "livraison" && !isDeliveryMinimumMet(value, totalAmount)) {
         openDeliveryMinimumDialog();
       }
@@ -96,9 +112,10 @@ export default function CartDrawer() {
     [openDeliveryMinimumDialog, totalAmount]
   );
 
-  const handleStripeCheckout = useCallback(async () => {
+  const handleCheckout = useCallback(async () => {
     try {
       setLoading(true);
+
       if (cart.length === 0) {
         toast.error("Your cart is empty", {
           duration: 2000,
@@ -116,7 +133,6 @@ export default function CartDrawer() {
         return;
       }
 
-      // Both COD and online payment go through /checkout so address is always collected
       router.push(`/checkout?orderType=${orderType}`);
     } catch (error) {
       const message = error instanceof Error ? error.message : "Something went wrong.";
@@ -131,7 +147,7 @@ export default function CartDrawer() {
     } finally {
       setLoading(false);
     }
-  }, [cart, isCOD, openDeliveryMinimumDialog, orderType, router, totalAmount]);
+  }, [cart.length, openDeliveryMinimumDialog, orderType, router, totalAmount]);
 
   return (
     <div>
@@ -155,67 +171,146 @@ export default function CartDrawer() {
         <div className="p-6 h-full flex flex-col justify-between">
           <div className="flex-1 overflow-y-auto pr-2 scrollbar-hidden">
             <h2 className="text-2xl font-semibold text-gray-900 mb-4">Your Cart</h2>
-            <div id="cart-items-desktop" className="space-y-4  ">
-              {cart.map((item) => (
-                <div key={item.id} className="flex items-center p-4 bg-gray-50 rounded-lg">
-                  <img
-                    src={item.image}
-                    alt={item.name}
-                    className="w-16 h-16 object-cover rounded mr-4"
-                  />
-                  <div className="flex-1">
-                    <h3 className="cart-item-heading text-base font-medium text-gray-900">
-                      {item.name}
-                    </h3>
-                    <p className="text-sm text-gray-500">EUR {item.price.toFixed(2)}</p>
-                    <div className="flex items-center mt-2">
-                      <button
-                        className="decreaseQty text-gray-500 hover:text-gray-700 cursor-pointer"
-                        onClick={() => handleUpdateQuantity(item.id, item.quantity - 1)}
-                      >
-                        -
-                      </button>
-                      <span className="mx-2 text-sm font-medium">{item.quantity}</span>
-                      <button
-                        className="increaseQty text-gray-500 hover:text-gray-700 cursor-pointer"
-                        onClick={() => handleUpdateQuantity(item.id, item.quantity + 1)}
-                      >
-                        +
-                      </button>
-                      <button
-                        className="removeItem ml-4 text-red-500 hover:text-red-700"
-                        onClick={() => handleRemoveFromCart(item.id, item.name)}
-                      >
-                        Remove
-                      </button>
+            <div id="cart-items-desktop" className="space-y-4">
+              {cart.map((item) => {
+                const pricing = calculateCartItemPricing(item, {
+                  orderType,
+                  takeawayDiscount: discountSettings.takeawayDiscount,
+                });
+
+                return (
+                  <div key={item.id} className="flex items-center p-4 bg-gray-50 rounded-lg">
+                    <img
+                      src={item.image}
+                      alt={item.name}
+                      className="w-16 h-16 object-cover rounded mr-4"
+                    />
+                    <div className="flex-1">
+                      <h3 className="cart-item-heading text-base font-medium text-gray-900">
+                        {item.name}
+                      </h3>
+                      <p className="text-sm text-gray-500">
+                        {pricing.lineDiscount > 0 ? (
+                          <>
+                            <span className="line-through">
+                              EUR {pricing.unitBasePrice.toFixed(2)}
+                            </span>
+                            <span className="ml-2 font-medium text-emerald-700">
+                              EUR {pricing.unitTotal.toFixed(2)}
+                            </span>
+                          </>
+                        ) : (
+                          <>EUR {pricing.unitBasePrice.toFixed(2)}</>
+                        )}
+                      </p>
+                      {pricing.lineDiscount > 0 && (
+                        <p className="mt-1 text-xs text-emerald-700">
+                          {pricing.appliedDiscountLabels.join(" + ")} : -EUR{" "}
+                          {pricing.lineDiscount.toFixed(2)}
+                        </p>
+                      )}
+                      <div className="flex items-center mt-2">
+                        <button
+                          className="decreaseQty text-gray-500 hover:text-gray-700 cursor-pointer"
+                          onClick={() => handleUpdateQuantity(item.id, item.quantity - 1)}
+                        >
+                          -
+                        </button>
+                        <span className="mx-2 text-sm font-medium">{item.quantity}</span>
+                        <button
+                          className="increaseQty text-gray-500 hover:text-gray-700 cursor-pointer"
+                          onClick={() => handleUpdateQuantity(item.id, item.quantity + 1)}
+                        >
+                          +
+                        </button>
+                        <button
+                          className="removeItem ml-4 text-red-500 hover:text-red-700"
+                          onClick={() => handleRemoveFromCart(item.id, item.name)}
+                        >
+                          Remove
+                        </button>
+                      </div>
                     </div>
+                    <p className="text-sm font-semibold text-gray-900 text-right">
+                      EUR {pricing.lineTotal.toFixed(2)}
+                    </p>
                   </div>
-                  <p className="text-sm font-semibold text-gray-900 text-right">
-                    EUR {(item.price * item.quantity).toFixed(2)}
-                  </p>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
 
           <div className="border-t pt-6 mt-6">
+            <div className="mb-6">
+              <h3 className="text-lg font-semibold text-gray-800 mb-4">Order type</h3>
+              <div className="flex flex-col gap-3">
+                <label className="flex items-center gap-2 cursor-pointer text-gray-700">
+                  <input
+                    type="radio"
+                    name="order-type-desktop"
+                    className="w-4 h-4 text-indigo-600 focus:ring-indigo-500"
+                    checked={orderType === "emporter"}
+                    onChange={() => handleOrderTypeChange("emporter")}
+                  />
+                  Take away
+                </label>
+                <label className="flex items-center gap-2 cursor-pointer text-gray-700">
+                  <input
+                    type="radio"
+                    name="order-type-desktop"
+                    className="w-4 h-4 text-indigo-600 focus:ring-indigo-500"
+                    checked={orderType === "livraison"}
+                    onChange={() => handleOrderTypeChange("livraison")}
+                  />
+                  Delivery
+                </label>
+              </div>
+              {orderType === "emporter" && takeawayNotice && (
+                <p className="mt-3 text-sm text-emerald-700">{takeawayNotice}</p>
+              )}
+              {!deliveryMinimumReached && orderType === "livraison" && (
+                <p className="mt-3 text-sm text-red-600">
+                  Delivery requires a minimum of {DELIVERY_MINIMUM_ORDER_AMOUNT} EUR.
+                </p>
+              )}
+            </div>
+
             <div className="flex justify-between items-center mb-4">
-              {" "}
-              <span className="text-lg font-medium text-gray-900">Subtotal</span>{" "}
+              <span className="text-lg font-medium text-gray-900">Subtotal</span>
               <span id="cart-total-desktop" className="text-lg font-semibold text-gray-900">
-                {" "}
-                EUR {getTotal()}{" "}
-              </span>{" "}
-            </div>{" "}
+                EUR {pricingSummary.subtotal.toFixed(2)}
+              </span>
+            </div>
+            {pricingSummary.dishDiscountTotal > 0 && (
+              <div className="flex justify-between items-center mb-4 text-emerald-700">
+                <span className="text-lg font-medium">Item discounts</span>
+                <span className="text-lg font-semibold">
+                  -EUR {pricingSummary.dishDiscountTotal.toFixed(2)}
+                </span>
+              </div>
+            )}
+            {pricingSummary.takeawayDiscountTotal > 0 && (
+              <div className="flex justify-between items-center mb-4 text-emerald-700">
+                <span className="text-lg font-medium">Takeaway discount</span>
+                <span className="text-lg font-semibold">
+                  -EUR {pricingSummary.takeawayDiscountTotal.toFixed(2)}
+                </span>
+              </div>
+            )}
+            <div className="flex justify-between items-center mb-4">
+              <span className="text-lg font-medium text-gray-900">Total</span>
+              <span className="text-lg font-semibold text-gray-900">
+                EUR {pricingSummary.total.toFixed(2)}
+              </span>
+            </div>
             <button
               id="checkoutButtonDesktop"
               className="w-full bg-black text-white py-3 rounded-lg font-medium hover:bg-gray-800 transition duration-300 disabled:bg-gray-400 disabled:cursor-not-allowed"
-              onClick={handleStripeCheckout}
+              onClick={handleCheckout}
               disabled={loading || cart.length === 0}
             >
-              {" "}
-              {loading ? "Loading..." : "Proceed to Checkout"}{" "}
-            </button>{" "}
+              {loading ? "Loading..." : "Proceed to Checkout"}
+            </button>
           </div>
         </div>
       </div>
@@ -230,7 +325,7 @@ export default function CartDrawer() {
             transition={{ duration: 0.3, ease: "easeOut" }}
           >
             <div
-              className="absolute "
+              className="absolute"
               onClick={() => setIsDrawerOpen(false)}
               aria-label="Close cart drawer"
             />
@@ -248,60 +343,86 @@ export default function CartDrawer() {
                     <p className="text-center text-gray-500 text-lg">Votre panier est vide.</p>
                   ) : (
                     <div className="space-y-4">
-                      {cart.map((item: CartItem) => (
-                        <motion.div
-                          key={item.id}
-                          className="flex items-center p-4 bg-gray-50 rounded-lg"
-                          initial={{ opacity: 0, y: 10 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          exit={{ opacity: 0, y: -10 }}
-                          transition={{ duration: 0.2 }}
-                        >
-                          <img
-                            src={item.image}
-                            alt={item.name}
-                            className="w-16 h-16 object-cover rounded mr-4"
-                          />
-                          <div className="flex-1">
-                            <h3 className="text-base font-medium text-gray-900">{item.name}</h3>
-                            <p className="text-sm text-gray-500">EUR {item.price.toFixed(2)}</p>
-                            <div className="flex items-center mt-2">
-                              <motion.button
-                                className="text-gray-500 hover:text-gray-700 cursor-pointer"
-                                onClick={() => handleUpdateQuantity(item.id, item.quantity - 1)}
-                                disabled={item.quantity <= 1}
-                                whileHover={{ scale: 1.1 }}
-                                whileTap={{ scale: 0.9 }}
-                                aria-label={`Decrease quantity of ${item.name}`}
-                              >
-                                -
-                              </motion.button>
-                              <span className="mx-2 text-sm font-medium">{item.quantity}</span>
-                              <motion.button
-                                className="text-gray-500 hover:text-gray-700 cursor-pointer"
-                                onClick={() => handleUpdateQuantity(item.id, item.quantity + 1)}
-                                whileHover={{ scale: 1.1 }}
-                                whileTap={{ scale: 0.9 }}
-                                aria-label={`Increase quantity of ${item.name}`}
-                              >
-                                +
-                              </motion.button>
-                              <motion.button
-                                className="ml-4 text-red-500 hover:text-red-700"
-                                onClick={() => handleRemoveFromCart(item.id, item.name)}
-                                whileHover={{ scale: 1.1 }}
-                                whileTap={{ scale: 0.9 }}
-                                aria-label={`Remove ${item.name} from cart`}
-                              >
-                                Supprimer
-                              </motion.button>
+                      {cart.map((item: CartItem) => {
+                        const pricing = calculateCartItemPricing(item, {
+                          orderType,
+                          takeawayDiscount: discountSettings.takeawayDiscount,
+                        });
+
+                        return (
+                          <motion.div
+                            key={item.id}
+                            className="flex items-center p-4 bg-gray-50 rounded-lg"
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -10 }}
+                            transition={{ duration: 0.2 }}
+                          >
+                            <img
+                              src={item.image}
+                              alt={item.name}
+                              className="w-16 h-16 object-cover rounded mr-4"
+                            />
+                            <div className="flex-1">
+                              <h3 className="text-base font-medium text-gray-900">{item.name}</h3>
+                              <p className="text-sm text-gray-500">
+                                {pricing.lineDiscount > 0 ? (
+                                  <>
+                                    <span className="line-through">
+                                      EUR {pricing.unitBasePrice.toFixed(2)}
+                                    </span>
+                                    <span className="ml-2 font-medium text-emerald-700">
+                                      EUR {pricing.unitTotal.toFixed(2)}
+                                    </span>
+                                  </>
+                                ) : (
+                                  <>EUR {pricing.unitBasePrice.toFixed(2)}</>
+                                )}
+                              </p>
+                              {pricing.lineDiscount > 0 && (
+                                <p className="mt-1 text-xs text-emerald-700">
+                                  {pricing.appliedDiscountLabels.join(" + ")} : -EUR{" "}
+                                  {pricing.lineDiscount.toFixed(2)}
+                                </p>
+                              )}
+                              <div className="flex items-center mt-2">
+                                <motion.button
+                                  className="text-gray-500 hover:text-gray-700 cursor-pointer"
+                                  onClick={() => handleUpdateQuantity(item.id, item.quantity - 1)}
+                                  disabled={item.quantity <= 1}
+                                  whileHover={{ scale: 1.1 }}
+                                  whileTap={{ scale: 0.9 }}
+                                  aria-label={`Decrease quantity of ${item.name}`}
+                                >
+                                  -
+                                </motion.button>
+                                <span className="mx-2 text-sm font-medium">{item.quantity}</span>
+                                <motion.button
+                                  className="text-gray-500 hover:text-gray-700 cursor-pointer"
+                                  onClick={() => handleUpdateQuantity(item.id, item.quantity + 1)}
+                                  whileHover={{ scale: 1.1 }}
+                                  whileTap={{ scale: 0.9 }}
+                                  aria-label={`Increase quantity of ${item.name}`}
+                                >
+                                  +
+                                </motion.button>
+                                <motion.button
+                                  className="ml-4 text-red-500 hover:text-red-700"
+                                  onClick={() => handleRemoveFromCart(item.id, item.name)}
+                                  whileHover={{ scale: 1.1 }}
+                                  whileTap={{ scale: 0.9 }}
+                                  aria-label={`Remove ${item.name} from cart`}
+                                >
+                                  Supprimer
+                                </motion.button>
+                              </div>
                             </div>
-                          </div>
-                          <p className="text-sm font-semibold text-gray-900 text-right">
-                            EUR {(item.price * item.quantity).toFixed(2)}
-                          </p>
-                        </motion.div>
-                      ))}
+                            <p className="text-sm font-semibold text-gray-900 text-right">
+                              EUR {pricing.lineTotal.toFixed(2)}
+                            </p>
+                          </motion.div>
+                        );
+                      })}
                     </div>
                   )}
                 </div>
@@ -336,6 +457,9 @@ export default function CartDrawer() {
                         La livraison demande un minimum de {DELIVERY_MINIMUM_ORDER_AMOUNT} EUR.
                       </p>
                     )}
+                    {orderType === "emporter" && takeawayNotice && (
+                      <p className="mt-3 text-sm text-emerald-700">{takeawayNotice}</p>
+                    )}
                   </div>
 
                   <div className="mb-6">
@@ -368,11 +492,35 @@ export default function CartDrawer() {
 
                   <div className="flex justify-between items-center mb-4">
                     <span className="text-lg font-medium text-gray-900">Sous-total</span>
-                    <span className="text-lg font-semibold text-gray-900">EUR {getTotal()}</span>
+                    <span className="text-lg font-semibold text-gray-900">
+                      EUR {pricingSummary.subtotal.toFixed(2)}
+                    </span>
+                  </div>
+                  {pricingSummary.dishDiscountTotal > 0 && (
+                    <div className="flex justify-between items-center mb-4 text-emerald-700">
+                      <span className="text-lg font-medium">Remises article</span>
+                      <span className="text-lg font-semibold">
+                        -EUR {pricingSummary.dishDiscountTotal.toFixed(2)}
+                      </span>
+                    </div>
+                  )}
+                  {pricingSummary.takeawayDiscountTotal > 0 && (
+                    <div className="flex justify-between items-center mb-4 text-emerald-700">
+                      <span className="text-lg font-medium">Remise a emporter</span>
+                      <span className="text-lg font-semibold">
+                        -EUR {pricingSummary.takeawayDiscountTotal.toFixed(2)}
+                      </span>
+                    </div>
+                  )}
+                  <div className="flex justify-between items-center mb-4">
+                    <span className="text-lg font-medium text-gray-900">Total</span>
+                    <span className="text-lg font-semibold text-gray-900">
+                      EUR {pricingSummary.total.toFixed(2)}
+                    </span>
                   </div>
 
                   <motion.button
-                    onClick={handleStripeCheckout}
+                    onClick={handleCheckout}
                     disabled={cart.length === 0 || loading}
                     className={`w-full py-3 rounded-lg font-medium transition duration-300 flex items-center justify-center gap-2 ${
                       cart.length === 0 || loading

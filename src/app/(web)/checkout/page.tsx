@@ -1,31 +1,41 @@
 "use client";
 
-import { Suspense, useState, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { Suspense, useEffect, useState } from "react";
+import { AnimatePresence, motion } from "framer-motion";
 import {
-  User,
-  Phone,
+  Banknote,
+  Building2,
+  CheckCircle2,
+  CreditCard,
+  FileText,
+  Hash,
   Mail,
+  MapPin,
+  Navigation,
+  Phone,
   ShoppingCart,
   Trash2,
+  User,
   X,
-  Navigation,
-  Building2,
-  Hash,
-  MapPin,
-  FileText,
-  CreditCard,
-  Banknote,
-  CheckCircle2,
 } from "lucide-react";
-import { useCart } from "@/hooks/use-cart";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useForm, SubmitHandler } from "react-hook-form";
+import { useForm, type SubmitHandler } from "react-hook-form";
 import { toast } from "sonner";
+
 import { DeliveryMinimumDialog } from "@/components/delivery-minimum-dialog";
-import { DELIVERY_MINIMUM_ORDER_AMOUNT, isDeliveryMinimumMet } from "@/lib/checkout";
+import { useCart, type CartItem } from "@/hooks/use-cart";
+import {
+  DEFAULT_TAKEAWAY_DISCOUNT_SETTINGS,
+  DELIVERY_MINIMUM_ORDER_AMOUNT,
+  calculateCartItemPricing,
+  calculateCartPricing,
+  getTakeawayDiscountSummary,
+  isDeliveryMinimumMet,
+} from "@/lib/checkout";
 import { fetchAllowedPincodes } from "@/services/delivery-zones-service";
+import { getDiscountSettings } from "@/services/discount-settings-service";
+import type { DiscountSettingsResponse } from "@repo-types/discounts";
 
 interface FormData {
   name: string;
@@ -40,23 +50,18 @@ interface FormData {
   instructions?: string;
 }
 
-interface CartItem {
-  id: string;
-  name: string;
-  quantity: number;
-  price: number;
-  option?: string;
-  selectedItems?: Record<string, string>;
-}
-
 function CheckoutContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { cart, removeFromCart } = useCart();
+  const { cart, removeFromCart, clearCart } = useCart();
+
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [showDeliveryMinimumDialog, setShowDeliveryMinimumDialog] = useState(false);
   const [allowedPincodes, setAllowedPincodes] = useState<string[]>([]);
+  const [discountSettings, setDiscountSettings] = useState<DiscountSettingsResponse>({
+    takeawayDiscount: DEFAULT_TAKEAWAY_DISCOUNT_SETTINGS,
+  });
 
   const {
     register,
@@ -91,14 +96,24 @@ function CheckoutContent() {
     fetchAllowedPincodes().then(setAllowedPincodes);
   }, []);
 
+  useEffect(() => {
+    getDiscountSettings()
+      .then(setDiscountSettings)
+      .catch(() => {
+        setDiscountSettings({ takeawayDiscount: DEFAULT_TAKEAWAY_DISCOUNT_SETTINGS });
+      });
+  }, []);
+
   const orderType = watch("orderType");
   const paymentMethod = watch("paymentMethod");
-  const totalAmount = cart.reduce(
-    (total: number, item: CartItem) => total + (item.quantity || 1) * item.price,
-    0
-  );
-  const totalPrice = totalAmount.toFixed(2);
+  const pricingSummary = calculateCartPricing(cart, {
+    orderType,
+    takeawayDiscount: discountSettings.takeawayDiscount,
+  });
+  const totalAmount = pricingSummary.total;
+  const totalPrice = pricingSummary.total.toFixed(2);
   const deliveryMinimumReached = isDeliveryMinimumMet(orderType, totalAmount);
+  const takeawayNotice = getTakeawayDiscountSummary(discountSettings.takeawayDiscount);
 
   const handleOrderTypeChange = (value: FormData["orderType"]) => {
     setValue("orderType", value, { shouldValidate: true, shouldDirty: true });
@@ -120,11 +135,18 @@ function CheckoutContent() {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            items: cart.map((item: CartItem) => ({
-              name: item.name,
-              price: item.price,
-              quantity: item.quantity || 1,
-            })),
+            items: cart.map((item: CartItem) => {
+              const pricing = calculateCartItemPricing(item, {
+                orderType: data.orderType,
+                takeawayDiscount: discountSettings.takeawayDiscount,
+              });
+
+              return {
+                name: item.name,
+                price: pricing.unitTotal,
+                quantity: item.quantity || 1,
+              };
+            }),
             orderType: data.orderType,
             customerInfo: {
               name: data.name,
@@ -157,13 +179,23 @@ function CheckoutContent() {
             zipcode: data.pincode,
             instructions: data.instructions,
             orderType: data.orderType,
-            orders: cart,
+            orders: cart.map((item: CartItem) => {
+              const pricing = calculateCartItemPricing(item, {
+                orderType: data.orderType,
+                takeawayDiscount: discountSettings.takeawayDiscount,
+              });
+
+              return {
+                ...item,
+                price: pricing.unitTotal,
+              };
+            }),
           }),
         });
 
         if (!response.ok) throw new Error((await response.json()).message);
 
-        localStorage.removeItem("cartItems");
+        clearCart();
         toast.success("Commande réussie !", {
           duration: 3000,
           style: { background: "#1a1a1a", color: "#fff", border: "1px solid #333" },
@@ -203,7 +235,6 @@ function CheckoutContent() {
 
         {cart.length ? (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
-            {/* Order summary */}
             <motion.div
               className="bg-white p-6 rounded-lg shadow-md"
               initial={{ opacity: 0, x: -16 }}
@@ -231,38 +262,93 @@ function CheckoutContent() {
                     </tr>
                   </thead>
                   <tbody>
-                    {cart.map((item: CartItem) => (
-                      <tr key={item.id} className="border-b border-gray-100">
-                        <td className="py-3 px-2 text-sm">
-                          <div className="font-medium text-gray-900">{item.name}</div>
-                          {item.option && (
-                            <div className="text-xs text-gray-500 mt-0.5">{item.option}</div>
-                          )}
-                          {item.selectedItems && (
-                            <ul className="text-xs text-gray-500 mt-0.5">
-                              {Object.entries(item.selectedItems).map(([k, v]) => (
-                                <li key={k}>
-                                  {k}: {v}
-                                </li>
-                              ))}
-                            </ul>
-                          )}
+                    {cart.map((item: CartItem) => {
+                      const pricing = calculateCartItemPricing(item, {
+                        orderType,
+                        takeawayDiscount: discountSettings.takeawayDiscount,
+                      });
+
+                      return (
+                        <tr key={item.id} className="border-b border-gray-100">
+                          <td className="py-3 px-2 text-sm">
+                            <div className="font-medium text-gray-900">{item.name}</div>
+                            {item.option && (
+                              <div className="text-xs text-gray-500 mt-0.5">{item.option}</div>
+                            )}
+                            {item.selectedItems && (
+                              <ul className="text-xs text-gray-500 mt-0.5">
+                                {Object.entries(item.selectedItems).map(([key, value]) => (
+                                  <li key={key}>
+                                    {key}: {String(value)}
+                                  </li>
+                                ))}
+                              </ul>
+                            )}
+                            {pricing.lineDiscount > 0 && (
+                              <div className="mt-1 text-xs text-emerald-700">
+                                {pricing.appliedDiscountLabels.join(" + ")} : -
+                                {pricing.lineDiscount.toFixed(2)} €
+                              </div>
+                            )}
+                          </td>
+                          <td className="py-3 px-2 text-sm text-gray-600">{item.quantity || 1}</td>
+                          <td className="py-3 px-2 text-sm font-medium text-gray-900">
+                            {pricing.lineDiscount > 0 && (
+                              <div className="text-xs text-gray-400 line-through">
+                                {pricing.lineSubtotal.toFixed(2)} €
+                              </div>
+                            )}
+                            {pricing.lineTotal.toFixed(2)} €
+                          </td>
+                          <td className="py-3 px-2">
+                            <button
+                              onClick={() => removeFromCart(item.id)}
+                              className="text-gray-400 hover:text-red-500 transition-colors"
+                              aria-label={`Supprimer ${item.name}`}
+                            >
+                              <X className="h-4 w-4" />
+                            </button>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                    <tr>
+                      <td
+                        colSpan={2}
+                        className="py-3 px-2 text-sm font-semibold text-gray-700 text-right"
+                      >
+                        Sous-total :
+                      </td>
+                      <td colSpan={2} className="py-3 px-2 text-base font-bold text-gray-900">
+                        {pricingSummary.subtotal.toFixed(2)} €
+                      </td>
+                    </tr>
+                    {pricingSummary.dishDiscountTotal > 0 && (
+                      <tr>
+                        <td
+                          colSpan={2}
+                          className="py-3 px-2 text-sm font-semibold text-emerald-700 text-right"
+                        >
+                          Remises article :
                         </td>
-                        <td className="py-3 px-2 text-sm text-gray-600">{item.quantity || 1}</td>
-                        <td className="py-3 px-2 text-sm font-medium text-gray-900">
-                          {((item.quantity || 1) * item.price).toFixed(2)} €
-                        </td>
-                        <td className="py-3 px-2">
-                          <button
-                            onClick={() => removeFromCart(item.id)}
-                            className="text-gray-400 hover:text-red-500 transition-colors"
-                            aria-label={`Supprimer ${item.name}`}
-                          >
-                            <X className="h-4 w-4" />
-                          </button>
+                        <td colSpan={2} className="py-3 px-2 text-base font-bold text-emerald-700">
+                          -{pricingSummary.dishDiscountTotal.toFixed(2)} €
                         </td>
                       </tr>
-                    ))}
+                    )}
+                    {pricingSummary.takeawayDiscountTotal > 0 && (
+                      <tr>
+                        <td
+                          colSpan={2}
+                          className="py-3 px-2 text-sm font-semibold text-emerald-700 text-right"
+                        >
+                          Remise a emporter :
+                        </td>
+                        <td colSpan={2} className="py-3 px-2 text-base font-bold text-emerald-700">
+                          -{pricingSummary.takeawayDiscountTotal.toFixed(2)} €
+                        </td>
+                      </tr>
+                    )}
                     <tr>
                       <td
                         colSpan={2}
@@ -279,7 +365,7 @@ function CheckoutContent() {
               </div>
               <button
                 onClick={() => {
-                  localStorage.removeItem("cartItems");
+                  clearCart();
                   toast.success("Panier vidé !", {
                     duration: 3000,
                     style: { background: "#1a1a1a", color: "#fff", border: "1px solid #333" },
@@ -293,7 +379,6 @@ function CheckoutContent() {
               </button>
             </motion.div>
 
-            {/* Checkout form */}
             <motion.div
               className="bg-white p-6 rounded-lg shadow-md"
               initial={{ opacity: 0, x: 16 }}
@@ -306,7 +391,6 @@ function CheckoutContent() {
               </h2>
 
               <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-                {/* Order type */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Type de commande
@@ -340,11 +424,13 @@ function CheckoutContent() {
                       Minimum de {DELIVERY_MINIMUM_ORDER_AMOUNT} € requis pour la livraison.
                     </p>
                   )}
+                  {orderType === "emporter" && takeawayNotice && (
+                    <p className="mt-1.5 text-xs text-emerald-700">{takeawayNotice}</p>
+                  )}
                 </div>
 
                 <hr className="border-gray-100" />
 
-                {/* Name */}
                 <div>
                   <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1.5">
                     Nom Complet <span className="text-red-500">*</span>
@@ -367,7 +453,6 @@ function CheckoutContent() {
                   )}
                 </div>
 
-                {/* Phone */}
                 <div>
                   <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-1.5">
                     Téléphone <span className="text-red-500">*</span>
@@ -390,7 +475,6 @@ function CheckoutContent() {
                   )}
                 </div>
 
-                {/* Email */}
                 <div>
                   <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1.5">
                     E-mail <span className="text-red-500">*</span>
@@ -413,7 +497,6 @@ function CheckoutContent() {
                   )}
                 </div>
 
-                {/* Address — livraison only */}
                 {orderType === "livraison" && (
                   <>
                     <hr className="border-gray-100" />
@@ -530,7 +613,6 @@ function CheckoutContent() {
                   </>
                 )}
 
-                {/* Payment method — livraison only */}
                 {orderType === "livraison" && (
                   <>
                     <hr className="border-gray-100" />
@@ -564,7 +646,9 @@ function CheckoutContent() {
                                 {method === "online" ? "En ligne" : "À la livraison"}
                               </p>
                               <p
-                                className={`text-xs leading-tight mt-0.5 ${paymentMethod === method ? "text-gray-300" : "text-gray-400"}`}
+                                className={`text-xs leading-tight mt-0.5 ${
+                                  paymentMethod === method ? "text-gray-300" : "text-gray-400"
+                                }`}
                               >
                                 {method === "online" ? "Carte via Stripe" : "Espèces"}
                               </p>
@@ -576,7 +660,6 @@ function CheckoutContent() {
                   </>
                 )}
 
-                {/* Submit */}
                 <motion.button
                   type="submit"
                   disabled={isSubmitting || (orderType === "livraison" && !deliveryMinimumReached)}
@@ -635,7 +718,6 @@ function CheckoutContent() {
           </motion.div>
         )}
 
-        {/* Success modal */}
         <AnimatePresence>
           {showModal && (
             <motion.div

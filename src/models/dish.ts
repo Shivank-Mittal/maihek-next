@@ -1,4 +1,5 @@
 import mongoose, { Document, Model, Schema } from "mongoose";
+import type { DishDiscount } from "@repo-types/dishes";
 
 const dishSchema = new Schema({
   name: {
@@ -14,6 +15,13 @@ const dishSchema = new Schema({
   },
   image: {
     type: String,
+  },
+  discount: {
+    percentage: {
+      type: Number,
+      min: 0,
+      max: 100,
+    },
   },
   category: {
     type: mongoose.Schema.Types.ObjectId,
@@ -38,6 +46,7 @@ export interface DishDocument extends Document {
   name: string;
   description: string; // single description property
   price: number;
+  discount?: DishDiscount | null;
   category: string;
   includes: string[];
   sizes: { size: string; price: number }[];
@@ -57,6 +66,7 @@ export type DishInput = {
   description: string; // required in DishInput
   category: string;
   price: number;
+  discount?: DishDiscount | null;
   includes?: string[];
   sizes?: { size: string; price: number }[];
   image?: string;

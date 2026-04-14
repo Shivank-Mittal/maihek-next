@@ -3,6 +3,7 @@ import { Dish } from "@/models/dish";
 import Category from "@/models/category";
 import ApiResponse from "@/lib/response";
 import { NextRequest } from "next/server";
+import { sanitizeDishDiscount } from "@/lib/checkout";
 
 interface Params {
   id: string;
@@ -49,7 +50,7 @@ export async function PATCH(req: NextRequest, context: { params: Promise<Params>
     if (!dish) return ApiResponse.notFound("Dish not found");
 
     const body = await req.json();
-    const { name, price, image, description, active, category, categoryId } = body;
+    const { name, price, image, description, active, category, categoryId, discount } = body;
 
     if (!body || typeof body !== "object" || Object.keys(body).length === 0) {
       return ApiResponse.badRequest("At least one field is required");
@@ -62,6 +63,9 @@ export async function PATCH(req: NextRequest, context: { params: Promise<Params>
     if (image !== undefined) updateFields.image = image;
     if (description !== undefined) updateFields.description = description;
     if (active !== undefined) updateFields.active = active;
+    if (Object.prototype.hasOwnProperty.call(body, "discount")) {
+      updateFields.discount = sanitizeDishDiscount(discount);
+    }
 
     if (category !== undefined || categoryId !== undefined) {
       const existingCategory = await resolveCategory(category, categoryId);

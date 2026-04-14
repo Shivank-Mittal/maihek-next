@@ -3,6 +3,7 @@ import { Dish, DishInput } from "@/models/dish";
 import ApiResponse from "@/lib/response";
 import Category from "@/models/category";
 import { ObjectId } from "mongodb";
+import { sanitizeDishDiscount } from "@/lib/checkout";
 
 async function resolveCategory(categoryName?: string, categoryId?: string) {
   if (categoryName) {
@@ -77,6 +78,7 @@ export async function POST(req: any) {
 
       const dishesWithCategory = dishesArray.map((dish: DishInput) => ({
         ...dish,
+        discount: sanitizeDishDiscount(dish.discount),
         active: dish.active ?? true,
         category: categoryDocument._id,
       }));
@@ -86,7 +88,7 @@ export async function POST(req: any) {
       return ApiResponse.created({ message: "Dish(es) created successfully" });
     }
 
-    const { name, price, description, image, active = true } = body;
+    const { name, price, description, image, active = true, discount } = body;
 
     if (!name || price === undefined || !description) {
       return ApiResponse.badRequest("'name', 'price', and 'description' are required");
@@ -98,6 +100,7 @@ export async function POST(req: any) {
       description,
       image,
       active,
+      discount: sanitizeDishDiscount(discount),
       category: categoryDocument._id,
     });
 
@@ -110,6 +113,7 @@ export async function POST(req: any) {
         description: createdDish.description,
         image: createdDish.image,
         active: createdDish.active,
+        discount: createdDish.discount,
         category: categoryDocument.name,
       },
     });

@@ -82,6 +82,7 @@ function normalizeDish(dish: ApiDish): MenuDish {
     description: dish.description,
     image: dish.image,
     active: dish.active ?? true,
+    discount: dish.discount ?? null,
     includes: Array.isArray(dish.includes) ? dish.includes : [],
     sizes: Array.isArray(dish.sizes) ? dish.sizes : [],
     variations: Array.isArray(dish.variations) ? dish.variations : [],

@@ -7,6 +7,8 @@ import { toast } from "sonner";
 import CartDrawer from "@/components/cart-drawer";
 import DishCard from "@/components/dish-card";
 import { listDishCategories } from "@/services/dishes-service";
+import { getDiscountSettings } from "@/services/discount-settings-service";
+import { DEFAULT_TAKEAWAY_DISCOUNT_SETTINGS, getTakeawayDiscountSummary } from "@/lib/checkout";
 import type { DishCategory, MenuDish } from "@repo-types/dishes";
 
 export default function Menu() {
@@ -15,11 +17,21 @@ export default function Menu() {
   const [isLoading, setIsLoading] = useState(true);
   const [menuItems, setMenuItems] = useState<DishCategory[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const [takeawayNotice, setTakeawayNotice] = useState<string | null>(
+    getTakeawayDiscountSummary(DEFAULT_TAKEAWAY_DISCOUNT_SETTINGS)
+  );
 
   const fetchMenuItems = async () => {
     try {
-      const categories = await listDishCategories();
+      const [categories, discountSettings] = await Promise.all([
+        listDishCategories(),
+        getDiscountSettings().catch(() => ({
+          takeawayDiscount: DEFAULT_TAKEAWAY_DISCOUNT_SETTINGS,
+        })),
+      ]);
+
       setMenuItems(categories);
+      setTakeawayNotice(getTakeawayDiscountSummary(discountSettings.takeawayDiscount));
     } catch (error) {
       console.error("Error fetching menu items:", error);
       setError("Failed to load menu items. Displaying default menu.");
@@ -95,6 +107,11 @@ export default function Menu() {
           <h1 className="text-3xl md:text-5xl font-extrabold text-center mb-16  ">
             Notre Menu Exquis
           </h1>
+          {takeawayNotice && (
+            <div className="mx-auto mb-10 max-w-3xl rounded-2xl border border-emerald-200 bg-emerald-50 px-5 py-4 text-center text-sm font-medium text-emerald-800 shadow-sm">
+              {takeawayNotice}
+            </div>
+          )}
         </div>
 
         {error && (
@@ -147,7 +164,15 @@ const CategoryBlock = ({
   title: string;
   dishes: MenuDish[];
   addToCart: (
-    item: { _id: string; name: string; price: number; image?: string },
+    item: {
+      _id: string;
+      name: string;
+      price: number;
+      basePrice?: number;
+      image?: string;
+      category?: string;
+      dishDiscount?: MenuDish["discount"];
+    },
     quantity: number
   ) => void;
 }) => {
@@ -159,7 +184,7 @@ const CategoryBlock = ({
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {dishes.map((dish) => (
-          <DishCard key={dish._id} dish={dish} addToCart={addToCart} />
+          <DishCard key={dish._id} dish={dish} categoryName={title} addToCart={addToCart} />
         ))}
       </div>
     </motion.div>

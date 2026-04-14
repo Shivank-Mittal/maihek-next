@@ -15,6 +15,10 @@ export type DishSize = {
   price: number;
 };
 
+export type DishDiscount = {
+  percentage: number;
+};
+
 export type ApiDish = {
   _id: string;
   name: string;
@@ -22,6 +26,7 @@ export type ApiDish = {
   description: string;
   image?: string;
   active?: boolean;
+  discount?: DishDiscount | null;
   includes?: string[];
   sizes?: DishSize[];
   variations?: string[];
@@ -40,6 +45,7 @@ export interface MenuDish {
   description: string;
   image?: string;
   active: boolean;
+  discount?: DishDiscount | null;
   includes: string[];
   sizes: DishSize[];
   variations: string[];
@@ -66,6 +72,7 @@ export type CreateDishInput = {
   image?: string;
   category: string;
   active: boolean;
+  discount?: DishDiscount | null;
 };
 
 export type PatchDishInput = Partial<CreateDishInput>;
