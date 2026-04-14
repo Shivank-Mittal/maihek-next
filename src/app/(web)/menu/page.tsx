@@ -83,9 +83,9 @@ export default function Menu() {
   }
 
   return (
-    <div className="bg-stone-50 min-h-screen flex">
+    <div className="bg-stone-50 min-h-screen grid grid-cols-[200px_1fr_400px] gap-4">
       {/* Left sidebar — category nav */}
-      <div className="hidden xl:flex flex-col w-56 shrink-0 fixed h-screen bg-white border-r border-stone-100 overflow-y-auto">
+      <div className="hidden xl:flex h-screen sticky top-0 bg-white border-r border-stone-100 overflow-y-auto">
         <div className="px-6 pt-8 pb-4">
           <p className="text-[10px] font-semibold uppercase tracking-widest text-stone-400 mb-5">
             Categories
@@ -106,7 +106,7 @@ export default function Menu() {
       </div>
 
       {/* Main content */}
-      <div className="xl:ml-56 w-full xl:w-[calc(100%-56*4px-20%)] px-4 sm:px-8 py-10 max-w-4xl mx-auto">
+      <div className="w-full px-4 sm:px-8 py-10">
         <div className="mb-12 text-center">
           <p className="text-xs font-semibold uppercase tracking-[0.2em] text-stone-400 mb-3">
             Restaurant Maihak
@@ -158,7 +158,8 @@ export default function Menu() {
             ))}
         </div>
       </div>
-      <CartDrawer />
+
+      <CartDrawer menuCategories={menuItems} />
     </div>
   );
 }

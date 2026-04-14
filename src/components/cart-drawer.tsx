@@ -8,6 +8,8 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { DeliveryMinimumDialog } from "@/components/delivery-minimum-dialog";
+import UpsellModal from "@/components/upsell-modal";
+import type { DishCategory } from "@repo-types/dishes";
 import {
   DEFAULT_TAKEAWAY_DISCOUNT_SETTINGS,
   DELIVERY_MINIMUM_ORDER_AMOUNT,
@@ -22,12 +24,17 @@ import type { DiscountSettingsResponse } from "@repo-types/discounts";
 
 type OrderType = "emporter" | "livraison";
 
-export default function CartDrawer() {
+type CartDrawerProps = {
+  menuCategories?: DishCategory[];
+};
+
+export default function CartDrawer({ menuCategories = [] }: CartDrawerProps) {
   const isMobile = useIsMobile();
   const router = useRouter();
   const { cart, updateQuantity, removeFromCart, isDrawerOpen, setIsDrawerOpen } = useCart();
 
   const [loading, setLoading] = useState(false);
+  const [showUpsellModal, setShowUpsellModal] = useState(false);
   const [orderType, setOrderType] = useState<OrderType>("emporter");
   const [isCOD, setIsCOD] = useState(false);
   const [showDeliveryMinimumDialog, setShowDeliveryMinimumDialog] = useState(false);
@@ -133,7 +140,7 @@ export default function CartDrawer() {
         return;
       }
 
-      router.push(`/checkout?orderType=${orderType}`);
+      setShowUpsellModal(true);
     } catch (error) {
       const message = error instanceof Error ? error.message : "Something went wrong.";
       toast.error(message, {
@@ -153,7 +160,7 @@ export default function CartDrawer() {
     <div>
       <button
         onClick={() => setIsDrawerOpen(true)}
-        className="xl:hidden fixed bottom-20 right-4 z-50 bg-black text-white p-3 rounded-full shadow-lg hover:bg-gray-800 transition duration-300 focus:outline-none focus:ring-2 focus:ring-gray-400"
+        className="xl:hidden bottom-20 right-4 z-50 bg-black text-white p-3 rounded-full shadow-lg hover:bg-gray-800 transition duration-300 focus:outline-none focus:ring-2 focus:ring-gray-400"
       >
         <ShoppingCart className="h-5 w-5" />
 
@@ -571,6 +578,17 @@ export default function CartDrawer() {
         onClose={() => setShowDeliveryMinimumDialog(false)}
         total={totalAmount}
         currencySymbol="EUR"
+      />
+
+      <UpsellModal
+        open={showUpsellModal}
+        menuCategories={menuCategories}
+        onClose={() => setShowUpsellModal(false)}
+        onConfirm={() => {
+          setShowUpsellModal(false);
+          setIsDrawerOpen(false);
+          router.push(`/checkout?orderType=${orderType}`);
+        }}
       />
     </div>
   );
