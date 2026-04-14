@@ -7,12 +7,14 @@ import { toast } from "sonner";
 import CartDrawer from "@/components/cart-drawer";
 import DishCard from "@/components/dish-card";
 import { listDishCategories } from "@/services/dishes-service";
+import { useRestaurantStatus } from "@/hooks/use-restaurant-status";
 import { getDiscountSettings } from "@/services/discount-settings-service";
 import { DEFAULT_TAKEAWAY_DISCOUNT_SETTINGS, getTakeawayDiscountSummary } from "@/lib/checkout";
 import type { DishCategory, MenuDish } from "@repo-types/dishes";
 
 export default function Menu() {
   const { addToCart, setIsDrawerOpen } = useCart();
+  const { isOpen: isRestaurantOpen } = useRestaurantStatus();
   const [isClient, setIsClient] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [menuItems, setMenuItems] = useState<DishCategory[]>([]);
@@ -117,6 +119,13 @@ export default function Menu() {
           <div className="mt-3 w-12 h-0.5 bg-stone-300 mx-auto rounded-full" />
         </div>
 
+        {!isRestaurantOpen && (
+          <div className="mx-auto mb-6 rounded-2xl border border-red-100 bg-red-50 px-5 py-3.5 text-center text-sm font-medium text-red-700">
+            Le restaurant est actuellement fermé — vous pouvez consulter le menu mais les commandes
+            ne sont pas disponibles pour le moment.
+          </div>
+        )}
+
         {takeawayNotice && (
           <div className="mx-auto mb-10 rounded-2xl border border-emerald-100 bg-emerald-50 px-5 py-3.5 text-center text-sm font-medium text-emerald-700">
             {takeawayNotice}
@@ -142,6 +151,7 @@ export default function Menu() {
                 _id={category._id}
                 title={category.name}
                 dishes={category.dishes || []}
+                restaurantClosed={!isRestaurantOpen}
                 addToCart={(item, quantity) => {
                   addToCart({ ...item, id: item._id }, quantity);
                   toast.success(`${item.name} added to cart!`, {
@@ -168,11 +178,13 @@ const CategoryBlock = ({
   _id,
   dishes,
   title,
+  restaurantClosed,
   addToCart,
 }: {
   _id: string;
   title: string;
   dishes: MenuDish[];
+  restaurantClosed?: boolean;
   addToCart: (
     item: {
       _id: string;
@@ -199,7 +211,13 @@ const CategoryBlock = ({
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {dishes.map((dish) => (
-          <DishCard key={dish._id} dish={dish} categoryName={title} addToCart={addToCart} />
+          <DishCard
+            key={dish._id}
+            dish={dish}
+            categoryName={title}
+            restaurantClosed={restaurantClosed}
+            addToCart={addToCart}
+          />
         ))}
       </div>
     </motion.div>

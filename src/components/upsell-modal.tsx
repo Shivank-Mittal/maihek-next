@@ -117,13 +117,7 @@ function DishRow({
 
 // ─── Add-on row ──────────────────────────────────────────────────────────────
 
-function AddOnRow({
-  addon,
-  onAdd,
-}: {
-  addon: AddOn;
-  onAdd: (addon: AddOn, qty: number) => void;
-}) {
+function AddOnRow({ addon, onAdd }: { addon: AddOn; onAdd: (addon: AddOn, qty: number) => void }) {
   const [qty, setQty] = useState(0);
 
   return (

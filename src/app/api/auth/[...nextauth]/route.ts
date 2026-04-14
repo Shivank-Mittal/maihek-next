@@ -62,21 +62,19 @@ const authOptions = {
     },
     async jwt({ token, user }: any) {
       if (user) {
-        const accessToken = jwt.sign(
-          {
-            id: user.id,
-            email: user.email,
-            role: user.role,
-          },
-          JWT_SECRET,
-          {
-            expiresIn: "1h", // token valid for 1 hour
-          }
-        );
-        token.accessToken = accessToken;
         token.id = user.id;
         token.role = user.role;
       }
+      // Regenerate the access token on every JWT refresh so it never expires
+      token.accessToken = jwt.sign(
+        {
+          id: token.id,
+          email: token.email,
+          role: token.role,
+        },
+        JWT_SECRET,
+        { expiresIn: "1h" }
+      );
       return token;
     },
   },

@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { CartProvider } from "@/hooks/use-cart";
+import { RestaurantStatusProvider } from "@/hooks/use-restaurant-status";
 import { SessionProvider } from "next-auth/react";
 
 const geistSans = Geist({
@@ -61,9 +62,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           />
         </noscript>
         <SessionProvider>
-          <CartProvider>
-            <>{children}</>
-          </CartProvider>
+          <RestaurantStatusProvider>
+            <CartProvider>
+              <>{children}</>
+            </CartProvider>
+          </RestaurantStatusProvider>
         </SessionProvider>
       </body>
     </html>

@@ -20,6 +20,7 @@ import {
   isDeliveryMinimumMet,
 } from "@/lib/checkout";
 import { getDiscountSettings } from "@/services/discount-settings-service";
+import { useRestaurantStatus } from "@/hooks/use-restaurant-status";
 import type { DiscountSettingsResponse } from "@repo-types/discounts";
 
 type OrderType = "emporter" | "livraison";
@@ -32,6 +33,7 @@ export default function CartDrawer({ menuCategories = [] }: CartDrawerProps) {
   const isMobile = useIsMobile();
   const router = useRouter();
   const { cart, updateQuantity, removeFromCart, isDrawerOpen, setIsDrawerOpen } = useCart();
+  const { isOpen: isRestaurantOpen } = useRestaurantStatus();
 
   const [loading, setLoading] = useState(false);
   const [showUpsellModal, setShowUpsellModal] = useState(false);
@@ -304,11 +306,16 @@ export default function CartDrawer({ menuCategories = [] }: CartDrawerProps) {
             </div>
           </div>
 
+          {!isRestaurantOpen && (
+            <p className="text-xs text-red-500 text-center">
+              Le restaurant est fermé — les commandes ne sont pas disponibles.
+            </p>
+          )}
           <button
             id="checkoutButtonDesktop"
             className="w-full bg-stone-900 text-white py-3 rounded-xl text-sm font-semibold hover:bg-stone-700 transition-colors duration-200 disabled:bg-stone-200 disabled:text-stone-400 disabled:cursor-not-allowed"
             onClick={handleCheckout}
-            disabled={loading || cart.length === 0}
+            disabled={loading || cart.length === 0 || !isRestaurantOpen}
           >
             {loading ? "Loading…" : "Proceed to Checkout"}
           </button>
@@ -519,11 +526,16 @@ export default function CartDrawer({ menuCategories = [] }: CartDrawerProps) {
                     </span>
                   </div>
 
+                  {!isRestaurantOpen && (
+                    <p className="mb-3 text-sm text-red-600 text-center">
+                      Le restaurant est fermé — les commandes ne sont pas disponibles.
+                    </p>
+                  )}
                   <motion.button
                     onClick={handleCheckout}
-                    disabled={cart.length === 0 || loading}
+                    disabled={cart.length === 0 || loading || !isRestaurantOpen}
                     className={`w-full py-3 rounded-lg font-medium transition duration-300 flex items-center justify-center gap-2 ${
-                      cart.length === 0 || loading
+                      cart.length === 0 || loading || !isRestaurantOpen
                         ? "bg-gray-400 cursor-not-allowed"
                         : "bg-gradient-to-r from-indigo-600 hover:from-indigo-700 to-purple-600 hover:to-purple-700 text-white"
                     }`}

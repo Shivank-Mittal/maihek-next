@@ -19,6 +19,7 @@ type DishCardItem = {
 type DishCardProps = {
   dish: DishCardItem;
   categoryName: string;
+  restaurantClosed?: boolean;
   addToCart: (
     item: {
       _id: string;
@@ -33,9 +34,14 @@ type DishCardProps = {
   ) => void;
 };
 
-export default function DishCard({ dish, categoryName, addToCart }: DishCardProps) {
+export default function DishCard({
+  dish,
+  categoryName,
+  restaurantClosed,
+  addToCart,
+}: DishCardProps) {
   const [quantity, setQuantity] = useState(0);
-  const isDisabled = dish.active === false;
+  const isDisabled = dish.active === false || restaurantClosed === true;
   const pricing = calculateCartItemPricing({
     price: dish.price,
     dishDiscount: dish.discount,
@@ -68,7 +74,7 @@ export default function DishCard({ dish, categoryName, addToCart }: DishCardProp
 
   return (
     <div className="relative bg-white rounded-2xl border border-stone-100 hover:border-stone-200 hover:shadow-md transition-all duration-300 overflow-hidden">
-      {isDisabled && (
+      {dish.active === false && (
         <div className="absolute inset-0 bg-white/80 backdrop-blur-[2px] rounded-2xl flex items-center justify-center z-10">
           <span className="bg-stone-800 text-stone-50 text-xs font-semibold px-4 py-2 rounded-full tracking-wide uppercase">
             Off the Menu Today

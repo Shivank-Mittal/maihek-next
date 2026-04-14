@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useSession, signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
@@ -21,12 +21,20 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { DEFAULT_TAKEAWAY_DISCOUNT_SETTINGS, getTakeawayDiscountSummary } from "@/lib/checkout";
 import { getDiscountSettings, updateDiscountSettings } from "@/services/discount-settings-service";
+import { useRestaurantStatus } from "@/hooks/use-restaurant-status";
 import { listAdminDishes, listCategoryOptions } from "@/services/dishes-service";
 import type { TakeawayDiscountSettings } from "@repo-types/discounts";
 import type { AdminDish, DishCategoryOption } from "@repo-types/dishes";
 
 interface ReservationStatus {
   status: "paused" | "resumed";
+}
+
+interface RestaurantStatusSettings {
+  isOpen: boolean;
+  useSchedule: boolean;
+  manualIsOpen: boolean;
+  windows: { open: string; close: string }[];
 }
 
 const toggleValue = (values: string[], value: string, checked: boolean) => {
@@ -40,6 +48,20 @@ const toggleValue = (values: string[], value: string, checked: boolean) => {
 export default function SettingsPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
+
+  const { refresh: refreshRestaurantStatus } = useRestaurantStatus();
+  const DEFAULT_WINDOWS = [
+    { open: "11:45", close: "14:15" },
+    { open: "18:30", close: "22:30" },
+  ];
+  const [restaurantSettings, setRestaurantSettings] = useState<RestaurantStatusSettings>({
+    isOpen: true,
+    useSchedule: false,
+    manualIsOpen: true,
+    windows: DEFAULT_WINDOWS,
+  });
+  const windowsRef = useRef(DEFAULT_WINDOWS as RestaurantStatusSettings["windows"]);
+  const [restaurantLoading, setRestaurantLoading] = useState(false);
 
   const [reservationStatus, setReservationStatus] = useState<ReservationStatus>({
     status: "resumed",
@@ -71,9 +93,10 @@ export default function SettingsPage() {
       setPageLoading(true);
 
       try {
-        const [reservationResponse, discountResponse, categoryOptions, adminDishes] =
+        const [reservationResponse, restaurantResponse, discountResponse, categoryOptions, adminDishes] =
           await Promise.all([
             fetch("/api/v1/reservation-status"),
+            fetch("/api/v1/restaurant-status"),
             getDiscountSettings(),
             listCategoryOptions(),
             listAdminDishes(),
@@ -82,6 +105,13 @@ export default function SettingsPage() {
         if (reservationResponse.ok) {
           const data: ReservationStatus = await reservationResponse.json();
           setReservationStatus(data);
+        }
+
+        if (restaurantResponse.ok) {
+          const data: RestaurantStatusSettings = await restaurantResponse.json();
+          const windows = data.windows?.length ? data.windows : DEFAULT_WINDOWS;
+          windowsRef.current = windows;
+          setRestaurantSettings({ ...data, windows });
         }
 
         setTakeawayDiscount(discountResponse.takeawayDiscount);
@@ -128,6 +158,30 @@ export default function SettingsPage() {
     }
   };
 
+  const saveRestaurantStatus = async (patch: Partial<RestaurantStatusSettings>) => {
+    if (!session?.accessToken) return;
+    setRestaurantLoading(true);
+    try {
+      const response = await fetch("/api/v1/restaurant-status", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${session.accessToken}`,
+        },
+        body: JSON.stringify(patch),
+      });
+      if (!response.ok) throw new Error("Impossible de mettre a jour le statut.");
+      const data: RestaurantStatusSettings = await response.json();
+      setRestaurantSettings({ ...data, windows: patch.windows || [] });
+      await refreshRestaurantStatus();
+      toast.success("Statut du restaurant mis a jour.");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Erreur.");
+    } finally {
+      setRestaurantLoading(false);
+    }
+  };
+
   const saveTakeawayDiscount = async () => {
     if (!session?.accessToken) {
       toast.error("Session admin introuvable.");
@@ -165,6 +219,102 @@ export default function SettingsPage() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6 }}
       >
+        <Card className="bg-white border border-gray-300 shadow-md">
+          <CardHeader>
+            <CardTitle className="text-2xl font-semibold text-gray-900">
+              Statut du Restaurant
+            </CardTitle>
+            <CardDescription className="text-gray-500 text-sm mt-1">
+              Actuellement :{" "}
+              <span className={`font-medium ${restaurantSettings.isOpen ? "text-emerald-600" : "text-red-600"}`}>
+                {restaurantSettings.isOpen ? "Ouvert" : "Ferme"}
+              </span>
+            </CardDescription>
+          </CardHeader>
+
+          <CardContent className="space-y-5">
+            {/* Manual override — disabled when schedule mode is on */}
+            <div className={`flex items-center justify-between rounded-xl border px-4 py-3 ${restaurantSettings.useSchedule ? "border-gray-100 bg-gray-50 opacity-50" : "border-gray-200 bg-gray-50"}`}>
+              <div>
+                <p className="font-medium text-gray-900">Ouvert maintenant</p>
+                <p className="text-sm text-gray-500">
+                  {restaurantSettings.useSchedule
+                    ? "Désactivé — le mode horaire est actif."
+                    : "Ouvrir ou fermer manuellement."}
+                </p>
+              </div>
+              <Switch
+                checked={restaurantSettings.manualIsOpen}
+                onCheckedChange={(checked) =>
+                  saveRestaurantStatus({ manualIsOpen: checked })
+                }
+                disabled={restaurantLoading || restaurantSettings.useSchedule}
+              />
+            </div>
+
+            {/* Schedule toggle */}
+            <div className="flex items-center justify-between rounded-xl border border-gray-200 bg-gray-50 px-4 py-3">
+              <div>
+                <p className="font-medium text-gray-900">Mode horaire</p>
+                <p className="text-sm text-gray-500">Ouvre et ferme automatiquement selon les horaires ci-dessous.</p>
+              </div>
+              <Switch
+                checked={restaurantSettings.useSchedule}
+                onCheckedChange={(checked) =>
+                  saveRestaurantStatus({ useSchedule: checked })
+                }
+                disabled={restaurantLoading}
+              />
+            </div>
+
+            {/* Time windows */}
+            <div className="space-y-3">
+              <p className="text-sm font-medium text-gray-700">Horaires d'ouverture</p>
+
+              {(restaurantSettings.windows ?? DEFAULT_WINDOWS).map((w, i) => (
+                <div key={i} className="flex items-center gap-3">
+                  <span className="text-sm text-gray-500 w-16">Service {i + 1}</span>
+                  <Input type="time" value={w.open}
+                    onChange={(e) => {
+                      const prev = windowsRef.current?.length ? windowsRef.current : DEFAULT_WINDOWS;
+                      const windows = prev.map((win, idx) =>
+                        idx === i ? { ...win, open: e.target.value } : win
+                      );
+                      windowsRef.current = windows;
+                      setRestaurantSettings((s) => ({ ...s, windows }));
+                    }}
+                    disabled={restaurantLoading}
+                    className="w-36"
+                  />
+                  <span className="text-sm text-gray-400">—</span>
+                  <Input
+                    type="time"
+                    value={w.close}
+                    onChange={(e) => {
+                      const prev = windowsRef.current?.length ? windowsRef.current : DEFAULT_WINDOWS;
+                      const windows = prev.map((win, idx) =>
+                        idx === i ? { ...win, close: e.target.value } : win
+                      );
+                      windowsRef.current = windows;
+                      setRestaurantSettings((s) => ({ ...s, windows }));
+                    }}
+                    disabled={restaurantLoading}
+                    className="w-36"
+                  />
+                </div>
+              ))}
+              <div className="flex justify-end">
+                <Button
+                  onClick={() => saveRestaurantStatus({ windows: windowsRef.current })}
+                  disabled={restaurantLoading}
+                >
+                  {restaurantLoading ? "Enregistrement..." : "Enregistrer les horaires"}
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
         <Card className="bg-white border border-gray-300 shadow-md">
           <CardHeader>
             <CardTitle className="text-2xl font-semibold text-gray-900">
