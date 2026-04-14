@@ -7,7 +7,6 @@ import { useCart, type CartItem } from "@/hooks/use-cart";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { DeliveryMinimumDialog } from "@/components/delivery-minimum-dialog";
 import UpsellModal from "@/components/upsell-modal";
 import type { DishCategory } from "@repo-types/dishes";
 import {
@@ -15,9 +14,7 @@ import {
   DELIVERY_MINIMUM_ORDER_AMOUNT,
   calculateCartItemPricing,
   calculateCartPricing,
-  getDeliveryMinimumMessage,
   getTakeawayDiscountSummary,
-  isDeliveryMinimumMet,
 } from "@/lib/checkout";
 import { getDiscountSettings } from "@/services/discount-settings-service";
 import { useRestaurantStatus } from "@/hooks/use-restaurant-status";
@@ -39,7 +36,6 @@ export default function CartDrawer({ menuCategories = [] }: CartDrawerProps) {
   const [showUpsellModal, setShowUpsellModal] = useState(false);
   const [orderType, setOrderType] = useState<OrderType>("emporter");
   const [isCOD, setIsCOD] = useState(false);
-  const [showDeliveryMinimumDialog, setShowDeliveryMinimumDialog] = useState(false);
   const [totalItems, setTotalItems] = useState<number>(0);
   const [discountSettings, setDiscountSettings] = useState<DiscountSettingsResponse>({
     takeawayDiscount: DEFAULT_TAKEAWAY_DISCOUNT_SETTINGS,
@@ -50,7 +46,6 @@ export default function CartDrawer({ menuCategories = [] }: CartDrawerProps) {
     takeawayDiscount: discountSettings.takeawayDiscount,
   });
   const totalAmount = pricingSummary.total;
-  const deliveryMinimumReached = isDeliveryMinimumMet(orderType, totalAmount);
   const takeawayNotice = getTakeawayDiscountSummary(discountSettings.takeawayDiscount);
 
   useEffect(() => {
@@ -66,17 +61,6 @@ export default function CartDrawer({ menuCategories = [] }: CartDrawerProps) {
       });
   }, []);
 
-  const openDeliveryMinimumDialog = useCallback(() => {
-    setShowDeliveryMinimumDialog(true);
-    toast.error(getDeliveryMinimumMessage("EUR"), {
-      duration: 3000,
-      style: {
-        background: "#7f1d1d",
-        color: "#fff",
-        border: "1px solid #dc2626",
-      },
-    });
-  }, []);
 
   const handleUpdateQuantity = useCallback(
     (id: string | number, newQuantity: number) => {
@@ -113,12 +97,8 @@ export default function CartDrawer({ menuCategories = [] }: CartDrawerProps) {
   const handleOrderTypeChange = useCallback(
     (value: OrderType) => {
       setOrderType(value);
-
-      if (value === "livraison" && !isDeliveryMinimumMet(value, totalAmount)) {
-        openDeliveryMinimumDialog();
-      }
     },
-    [openDeliveryMinimumDialog, totalAmount]
+    []
   );
 
   const handleCheckout = useCallback(async () => {
@@ -137,11 +117,6 @@ export default function CartDrawer({ menuCategories = [] }: CartDrawerProps) {
         return;
       }
 
-      if (!isDeliveryMinimumMet(orderType, totalAmount)) {
-        openDeliveryMinimumDialog();
-        return;
-      }
-
       setShowUpsellModal(true);
     } catch (error) {
       const message = error instanceof Error ? error.message : "Something went wrong.";
@@ -156,7 +131,7 @@ export default function CartDrawer({ menuCategories = [] }: CartDrawerProps) {
     } finally {
       setLoading(false);
     }
-  }, [cart.length, openDeliveryMinimumDialog, orderType, router, totalAmount]);
+  }, [cart.length, orderType, router, totalAmount]);
 
   return (
     <div>
@@ -276,9 +251,11 @@ export default function CartDrawer({ menuCategories = [] }: CartDrawerProps) {
             {orderType === "emporter" && takeawayNotice && (
               <p className="mt-2 text-xs text-emerald-600">{takeawayNotice}</p>
             )}
-            {!deliveryMinimumReached && orderType === "livraison" && (
-              <p className="mt-2 text-xs text-red-500">
-                Min. {DELIVERY_MINIMUM_ORDER_AMOUNT} EUR for delivery.
+            {orderType === "livraison" && (
+              <p className="mt-2 text-xs text-amber-600">
+                {pricingSummary.deliveryCharge > 0
+                  ? `+${pricingSummary.deliveryCharge.toFixed(2)} € frais de livraison (gratuit dès ${DELIVERY_MINIMUM_ORDER_AMOUNT} €)`
+                  : `Livraison gratuite à partir de ${DELIVERY_MINIMUM_ORDER_AMOUNT} €`}
               </p>
             )}
           </div>
@@ -459,9 +436,11 @@ export default function CartDrawer({ menuCategories = [] }: CartDrawerProps) {
                         Livraison
                       </label>
                     </div>
-                    {!deliveryMinimumReached && orderType === "livraison" && (
-                      <p className="mt-3 text-sm text-red-600">
-                        La livraison demande un minimum de {DELIVERY_MINIMUM_ORDER_AMOUNT} EUR.
+                    {orderType === "livraison" && (
+                      <p className="mt-3 text-sm text-amber-600">
+                        {pricingSummary.deliveryCharge > 0
+                          ? `+${pricingSummary.deliveryCharge.toFixed(2)} € frais de livraison (gratuit dès ${DELIVERY_MINIMUM_ORDER_AMOUNT} €)`
+                          : `Livraison gratuite à partir de ${DELIVERY_MINIMUM_ORDER_AMOUNT} €`}
                       </p>
                     )}
                     {orderType === "emporter" && takeawayNotice && (
@@ -584,13 +563,6 @@ export default function CartDrawer({ menuCategories = [] }: CartDrawerProps) {
           </motion.div>
         )}
       </AnimatePresence>
-
-      <DeliveryMinimumDialog
-        open={showDeliveryMinimumDialog}
-        onClose={() => setShowDeliveryMinimumDialog(false)}
-        total={totalAmount}
-        currencySymbol="EUR"
-      />
 
       <UpsellModal
         open={showUpsellModal}

@@ -23,7 +23,6 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useForm, type SubmitHandler } from "react-hook-form";
 import { toast } from "sonner";
 
-import { DeliveryMinimumDialog } from "@/components/delivery-minimum-dialog";
 import { useCart, type CartItem } from "@/hooks/use-cart";
 import {
   DEFAULT_TAKEAWAY_DISCOUNT_SETTINGS,
@@ -31,7 +30,6 @@ import {
   calculateCartItemPricing,
   calculateCartPricing,
   getTakeawayDiscountSummary,
-  isDeliveryMinimumMet,
 } from "@/lib/checkout";
 import { fetchAllowedPincodes } from "@/services/delivery-zones-service";
 import { getDiscountSettings } from "@/services/discount-settings-service";
@@ -57,7 +55,6 @@ function CheckoutContent() {
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showModal, setShowModal] = useState(false);
-  const [showDeliveryMinimumDialog, setShowDeliveryMinimumDialog] = useState(false);
   const [allowedPincodes, setAllowedPincodes] = useState<string[]>([]);
   const [discountSettings, setDiscountSettings] = useState<DiscountSettingsResponse>({
     takeawayDiscount: DEFAULT_TAKEAWAY_DISCOUNT_SETTINGS,
@@ -110,23 +107,14 @@ function CheckoutContent() {
     orderType,
     takeawayDiscount: discountSettings.takeawayDiscount,
   });
-  const totalAmount = pricingSummary.total;
   const totalPrice = pricingSummary.total.toFixed(2);
-  const deliveryMinimumReached = isDeliveryMinimumMet(orderType, totalAmount);
   const takeawayNotice = getTakeawayDiscountSummary(discountSettings.takeawayDiscount);
 
   const handleOrderTypeChange = (value: FormData["orderType"]) => {
     setValue("orderType", value, { shouldValidate: true, shouldDirty: true });
-    if (value === "livraison" && !isDeliveryMinimumMet(value, totalAmount)) {
-      setShowDeliveryMinimumDialog(true);
-    }
   };
 
   const onSubmit: SubmitHandler<FormData> = async (data) => {
-    if (!isDeliveryMinimumMet(data.orderType, totalAmount)) {
-      setShowDeliveryMinimumDialog(true);
-      return;
-    }
 
     setIsSubmitting(true);
     try {
@@ -349,6 +337,19 @@ function CheckoutContent() {
                         </td>
                       </tr>
                     )}
+                    {pricingSummary.deliveryCharge > 0 && (
+                      <tr>
+                        <td
+                          colSpan={2}
+                          className="py-3 px-2 text-sm font-semibold text-amber-600 text-right"
+                        >
+                          Frais de livraison :
+                        </td>
+                        <td colSpan={2} className="py-3 px-2 text-base font-bold text-amber-600">
+                          +{pricingSummary.deliveryCharge.toFixed(2)} €
+                        </td>
+                      </tr>
+                    )}
                     <tr>
                       <td
                         colSpan={2}
@@ -419,9 +420,11 @@ function CheckoutContent() {
                       </label>
                     ))}
                   </div>
-                  {orderType === "livraison" && !deliveryMinimumReached && (
-                    <p className="mt-1.5 text-xs text-red-500">
-                      Minimum de {DELIVERY_MINIMUM_ORDER_AMOUNT} € requis pour la livraison.
+                  {orderType === "livraison" && (
+                    <p className="mt-1.5 text-xs text-amber-600">
+                      {pricingSummary.deliveryCharge > 0
+                        ? `Frais de livraison de ${pricingSummary.deliveryCharge.toFixed(2)} € ajoutés (livraison gratuite dès ${DELIVERY_MINIMUM_ORDER_AMOUNT} €).`
+                        : `Livraison gratuite à partir de ${DELIVERY_MINIMUM_ORDER_AMOUNT} €.`}
                     </p>
                   )}
                   {orderType === "emporter" && takeawayNotice && (
@@ -662,7 +665,7 @@ function CheckoutContent() {
 
                 <motion.button
                   type="submit"
-                  disabled={isSubmitting || (orderType === "livraison" && !deliveryMinimumReached)}
+                  disabled={isSubmitting}
                   className="w-full bg-black text-white py-3 rounded-lg font-medium flex items-center justify-center gap-2 hover:bg-gray-800 transition duration-300 disabled:bg-gray-400 disabled:cursor-not-allowed mt-2"
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.97 }}
@@ -755,12 +758,6 @@ function CheckoutContent() {
           )}
         </AnimatePresence>
 
-        <DeliveryMinimumDialog
-          open={showDeliveryMinimumDialog}
-          onClose={() => setShowDeliveryMinimumDialog(false)}
-          total={totalAmount}
-          currencySymbol="EUR"
-        />
       </div>
     </section>
   );

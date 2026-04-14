@@ -40,6 +40,7 @@ export type CartPricingSummary = {
   dishDiscountTotal: number;
   takeawayDiscountTotal: number;
   totalDiscount: number;
+  deliveryCharge: number;
   total: number;
 };
 
@@ -220,8 +221,8 @@ export const calculateCartPricing = (
     orderType?: string | null;
     takeawayDiscount?: Partial<TakeawayDiscountSettings> | null;
   }
-): CartPricingSummary =>
-  items.reduce<CartPricingSummary>(
+): CartPricingSummary => {
+  const itemsSummary = items.reduce<Omit<CartPricingSummary, "deliveryCharge" | "total">>(
     (summary, item) => {
       const pricing = calculateCartItemPricing(item, options);
 
@@ -232,11 +233,22 @@ export const calculateCartPricing = (
           summary.takeawayDiscountTotal + pricing.lineTakeawayDiscount
         ),
         totalDiscount: roundCurrency(summary.totalDiscount + pricing.lineDiscount),
-        total: roundCurrency(summary.total + pricing.lineTotal),
       };
     },
-    { subtotal: 0, dishDiscountTotal: 0, takeawayDiscountTotal: 0, totalDiscount: 0, total: 0 }
+    { subtotal: 0, dishDiscountTotal: 0, takeawayDiscountTotal: 0, totalDiscount: 0 }
   );
+
+  const itemsTotal = roundCurrency(itemsSummary.subtotal - itemsSummary.totalDiscount);
+  const deliveryCharge = isDeliveryOrderType(options?.orderType)
+    ? roundCurrency(Math.max(0, DELIVERY_MINIMUM_ORDER_AMOUNT - itemsTotal))
+    : 0;
+
+  return {
+    ...itemsSummary,
+    deliveryCharge,
+    total: roundCurrency(itemsTotal + deliveryCharge),
+  };
+};
 
 export const getTakeawayDiscountSummary = (settings?: Partial<TakeawayDiscountSettings> | null) => {
   const takeawayDiscount = sanitizeTakeawayDiscountSettings(settings);

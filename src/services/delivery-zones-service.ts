@@ -6,7 +6,7 @@
  * with a fetch() call to your endpoint and return the array it gives back.
  */
 
-const HARDCODED_PINCODES = ["75001", "75002", "75003"];
+const HARDCODED_PINCODES = [ "94800", "94270", "94400", "94250", "94230", "94240", "94110", "94550", "94320", "94260", "94200"];
 
 export async function fetchAllowedPincodes(): Promise<string[]> {
   // TODO: replace with real API call, e.g.:
