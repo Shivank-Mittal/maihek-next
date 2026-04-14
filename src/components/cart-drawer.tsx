@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ShoppingCart } from "lucide-react";
 import { useCart, type CartItem } from "@/hooks/use-cart";
+import { getItemEmoji } from "@/lib/food-emojis";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -21,6 +22,20 @@ import { useRestaurantStatus } from "@/hooks/use-restaurant-status";
 import type { DiscountSettingsResponse } from "@repo-types/discounts";
 
 type OrderType = "emporter" | "livraison";
+
+
+function CartItemImage({ item, className }: { item: CartItem; className: string }) {
+  if (item.image) {
+    return <img src={item.image} alt={item.name} className={className} />;
+  }
+  return (
+    <div
+      className={`${className} bg-stone-50 border border-stone-100 flex items-center justify-center text-xl shrink-0`}
+    >
+      {item.emoji ?? getItemEmoji(item.id, item.category)}
+    </div>
+  );
+}
 
 type CartDrawerProps = {
   menuCategories?: DishCategory[];
@@ -171,11 +186,7 @@ export default function CartDrawer({ menuCategories = [] }: CartDrawerProps) {
 
             return (
               <div key={item.id} className="flex items-start gap-3 p-3 bg-stone-50 rounded-xl">
-                <img
-                  src={item.image}
-                  alt={item.name}
-                  className="w-12 h-12 object-cover rounded-lg shrink-0"
-                />
+                <CartItemImage item={item} className="w-12 h-12 object-cover rounded-lg shrink-0" />
                 <div className="flex-1 min-w-0">
                   <h3 className="cart-item-heading text-sm font-semibold text-stone-800 truncate">
                     {item.name}
@@ -342,11 +353,7 @@ export default function CartDrawer({ menuCategories = [] }: CartDrawerProps) {
                             exit={{ opacity: 0, y: -10 }}
                             transition={{ duration: 0.2 }}
                           >
-                            <img
-                              src={item.image}
-                              alt={item.name}
-                              className="w-16 h-16 object-cover rounded mr-4"
-                            />
+                            <CartItemImage item={item} className="w-16 h-16 object-cover rounded mr-4" />
                             <div className="flex-1">
                               <h3 className="text-base font-medium text-gray-900">{item.name}</h3>
                               <p className="text-sm text-gray-500">

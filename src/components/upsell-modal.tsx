@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Plus, Minus, ChevronRight, ChevronLeft } from "lucide-react";
 import { useCart } from "@/hooks/use-cart";
+import { ADDON_EMOJI } from "@/lib/food-emojis";
 import type { DishCategory, MenuDish } from "@repo-types/dishes";
 
 // ─── Hardcoded add-ons ───────────────────────────────────────────────────────
@@ -62,13 +63,15 @@ function DishRow({
   dish,
   categoryName,
   onAdd,
+  onRemove,
+  cartQty,
 }: {
   dish: MenuDish;
   categoryName: string;
-  onAdd: (dish: MenuDish, categoryName: string, qty: number) => void;
+  onAdd: (dish: MenuDish, categoryName: string) => void;
+  onRemove: (id: string) => void;
+  cartQty: number;
 }) {
-  const [qty, setQty] = useState(0);
-
   return (
     <div className="flex items-center justify-between gap-3 py-3 border-b border-stone-100 last:border-0">
       <div className="flex items-center gap-3 min-w-0">
@@ -88,27 +91,17 @@ function DishRow({
       <div className="flex items-center gap-1.5 shrink-0">
         <button
           className="w-7 h-7 flex items-center justify-center rounded-full bg-stone-100 hover:bg-stone-200 text-stone-600 disabled:opacity-30 transition-colors"
-          onClick={() => setQty((q) => Math.max(0, q - 1))}
-          disabled={qty === 0}
+          onClick={() => onRemove(dish._id)}
+          disabled={cartQty === 0}
         >
           <Minus className="w-3 h-3" />
         </button>
-        <span className="w-5 text-center text-sm font-semibold text-stone-700">{qty}</span>
+        <span className="w-5 text-center text-sm font-semibold text-stone-700">{cartQty}</span>
         <button
           className="w-7 h-7 flex items-center justify-center rounded-full bg-stone-100 hover:bg-stone-200 text-stone-600 transition-colors"
-          onClick={() => setQty((q) => q + 1)}
+          onClick={() => onAdd(dish, categoryName)}
         >
           <Plus className="w-3 h-3" />
-        </button>
-        <button
-          className="ml-1 bg-stone-900 text-white text-xs px-3 py-1.5 rounded-full hover:bg-stone-700 transition-colors disabled:opacity-30 disabled:cursor-not-allowed font-medium"
-          disabled={qty === 0}
-          onClick={() => {
-            onAdd(dish, categoryName, qty);
-            setQty(0);
-          }}
-        >
-          Add
         </button>
       </div>
     </div>
@@ -117,42 +110,45 @@ function DishRow({
 
 // ─── Add-on row ──────────────────────────────────────────────────────────────
 
-function AddOnRow({ addon, onAdd }: { addon: AddOn; onAdd: (addon: AddOn, qty: number) => void }) {
-  const [qty, setQty] = useState(0);
-
+function AddOnRow({
+  addon,
+  onAdd,
+  onRemove,
+  cartQty,
+}: {
+  addon: AddOn;
+  onAdd: (addon: AddOn) => void;
+  onRemove: (id: string) => void;
+  cartQty: number;
+}) {
   return (
     <div className="flex items-center justify-between gap-3 py-3 border-b border-stone-100 last:border-0">
-      <div className="min-w-0">
-        <p className="text-sm font-semibold text-stone-800">{addon.name}</p>
-        <p className="text-xs text-stone-400">
-          {addon.price === 0 ? "free" : `+€${addon.price.toFixed(2)}`}
-        </p>
+      <div className="flex items-center gap-3 min-w-0">
+        <div className="w-10 h-10 rounded-lg bg-stone-50 border border-stone-100 flex items-center justify-center text-xl shrink-0">
+          {ADDON_EMOJI[addon.id]}
+        </div>
+        <div className="min-w-0">
+          <p className="text-sm font-semibold text-stone-800">{addon.name}</p>
+          <p className="text-xs text-stone-400">
+            {addon.price === 0 ? "free" : `+€${addon.price.toFixed(2)}`}
+          </p>
+        </div>
       </div>
 
       <div className="flex items-center gap-1.5 shrink-0">
         <button
           className="w-7 h-7 flex items-center justify-center rounded-full bg-stone-100 hover:bg-stone-200 text-stone-600 disabled:opacity-30 transition-colors"
-          onClick={() => setQty((q) => Math.max(0, q - 1))}
-          disabled={qty === 0}
+          onClick={() => onRemove(addon.id)}
+          disabled={cartQty === 0}
         >
           <Minus className="w-3 h-3" />
         </button>
-        <span className="w-5 text-center text-sm font-semibold text-stone-700">{qty}</span>
+        <span className="w-5 text-center text-sm font-semibold text-stone-700">{cartQty}</span>
         <button
           className="w-7 h-7 flex items-center justify-center rounded-full bg-stone-100 hover:bg-stone-200 text-stone-600 transition-colors"
-          onClick={() => setQty((q) => q + 1)}
+          onClick={() => onAdd(addon)}
         >
           <Plus className="w-3 h-3" />
-        </button>
-        <button
-          className="ml-1 bg-stone-900 text-white text-xs px-3 py-1.5 rounded-full hover:bg-stone-700 transition-colors disabled:opacity-30 disabled:cursor-not-allowed font-medium"
-          disabled={qty === 0}
-          onClick={() => {
-            onAdd(addon, qty);
-            setQty(0);
-          }}
-        >
-          Add
         </button>
       </div>
     </div>
@@ -167,7 +163,7 @@ export default function UpsellModal({
   onClose,
   menuCategories,
 }: UpsellModalProps) {
-  const { cart, addToCart } = useCart();
+  const { cart, addToCart, updateQuantity } = useCart();
   const [step, setStep] = useState<Step>("dishes");
 
   // Reset to first step whenever modal opens
@@ -183,22 +179,17 @@ export default function UpsellModal({
     };
   }, [open]);
 
-  // IDs of dishes already in cart — exclude them from dish suggestions
-  const cartDishIds = new Set(cart.map((item) => item.id));
+  const cartQtyMap = new Map(cart.map((item) => [item.id, item.quantity]));
 
   const riceCategory = menuCategories.find((c) => matchesCategory(c.name, RICE_CATEGORY_NAMES));
   const breadCategory = menuCategories.find((c) => matchesCategory(c.name, BREAD_CATEGORY_NAMES));
 
-  const riceDishes = (riceCategory?.dishes ?? []).filter(
-    (d) => d.active !== false && !cartDishIds.has(d._id)
-  );
-  const breadDishes = (breadCategory?.dishes ?? []).filter(
-    (d) => d.active !== false && !cartDishIds.has(d._id)
-  );
+  const riceDishes = (riceCategory?.dishes ?? []).filter((d) => d.active !== false);
+  const breadDishes = (breadCategory?.dishes ?? []).filter((d) => d.active !== false);
 
   const hasDishes = riceDishes.length > 0 || breadDishes.length > 0;
 
-  const handleAddDish = (dish: MenuDish, categoryName: string, qty: number) => {
+  const handleAddDish = (dish: MenuDish, categoryName: string) => {
     addToCart(
       {
         id: dish._id,
@@ -209,11 +200,16 @@ export default function UpsellModal({
         category: categoryName,
         dishDiscount: dish.discount ?? null,
       },
-      qty
+      1
     );
   };
 
-  const handleAddAddon = (addon: AddOn, qty: number) => {
+  const handleRemoveDish = (id: string) => {
+    const qty = cartQtyMap.get(id) ?? 0;
+    updateQuantity(id, qty - 1);
+  };
+
+  const handleAddAddon = (addon: AddOn) => {
     addToCart(
       {
         id: addon.id,
@@ -221,9 +217,15 @@ export default function UpsellModal({
         price: addon.price,
         basePrice: addon.price,
         category: "Add-ons",
+        emoji: ADDON_EMOJI[addon.id],
       },
-      qty
+      1
     );
+  };
+
+  const handleRemoveAddon = (id: string) => {
+    const qty = cartQtyMap.get(id) ?? 0;
+    updateQuantity(id, qty - 1);
   };
 
   const stepConfig = {
@@ -329,6 +331,8 @@ export default function UpsellModal({
                               dish={dish}
                               categoryName={riceCategory!.name}
                               onAdd={handleAddDish}
+                              onRemove={handleRemoveDish}
+                              cartQty={cartQtyMap.get(dish._id) ?? 0}
                             />
                           ))}
                         </section>
@@ -345,6 +349,8 @@ export default function UpsellModal({
                               dish={dish}
                               categoryName={breadCategory!.name}
                               onAdd={handleAddDish}
+                              onRemove={handleRemoveDish}
+                              cartQty={cartQtyMap.get(dish._id) ?? 0}
                             />
                           ))}
                         </section>
@@ -359,7 +365,13 @@ export default function UpsellModal({
                       transition={{ duration: 0.2 }}
                     >
                       {ADD_ONS.map((addon) => (
-                        <AddOnRow key={addon.id} addon={addon} onAdd={handleAddAddon} />
+                        <AddOnRow
+                          key={addon.id}
+                          addon={addon}
+                          onAdd={handleAddAddon}
+                          onRemove={handleRemoveAddon}
+                          cartQty={cartQtyMap.get(addon.id) ?? 0}
+                        />
                       ))}
                     </motion.div>
                   )}

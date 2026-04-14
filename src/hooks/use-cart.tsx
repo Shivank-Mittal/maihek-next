@@ -110,6 +110,7 @@ export interface CartItem {
   option?: string;
   selectedItems?: Record<string, string>;
   image?: string;
+  emoji?: string;
 }
 
 // Define location interface (optional, adjust as needed)
