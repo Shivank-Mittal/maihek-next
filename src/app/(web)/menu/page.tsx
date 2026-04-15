@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { useCart } from "@/hooks/use-cart";
 import { toast } from "sonner";
+import { Tag, Sparkles, Clock, AlertCircle } from "lucide-react";
 import CartDrawer from "@/components/cart-drawer";
 import DishCard from "@/components/dish-card";
 import { listDishCategories } from "@/services/dishes-service";
@@ -109,7 +110,7 @@ export default function Menu() {
 
       {/* Main content */}
       <div className="w-full px-4 sm:px-8 py-10">
-        <div className="mb-12 text-center">
+        <div className="mb-4 text-center">
           <p className="text-xs font-semibold uppercase tracking-[0.2em] text-stone-400 mb-3">
             Restaurant Maihak
           </p>
@@ -120,16 +121,36 @@ export default function Menu() {
         </div>
 
         {!isRestaurantOpen && (
-          <div className="mx-auto mb-6 rounded-2xl border border-red-100 bg-red-50 px-5 py-3.5 text-center text-sm font-medium text-red-700">
-            Le restaurant est actuellement fermé — vous pouvez consulter le menu mais les commandes
-            ne sont pas disponibles pour le moment.
-          </div>
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="flex justify-center mb-4 px-4"
+          >
+            <div className="flex items-center gap-2 rounded-full border border-red-100 bg-red-50/50 px-4 py-1.5 text-[13px] font-medium text-red-800 shadow-sm backdrop-blur-sm">
+              <Clock className="h-3.5 w-3.5 text-red-500" />
+              <span>Restaurant fermé — Consultation uniquement</span>
+            </div>
+          </motion.div>
         )}
 
         {takeawayNotice && (
-          <div className="mx-auto mb-10 rounded-2xl border border-emerald-100 bg-emerald-50 px-5 py-3.5 text-center text-sm font-medium text-emerald-700">
-            {takeawayNotice}
-          </div>
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.1 }}
+            className="flex justify-center mb-8 px-4"
+          >
+            <div className="inline-flex items-center gap-3 rounded-full border border-emerald-100 bg-white px-4 py-2 shadow-sm hover:shadow-md transition-shadow duration-300">
+              <div className="flex h-6 w-6 items-center justify-center rounded-full bg-emerald-50">
+                <Tag className="h-3.5 w-3.5 text-emerald-600" />
+              </div>
+              <p className="text-[13px] font-medium text-stone-600">
+                <span className="text-emerald-700 font-bold uppercase tracking-wider text-[11px] mr-2">Offre:</span>
+                Profitez de <span className="text-emerald-900 font-bold">{takeawayNotice}</span>
+              </p>
+              <Sparkles className="h-3.5 w-3.5 text-emerald-400 animate-pulse hidden sm:block" />
+            </div>
+          </motion.div>
         )}
 
         {error && (

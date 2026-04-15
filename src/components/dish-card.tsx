@@ -3,10 +3,10 @@
 import { useState } from "react";
 import { calculateCartItemPricing } from "@/lib/checkout";
 import { getCategoryEmoji } from "@/lib/food-emojis";
-import type { DishDiscount } from "@repo-types/dishes";
+import type { DishDiscount, MenuDish } from "@repo-types/dishes";
 
 type DishCardProps = {
-  dish: DishCardItem;
+  dish: MenuDish;
   categoryName: string;
   restaurantClosed?: boolean;
   addToCart: (

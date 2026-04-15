@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ShoppingCart } from "lucide-react";
+import { ShoppingCart, Tag, Clock } from "lucide-react";
 import { useCart, type CartItem } from "@/hooks/use-cart";
 import { getItemEmoji } from "@/lib/food-emojis";
 import { useRouter } from "next/navigation";
