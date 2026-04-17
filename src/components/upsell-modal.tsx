@@ -110,16 +110,20 @@ function DishRow({
 
 // ─── Add-on row ──────────────────────────────────────────────────────────────
 
+const MAX_ADDONS = 2;
+
 function AddOnRow({
   addon,
   onAdd,
   onRemove,
   cartQty,
+  atLimit,
 }: {
   addon: AddOn;
   onAdd: (addon: AddOn) => void;
   onRemove: (id: string) => void;
   cartQty: number;
+  atLimit: boolean;
 }) {
   return (
     <div className="flex items-center justify-between gap-3 py-3 border-b border-stone-100 last:border-0">
@@ -145,8 +149,9 @@ function AddOnRow({
         </button>
         <span className="w-5 text-center text-sm font-semibold text-stone-700">{cartQty}</span>
         <button
-          className="w-7 h-7 flex items-center justify-center rounded-full bg-stone-100 hover:bg-stone-200 text-stone-600 transition-colors"
+          className="w-7 h-7 flex items-center justify-center rounded-full bg-stone-100 hover:bg-stone-200 text-stone-600 disabled:opacity-30 transition-colors"
           onClick={() => onAdd(addon)}
+          disabled={atLimit && cartQty === 0}
         >
           <Plus className="w-3 h-3" />
         </button>
@@ -364,15 +369,32 @@ export default function UpsellModal({
                       exit={{ opacity: 0, x: -20 }}
                       transition={{ duration: 0.2 }}
                     >
-                      {ADD_ONS.map((addon) => (
-                        <AddOnRow
-                          key={addon.id}
-                          addon={addon}
-                          onAdd={handleAddAddon}
-                          onRemove={handleRemoveAddon}
-                          cartQty={cartQtyMap.get(addon.id) ?? 0}
-                        />
-                      ))}
+                      {(() => {
+                        const totalAddons = ADD_ONS.reduce(
+                          (sum, a) => sum + (cartQtyMap.get(a.id) ?? 0),
+                          0
+                        );
+                        const atLimit = totalAddons >= MAX_ADDONS;
+                        return (
+                          <>
+                            {atLimit && (
+                              <p className="text-xs text-stone-400 text-center mb-3">
+                                Maximum de {MAX_ADDONS} extras atteint
+                              </p>
+                            )}
+                            {ADD_ONS.map((addon) => (
+                              <AddOnRow
+                                key={addon.id}
+                                addon={addon}
+                                onAdd={handleAddAddon}
+                                onRemove={handleRemoveAddon}
+                                cartQty={cartQtyMap.get(addon.id) ?? 0}
+                                atLimit={atLimit}
+                              />
+                            ))}
+                          </>
+                        );
+                      })()}
                     </motion.div>
                   )}
                 </AnimatePresence>
