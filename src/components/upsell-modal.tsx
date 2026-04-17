@@ -16,26 +16,26 @@ type AddOn = {
 };
 
 const ADD_ONS: AddOn[] = [
-  { id: "addon-chicken", name: "Chicken", price: 2 },
-  { id: "addon-lamb", name: "Lamb", price: 2 },
-  { id: "addon-shrimp", name: "Shrimp", price: 3 },
+  { id: "addon-chicken", name: "Poulet", price: 2 },
+  { id: "addon-lamb", name: "Agneau", price: 2 },
+  { id: "addon-shrimp", name: "Crevettes", price: 3 },
   { id: "addon-paneer", name: "Paneer", price: 0 },
-  { id: "addon-extra-chicken", name: "Extra chicken", price: 2 },
-  { id: "addon-extra-lamb", name: "Extra lamb", price: 2 },
-  { id: "addon-extra-shrimp", name: "Extra shrimp", price: 3 },
-  { id: "addon-extra-sauce", name: "Extra sauce", price: 1.5 },
-  { id: "addon-extra-gravy", name: "Extra gravy", price: 1.5 },
-  { id: "addon-potatoes", name: "Potatoes", price: 1 },
-  { id: "addon-peas", name: "Peas", price: 1 },
-  { id: "addon-mixed-veg", name: "Mixed vegetables", price: 1.5 },
-  { id: "addon-extra-garlic", name: "Extra garlic", price: 0.5 },
-  { id: "addon-coriander", name: "Fresh coriander", price: 0.5 },
-  { id: "addon-ginger", name: "Ginger", price: 0.5 },
-  { id: "addon-lemon", name: "Lemon", price: 0.5 },
-  { id: "addon-onions", name: "Onions", price: 0.5 },
-  { id: "addon-pickles", name: "Pickles", price: 0.5 },
+  { id: "addon-extra-chicken", name: "Poulet supplémentaire", price: 2 },
+  { id: "addon-extra-lamb", name: "Agneau supplémentaire", price: 2 },
+  { id: "addon-extra-shrimp", name: "Crevettes supplémentaires", price: 3 },
+  { id: "addon-extra-sauce", name: "Sauce supplémentaire", price: 1.5 },
+  { id: "addon-extra-gravy", name: "Sauce supplémentaire", price: 1.5 },
+  { id: "addon-potatoes", name: "Pommes de terre", price: 1 },
+  { id: "addon-peas", name: "Pois", price: 1 },
+  { id: "addon-mixed-veg", name: "Légumes mélangés", price: 1.5 },
+  { id: "addon-extra-garlic", name: "Ail supplémentaire", price: 0.5 },
+  { id: "addon-coriander", name: "Coriandre fraîche", price: 0.5 },
+  { id: "addon-ginger", name: "Gingembre", price: 0.5 },
+  { id: "addon-lemon", name: "Citron", price: 0.5 },
+  { id: "addon-onions", name: "Oignons", price: 0.5 },
+  { id: "addon-pickles", name: "Cornichons", price: 0.5 },
   { id: "addon-raita", name: "Raita", price: 1.5 },
-  { id: "addon-fresh-cream", name: "Fresh cream", price: 1.5 },
+  { id: "addon-fresh-cream", name: "Crème fraîche", price: 1.5 },
 ];
 
 // ─── Category name matchers ──────────────────────────────────────────────────
@@ -130,7 +130,7 @@ function AddOnRow({
         <div className="min-w-0">
           <p className="text-sm font-semibold text-stone-800">{addon.name}</p>
           <p className="text-xs text-stone-400">
-            {addon.price === 0 ? "free" : `+€${addon.price.toFixed(2)}`}
+            {addon.price === 0 ? "gratuit" : `+€${addon.price.toFixed(2)}`}
           </p>
         </div>
       </div>
@@ -216,7 +216,7 @@ export default function UpsellModal({
         name: addon.name,
         price: addon.price,
         basePrice: addon.price,
-        category: "Add-ons",
+        category: "Extras",
         emoji: ADDON_EMOJI[addon.id],
       },
       1
@@ -230,12 +230,12 @@ export default function UpsellModal({
 
   const stepConfig = {
     dishes: {
-      eyebrow: "Step 1 of 2",
-      title: "Add sides to your order",
+      eyebrow: "Étape 1 sur 2",
+      title: "Ajoutez des accompagnements à votre commande",
     },
     addons: {
-      eyebrow: "Step 2 of 2",
-      title: "Any extras?",
+      eyebrow: "Étape 2 sur 2",
+      title: "Des extras ?",
     },
   };
 
@@ -316,14 +316,14 @@ export default function UpsellModal({
                     >
                       {!hasDishes && (
                         <p className="text-sm text-stone-400 text-center py-8">
-                          All side dishes and breads are already in your cart.
+                          Tous les accompagnements et pains sont déjà dans votre panier.
                         </p>
                       )}
 
                       {riceDishes.length > 0 && (
                         <section>
                           <h3 className="text-xs font-semibold uppercase tracking-widest text-stone-400 mb-2">
-                            Side Dishes
+                            Accompagnements
                           </h3>
                           {riceDishes.map((dish) => (
                             <DishRow
@@ -341,7 +341,7 @@ export default function UpsellModal({
                       {breadDishes.length > 0 && (
                         <section>
                           <h3 className="text-xs font-semibold uppercase tracking-widest text-stone-400 mb-2">
-                            Breads
+                            Pains
                           </h3>
                           {breadDishes.map((dish) => (
                             <DishRow
@@ -386,14 +386,14 @@ export default function UpsellModal({
                       onClick={() => setStep("addons")}
                       className="w-full bg-stone-900 text-white py-3 rounded-xl text-sm font-semibold hover:bg-stone-700 transition-colors duration-200 flex items-center justify-center gap-2"
                     >
-                      Next: Add-ons
+                      Suivant : Extras
                       <ChevronRight className="w-4 h-4" />
                     </button>
                     <button
                       onClick={onConfirm}
                       className="w-full py-2.5 rounded-xl text-sm font-medium text-stone-500 hover:text-stone-700 transition-colors"
                     >
-                      Skip & Checkout
+                      Passer et payer
                     </button>
                   </>
                 ) : (
@@ -402,13 +402,13 @@ export default function UpsellModal({
                       onClick={onConfirm}
                       className="w-full bg-stone-900 text-white py-3 rounded-xl text-sm font-semibold hover:bg-stone-700 transition-colors duration-200"
                     >
-                      Continue to Checkout
+                      Continuer vers le paiement
                     </button>
                     <button
                       onClick={onConfirm}
                       className="w-full py-2.5 rounded-xl text-sm font-medium text-stone-500 hover:text-stone-700 transition-colors"
                     >
-                      Skip
+                      Passer
                     </button>
                   </>
                 )}

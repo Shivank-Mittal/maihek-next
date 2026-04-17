@@ -364,6 +364,16 @@ function CheckoutContent() {
                   </tbody>
                 </table>
               </div>
+              {orderType === "livraison" && (
+                <div className="mt-4 rounded-2xl bg-slate-50 px-4 py-3 text-sm text-slate-600 ring-1 ring-slate-200">
+                  <p className="font-semibold text-slate-800 mb-1">Note livraison</p>
+                  <p className="leading-6">
+                    {pricingSummary.deliveryCharge > 0
+                      ? `Frais de livraison de ${pricingSummary.deliveryCharge.toFixed(2)} € ajoutés. Livraison gratuite dès ${DELIVERY_MINIMUM_ORDER_AMOUNT} €.`
+                      : `Livraison gratuite à partir de ${DELIVERY_MINIMUM_ORDER_AMOUNT} €.`}
+                  </p>
+                </div>
+              )}
               <button
                 onClick={() => {
                   clearCart();
@@ -420,13 +430,6 @@ function CheckoutContent() {
                       </label>
                     ))}
                   </div>
-                  {orderType === "livraison" && (
-                    <p className="mt-1.5 text-xs text-amber-600">
-                      {pricingSummary.deliveryCharge > 0
-                        ? `Frais de livraison de ${pricingSummary.deliveryCharge.toFixed(2)} € ajoutés (livraison gratuite dès ${DELIVERY_MINIMUM_ORDER_AMOUNT} €).`
-                        : `Livraison gratuite à partir de ${DELIVERY_MINIMUM_ORDER_AMOUNT} €.`}
-                    </p>
-                  )}
                   {orderType === "emporter" && takeawayNotice && (
                     <p className="mt-1.5 text-xs text-emerald-700">{takeawayNotice}</p>
                   )}

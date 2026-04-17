@@ -271,4 +271,4 @@ export const getDeliveryShortfall = (total: number) =>
   Math.max(0, DELIVERY_MINIMUM_ORDER_AMOUNT - total);
 
 export const getDeliveryMinimumMessage = (currencySymbol = "EUR") =>
-  `Delivery is available only for orders of ${DELIVERY_MINIMUM_ORDER_AMOUNT} ${currencySymbol} or more.`;
+  `La livraison est disponible uniquement pour les commandes de ${DELIVERY_MINIMUM_ORDER_AMOUNT} ${currencySymbol} ou plus.`;

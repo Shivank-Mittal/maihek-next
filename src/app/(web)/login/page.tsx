@@ -24,7 +24,7 @@ export default function AdminLoginPage() {
     });
 
     if (result?.error) {
-      setError("Invalid email or password");
+      setError("Email ou mot de passe invalide");
     } else {
       router.push("/dashboard");
     }
@@ -46,7 +46,7 @@ export default function AdminLoginPage() {
             transition={{ delay: 0.2, duration: 0.5 }}
             className="flex items-center justify-center mb-6"
           >
-            <h2 className="text-3xl font-bold text-gray-800">Restaurant Admin Login</h2>
+            <h2 className="text-3xl font-bold text-gray-800">Connexion administrateur</h2>
           </motion.div>
           {error && (
             <motion.p
@@ -60,7 +60,7 @@ export default function AdminLoginPage() {
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-                Admin Email
+                Email administrateur
               </label>
               <motion.input
                 initial={{ opacity: 0, x: -20 }}
@@ -97,7 +97,7 @@ export default function AdminLoginPage() {
                 href="/admin/forgot-password"
                 className="text-sm text-amber-600 hover:underline"
               >
-                Forgot Password?
+                Mot de passe oublié ?
               </Link>
             </div>
             <motion.button
@@ -106,13 +106,13 @@ export default function AdminLoginPage() {
               type="submit"
               className="w-full bg-amber-600 text-white py-3 rounded-lg hover:bg-amber-700 transition-colors font-medium"
             >
-              Sign In to Dashboard
+              Se connecter au tableau de bord
             </motion.button>
           </form>
           <p className="mt-6 text-center text-sm text-gray-600">
-            Not an admin?{" "}
+            Pas admin ?{" "}
             <Link href="/" className="text-amber-600 hover:underline font-medium">
-              Visit Restaurant Homepage
+              Visiter la page d'accueil du restaurant
             </Link>
           </p>
         </div>

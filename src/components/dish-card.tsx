@@ -66,7 +66,7 @@ export default function DishCard({
       {dish.active === false && (
         <div className="absolute inset-0 bg-white/80 backdrop-blur-[2px] rounded-2xl flex items-center justify-center z-10">
           <span className="bg-stone-800 text-stone-50 text-xs font-semibold px-4 py-2 rounded-full tracking-wide uppercase">
-            Off the Menu Today
+            Hors du menu aujourd'hui
           </span>
         </div>
       )}
@@ -142,7 +142,7 @@ export default function DishCard({
                   onClick={handleAddToCart}
                   disabled={quantity === 0 || isDisabled}
                 >
-                  Add To Cart
+                  Ajouter au panier
                 </button>
               </div>
             </div>

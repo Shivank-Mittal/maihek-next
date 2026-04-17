@@ -243,7 +243,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
         localStorage.setItem("cartItems", JSON.stringify(cart));
       } catch (error) {
         console.error("Error saving cart to localStorage:", error);
-        toast.error("Failed to save cart."); // Optional: Remove if not using sonner
+        toast.error("Échec de l'enregistrement du panier.");
       }
     }
   }, [cart]);
@@ -264,7 +264,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
 
       return [...prevCart, { ...item, quantity }];
     });
-    toast.success(`${item.name} added to cart!`); // Optional: Remove if not using sonner
+    toast.success(`${item.name} a été ajouté au panier !`);
   };
 
   // Remove item from cart
@@ -272,7 +272,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     setCart((prevCart) => {
       const item = prevCart.find((item) => item.id === itemId);
       if (item) {
-        toast.success(`${item.name} removed from cart!`); // Optional: Remove if not using sonner
+        toast.success(`${item.name} a été retiré du panier !`);
       }
       return prevCart.filter((item) => item.id !== itemId);
     });
@@ -281,7 +281,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
   // Clear cart
   const clearCart = () => {
     setCart([]);
-    toast.success("Cart cleared!"); // Optional: Remove if not using sonner
+    toast.success("Panier vidé !");
   };
 
   // Get total price (needed for checkout page)

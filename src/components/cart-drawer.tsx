@@ -81,7 +81,7 @@ export default function CartDrawer({ menuCategories = [] }: CartDrawerProps) {
     (id: string | number, newQuantity: number) => {
       if (newQuantity >= 0) {
         updateQuantity(id.toString(), newQuantity);
-        toast.success("Updated quantity for item", {
+        toast.success("Quantité mise à jour", {
           duration: 2000,
           style: {
             background: "#15803d",
@@ -97,7 +97,7 @@ export default function CartDrawer({ menuCategories = [] }: CartDrawerProps) {
   const handleRemoveFromCart = useCallback(
     (id: string | number, name: string) => {
       removeFromCart(id.toString());
-      toast.success(`Removed ${name} from cart`, {
+      toast.success(`${name} a été retiré du panier`, {
         duration: 2000,
         style: {
           background: "#15803d",
@@ -121,7 +121,7 @@ export default function CartDrawer({ menuCategories = [] }: CartDrawerProps) {
       setLoading(true);
 
       if (cart.length === 0) {
-        toast.error("Your cart is empty", {
+        toast.error("Votre panier est vide", {
           duration: 2000,
           style: {
             background: "#15803d",
@@ -134,7 +134,7 @@ export default function CartDrawer({ menuCategories = [] }: CartDrawerProps) {
 
       setShowUpsellModal(true);
     } catch (error) {
-      const message = error instanceof Error ? error.message : "Something went wrong.";
+      const message = error instanceof Error ? error.message : "Une erreur s'est produite.";
       toast.error(message, {
         duration: 3000,
         style: {
@@ -169,14 +169,14 @@ export default function CartDrawer({ menuCategories = [] }: CartDrawerProps) {
       <div className="hidden xl:flex xl:flex-col w-[22%] bg-white border-l border-stone-100 fixed right-0 h-screen">
         <div className="px-5 pt-7 pb-4 border-b border-stone-100">
           <p className="text-[10px] font-semibold uppercase tracking-widest text-stone-400 mb-1">
-            Your Order
+            Votre commande
           </p>
-          <h2 className="text-lg font-bold text-stone-900">Cart</h2>
+          <h2 className="text-lg font-bold text-stone-900">Panier</h2>
         </div>
 
         <div className="flex-1 overflow-y-auto px-5 py-4 scrollbar-hidden space-y-3">
           {cart.length === 0 && (
-            <p className="text-sm text-stone-400 text-center mt-10">Your cart is empty.</p>
+            <p className="text-sm text-stone-400 text-center mt-10">Votre panier est vide.</p>
           )}
           {cart.map((item) => {
             const pricing = calculateCartItemPricing(item, {
@@ -227,7 +227,7 @@ export default function CartDrawer({ menuCategories = [] }: CartDrawerProps) {
                       className="removeItem ml-auto text-xs text-stone-400 hover:text-red-500 transition-colors"
                       onClick={() => handleRemoveFromCart(item.id, item.name)}
                     >
-                      Remove
+                      Supprimer
                     </button>
                   </div>
                 </div>
@@ -242,7 +242,7 @@ export default function CartDrawer({ menuCategories = [] }: CartDrawerProps) {
         <div className="px-5 py-5 border-t border-stone-100 space-y-4">
           <div>
             <p className="text-[10px] font-semibold uppercase tracking-widest text-stone-400 mb-3">
-              Order type
+              Type de commande
             </p>
             <div className="flex gap-3">
               {(["emporter", "livraison"] as const).map((type) => (
@@ -255,7 +255,7 @@ export default function CartDrawer({ menuCategories = [] }: CartDrawerProps) {
                       : "bg-white text-stone-600 border-stone-200 hover:border-stone-400"
                   }`}
                 >
-                  {type === "emporter" ? "Take away" : "Delivery"}
+                  {type === "emporter" ? "À emporter" : "Livraison"}
                 </button>
               ))}
             </div>
@@ -273,21 +273,21 @@ export default function CartDrawer({ menuCategories = [] }: CartDrawerProps) {
 
           <div className="space-y-1.5 text-sm">
             <div className="flex justify-between text-stone-500">
-              <span>Subtotal</span>
-              <span id="cart-total-desktop">EUR {pricingSummary.subtotal.toFixed(2)}</span>
-            </div>
-            {pricingSummary.dishDiscountTotal > 0 && (
-              <div className="flex justify-between text-emerald-600">
-                <span>Item discounts</span>
-                <span>−EUR {pricingSummary.dishDiscountTotal.toFixed(2)}</span>
+                <span>Sous-total</span>
+                <span id="cart-total-desktop">EUR {pricingSummary.subtotal.toFixed(2)}</span>
               </div>
-            )}
-            {pricingSummary.takeawayDiscountTotal > 0 && (
-              <div className="flex justify-between text-emerald-600">
-                <span>Takeaway discount</span>
-                <span>−EUR {pricingSummary.takeawayDiscountTotal.toFixed(2)}</span>
-              </div>
-            )}
+              {pricingSummary.dishDiscountTotal > 0 && (
+                <div className="flex justify-between text-emerald-600">
+                  <span>Remises article</span>
+                  <span>−EUR {pricingSummary.dishDiscountTotal.toFixed(2)}</span>
+                </div>
+              )}
+              {pricingSummary.takeawayDiscountTotal > 0 && (
+                <div className="flex justify-between text-emerald-600">
+                  <span>Remise à emporter</span>
+                  <span>−EUR {pricingSummary.takeawayDiscountTotal.toFixed(2)}</span>
+                </div>
+              )}
             <div className="flex justify-between font-bold text-stone-900 pt-1 border-t border-stone-100">
               <span>Total</span>
               <span>EUR {pricingSummary.total.toFixed(2)}</span>
@@ -305,7 +305,7 @@ export default function CartDrawer({ menuCategories = [] }: CartDrawerProps) {
             onClick={handleCheckout}
             disabled={loading || cart.length === 0 || !isRestaurantOpen}
           >
-            {loading ? "Loading…" : "Proceed to Checkout"}
+            {loading ? "Chargement…" : "Passer à la commande"}
           </button>
         </div>
       </div>
@@ -402,7 +402,7 @@ export default function CartDrawer({ menuCategories = [] }: CartDrawerProps) {
                                   onClick={() => handleRemoveFromCart(item.id, item.name)}
                                   whileHover={{ scale: 1.1 }}
                                   whileTap={{ scale: 0.9 }}
-                                  aria-label={`Remove ${item.name} from cart`}
+                                  aria-label={`Supprimer ${item.name} du panier`}
                                 >
                                   Supprimer
                                 </motion.button>
@@ -499,7 +499,7 @@ export default function CartDrawer({ menuCategories = [] }: CartDrawerProps) {
                   )}
                   {pricingSummary.takeawayDiscountTotal > 0 && (
                     <div className="flex justify-between items-center mb-4 text-emerald-700">
-                      <span className="text-lg font-medium">Remise a emporter</span>
+                      <span className="text-lg font-medium">Remise à emporter</span>
                       <span className="text-lg font-semibold">
                         -EUR {pricingSummary.takeawayDiscountTotal.toFixed(2)}
                       </span>
@@ -553,7 +553,7 @@ export default function CartDrawer({ menuCategories = [] }: CartDrawerProps) {
                         Chargement...
                       </>
                     ) : (
-                      "Passer a la caisse"
+                      "Passer à la caisse"
                     )}
                   </motion.button>
                   <motion.button

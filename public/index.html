@@ -1684,7 +1684,7 @@
 
                         <!-- Hamburger Menu -->
                         <div class="uc_liquid_hamburger">
-                          <img src="images/menu.png" alt="Menu Icon" class="responsive-hamburger" style="
+                          <img src="images/menu.png" alt="Icône du menu" class="responsive-hamburger" style="
          width: 100px;               /* Change icon width */
          height: 85px;              /* Change icon height */
          transform: scale(1.5);     /* Optional visual scale */
@@ -1723,7 +1723,7 @@
                           <ul id="menu-trupaste-menu" class="global-menu__wrap uc-list-menu">
                             <li id="menu-item-1187"
                               class="menu-item menu-item-type-post_type menu-item-object-page menu-item-home current-menu-item page_item page-item-40 current_page_item menu-item-1187">
-                              <a href="#" aria-current="page">Home</a>
+                              <a href="#" aria-current="page">Accueil</a>
                             </li>
                             <li id="menu-item-1184"
                               class="menu-item menu-item-type-post_type menu-item-object-page menu-item-1184"><a
@@ -3140,7 +3140,7 @@
                               </div>
                               <button id="checkoutButton"
                                 class="w-full bg-black text-white py-3 rounded-lg font-medium hover:bg-gray-800 transition duration-300 focus:outline-none focus:ring-2 focus:ring-gray-400">
-                                Proceed to Checkout
+                                Passer à la commande
                               </button>
                             </div>
                           </div>
@@ -3235,7 +3235,7 @@
                             cartItemsContainer.innerHTML = '';
 
                             if (cart.length === 0) {
-                              cartItemsContainer.innerHTML = '<p class="text-gray-500 text-center">Your cart is empty.</p>';
+                              cartItemsContainer.innerHTML = '<p class="text-gray-500 text-center">Votre panier est vide.</p>';
                               cartCount.textContent = '0';
                               cartSubtotal.textContent = '$0.00';
                               return;
@@ -3620,7 +3620,7 @@
                       <ul id="menu-1-ebc2e03" class="elementor-nav-menu">
                         <li
                           class="menu-item menu-item-type-post_type menu-item-object-page menu-item-home current-menu-item page_item page-item-40 current_page_item menu-item-1187">
-                          <a href="index.html" aria-current="page" class="elementor-item elementor-item-active">Home</a>
+                          <a href="index.html" aria-current="page" class="elementor-item elementor-item-active">Accueil</a>
                         </li>
                         <li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-1184"><a
                             href="#about" class="elementor-item">À propos de nous</a></li>
@@ -3637,7 +3637,7 @@
                         <li
                           class="menu-item menu-item-type-post_type menu-item-object-page menu-item-home current-menu-item page_item page-item-40 current_page_item menu-item-1187">
                           <a href="index.html" aria-current="page" class="elementor-item elementor-item-active"
-                            tabindex="-1">Home</a>
+                            tabindex="-1">Accueil</a>
                         </li>
                         <li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-1184"><a
                             href="#about" class="elementor-item" tabindex="-1">À propos de nous</a></li>
@@ -4040,50 +4040,7 @@
       }
     }
   </style>
-
-  <div class="popup-overlay" id="popup">
-    <div class="popup-box">
-      <span class="popup-close" id="popupClose">&times;</span>
-      <h2>🍴 Information Importante</h2>
-      <p>Chers clients, pour garantir la meilleure expérience culinaire, nous vous invitons à commander <strong>uniquement aux horaires de repas suivants :</strong></p>
-
-      <div class="timings">
-        <h3>Déjeuner</h3>
-        <ul>
-          <li>12:00 - 14:00</li>
- 
-        </ul>
-        <h3>Dîner</h3>
-        <ul>
-          <li>19:00 – 22:30</li>
-        </ul>
-      </div>
-
-      <p>🙏 Merci de votre compréhension et de votre fidélité.<br>
-      ❤️ L'équipe Maihak</p>
-    </div>
-  </div>
-
-  <script>
-    document.addEventListener("DOMContentLoaded", function() {
-      const popup = document.getElementById("popup");
-      const closeBtn = document.getElementById("popupClose");
-
-      // Close when X clicked
-      closeBtn.addEventListener("click", () => {
-        popup.style.display = "none";
-      });
-
-      // Close when clicked outside
-      popup.addEventListener("click", (e) => {
-        if (e.target === popup) {
-          popup.style.display = "none";
-        }
-      });
-    });
-  </script>
 </section>
-
 
 </body>
 

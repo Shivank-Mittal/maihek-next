@@ -37,7 +37,7 @@ export default function Menu() {
       setTakeawayNotice(getTakeawayDiscountSummary(discountSettings.takeawayDiscount));
     } catch (error) {
       console.error("Error fetching menu items:", error);
-      setError("Failed to load menu items. Displaying default menu.");
+      setError("Échec du chargement du menu. Affichage du menu par défaut.");
     } finally {
       setIsLoading(false);
     }
@@ -79,7 +79,7 @@ export default function Menu() {
               d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
             ></path>
           </svg>
-          <p className="text-stone-500 text-sm font-medium tracking-wide">Loading Menu…</p>
+          <p className="text-stone-500 text-sm font-medium tracking-wide">Chargement du menu…</p>
         </motion.div>
       </div>
     );
@@ -91,7 +91,7 @@ export default function Menu() {
       <div className="hidden xl:flex h-screen sticky top-0 bg-white border-r border-stone-100 overflow-y-auto">
         <div className="px-6 pt-8 pb-4">
           <p className="text-[10px] font-semibold uppercase tracking-widest text-stone-400 mb-5">
-            Categories
+            Catégories
           </p>
           <ul className="space-y-1">
             {menuItems.map((category) => (
@@ -138,7 +138,7 @@ export default function Menu() {
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: 0.1 }}
-            className="flex justify-center mb-8 px-4"
+            className="flex justify-center mb-4 px-4"
           >
             <div className="inline-flex items-center gap-3 rounded-full border border-emerald-100 bg-white px-4 py-2 shadow-sm hover:shadow-md transition-shadow duration-300">
               <div className="flex h-6 w-6 items-center justify-center rounded-full bg-emerald-50">
@@ -152,6 +152,17 @@ export default function Menu() {
             </div>
           </motion.div>
         )}
+
+        <motion.div
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.15 }}
+          className="flex justify-center mb-8 px-4"
+        >
+          <p className="max-w-md text-center text-sm text-stone-500 leading-6 tracking-wide opacity-80">
+            Le riz n'est pas inclus dans les plats — il peut être commandé séparément.
+          </p>
+        </motion.div>
 
         {error && (
           <motion.p
@@ -175,7 +186,7 @@ export default function Menu() {
                 restaurantClosed={!isRestaurantOpen}
                 addToCart={(item, quantity) => {
                   addToCart({ ...item, id: item._id }, quantity);
-                  toast.success(`${item.name} added to cart!`, {
+                  toast.success(`${item.name} a été ajouté au panier !`, {
                     duration: 2000,
                     style: {
                       background: "#1c1917",
