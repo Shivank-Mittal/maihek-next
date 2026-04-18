@@ -10,9 +10,19 @@ npm run build      # Production build
 npm run lint       # ESLint
 npm run format     # Prettier (write)
 npm run format:check  # Prettier (check only)
+npm run test       # Run unit tests with Jest
+npm run test:watch # Run tests in watch mode
 ```
 
-No test suite is configured.
+## Testing
+
+Unit testing is configured with Jest and React Testing Library:
+- **Jest**: Test runner and assertion library
+- **React Testing Library**: For testing React components
+- **@testing-library/jest-dom**: Additional DOM matchers
+- **jest-environment-jsdom**: Browser-like environment for tests
+
+Test files are located in the `tests/` directory alongside the source code they test.
 
 ## Environment Variables
 
