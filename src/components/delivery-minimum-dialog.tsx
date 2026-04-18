@@ -34,14 +34,16 @@ export function DeliveryMinimumDialog({
             exit={{ scale: 0.95, opacity: 0 }}
             transition={{ duration: 0.2 }}
           >
-            <h3 className="text-xl font-semibold text-gray-900">Montant minimum de livraison non atteint</h3>
+            <h3 className="text-xl font-semibold text-gray-900">
+              Montant minimum de livraison non atteint
+            </h3>
             <p className="mt-3 text-sm leading-6 text-gray-600">
-              La livraison est disponible uniquement pour les commandes de {DELIVERY_MINIMUM_ORDER_AMOUNT}{" "}
-              {currencySymbol} ou plus.
+              La livraison est disponible uniquement pour les commandes de{" "}
+              {DELIVERY_MINIMUM_ORDER_AMOUNT} {currencySymbol} ou plus.
             </p>
             <p className="mt-2 text-sm leading-6 text-gray-600">
-              Votre total actuel est de {total.toFixed(2)} {currencySymbol}. Ajoutez {shortfall.toFixed(2)}{" "}
-              {currencySymbol} de plus, ou passez la commande en retrait.
+              Votre total actuel est de {total.toFixed(2)} {currencySymbol}. Ajoutez{" "}
+              {shortfall.toFixed(2)} {currencySymbol} de plus, ou passez la commande en retrait.
             </p>
             <button
               type="button"

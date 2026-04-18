@@ -48,16 +48,7 @@ export const DEFAULT_TAKEAWAY_DISCOUNT_SETTINGS: TakeawayDiscountSettings = {
   enabled: true,
   percentage: 10,
   excludedDishIds: [],
-  excludedCategoryNames: [
-    "Menu",
-    "Menus",
-    "Drink",
-    "Drinks",
-    "Boisson",
-    "Boissons",
-    "Beverage",
-    "Beverages",
-  ],
+  excludedCategoryNames: [],
 };
 
 const roundCurrency = (value: number) => Math.round((value + Number.EPSILON) * 100) / 100;

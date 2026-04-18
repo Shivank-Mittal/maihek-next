@@ -11,7 +11,6 @@ import {
   Hash,
   Mail,
   MapPin,
-  Navigation,
   Phone,
   ShoppingCart,
   Trash2,
@@ -23,6 +22,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useForm, type SubmitHandler } from "react-hook-form";
 import { toast } from "sonner";
 
+import { AddressAutocomplete } from "@/components/address-autocomplete";
 import { useCart, type CartItem } from "@/hooks/use-cart";
 import {
   DEFAULT_TAKEAWAY_DISCOUNT_SETTINGS,
@@ -56,6 +56,7 @@ function CheckoutContent() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [allowedPincodes, setAllowedPincodes] = useState<string[]>([]);
+  const [addressConfirmed, setAddressConfirmed] = useState(false);
   const [discountSettings, setDiscountSettings] = useState<DiscountSettingsResponse>({
     takeawayDiscount: DEFAULT_TAKEAWAY_DISCOUNT_SETTINGS,
   });
@@ -115,6 +116,13 @@ function CheckoutContent() {
   };
 
   const onSubmit: SubmitHandler<FormData> = async (data) => {
+    if (data.orderType === "livraison" && !addressConfirmed) {
+      toast.error("Veuillez sélectionner une adresse depuis les suggestions.", {
+        duration: 3000,
+        style: { background: "#fff", color: "#000", border: "1px solid #ccc" },
+      });
+      return;
+    }
 
     setIsSubmitting(true);
     try {
@@ -517,19 +525,27 @@ function CheckoutContent() {
                           <label htmlFor="addressLine" className="block text-xs text-gray-500 mb-1">
                             Rue et numéro *
                           </label>
-                          <div className="relative">
-                            <Navigation className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-                            <input
-                              type="text"
-                              id="addressLine"
-                              className={inputClass}
-                              placeholder="12 Rue de la Paix"
-                              {...register("addressLine", {
-                                required: "L'adresse est requise",
-                                minLength: { value: 5, message: "Adresse trop courte" },
-                              })}
-                            />
-                          </div>
+                          <AddressAutocomplete
+                            value={watch("addressLine") ?? ""}
+                            onChange={(val) =>
+                              setValue("addressLine", val, { shouldValidate: true })
+                            }
+                            onAddressSelect={({ addressLine, city, pincode }) => {
+                              setValue("addressLine", addressLine, { shouldValidate: true });
+                              if (city) setValue("city", city, { shouldValidate: true });
+                              if (pincode) setValue("pincode", pincode, { shouldValidate: true });
+                            }}
+                            onValidSelection={(valid) => {
+                              setAddressConfirmed(valid);
+                              if (!valid) {
+                                setValue("pincode", "", { shouldValidate: false });
+                                setValue("city", "", { shouldValidate: false });
+                              }
+                            }}
+                            allowedPincodes={allowedPincodes}
+                            className={inputClass}
+                            hasError={!!errors.addressLine}
+                          />
                           {errors.addressLine && (
                             <p className="mt-1 text-xs text-red-500">
                               {errors.addressLine.message}
@@ -561,7 +577,8 @@ function CheckoutContent() {
                             <input
                               type="text"
                               id="city"
-                              className="w-full px-3 py-2.5 rounded-lg border border-gray-200 bg-white text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-black focus:border-black transition duration-200 text-sm"
+                              disabled={addressConfirmed}
+                              className={`w-full px-3 py-2.5 rounded-lg border border-gray-200 bg-white text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-black focus:border-black transition duration-200 text-sm ${addressConfirmed ? "opacity-60 cursor-not-allowed" : ""}`}
                               placeholder="Paris"
                               {...register("city", { required: "Ville requise" })}
                             />
@@ -577,7 +594,8 @@ function CheckoutContent() {
                               <Hash className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
                               <select
                                 id="pincode"
-                                className="w-full pl-10 pr-3 py-2.5 rounded-lg border border-gray-200 bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-black focus:border-black transition duration-200 text-sm appearance-none"
+                                disabled={addressConfirmed}
+                                className={`w-full pl-10 pr-3 py-2.5 rounded-lg border border-gray-200 bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-black focus:border-black transition duration-200 text-sm appearance-none ${addressConfirmed ? "opacity-60 cursor-not-allowed" : ""}`}
                                 {...register("pincode", {
                                   required: "Sélectionnez un code postal",
                                 })}
@@ -665,10 +683,9 @@ function CheckoutContent() {
                     </div>
                   </>
                 )}
-
                 <motion.button
                   type="submit"
-                  disabled={isSubmitting}
+                  disabled={isSubmitting || (orderType === "livraison" && !addressConfirmed)}
                   className="w-full bg-black text-white py-3 rounded-lg font-medium flex items-center justify-center gap-2 hover:bg-gray-800 transition duration-300 disabled:bg-gray-400 disabled:cursor-not-allowed mt-2"
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.97 }}
@@ -760,7 +777,6 @@ function CheckoutContent() {
             </motion.div>
           )}
         </AnimatePresence>
-
       </div>
     </section>
   );

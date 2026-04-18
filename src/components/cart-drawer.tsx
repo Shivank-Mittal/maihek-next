@@ -23,7 +23,6 @@ import type { DiscountSettingsResponse } from "@repo-types/discounts";
 
 type OrderType = "emporter" | "livraison";
 
-
 function CartItemImage({ item, className }: { item: CartItem; className: string }) {
   if (item.image) {
     return <img src={item.image} alt={item.name} className={className} />;
@@ -76,7 +75,6 @@ export default function CartDrawer({ menuCategories = [] }: CartDrawerProps) {
       });
   }, []);
 
-
   const handleUpdateQuantity = useCallback(
     (id: string | number, newQuantity: number) => {
       if (newQuantity >= 0) {
@@ -109,12 +107,9 @@ export default function CartDrawer({ menuCategories = [] }: CartDrawerProps) {
     [removeFromCart]
   );
 
-  const handleOrderTypeChange = useCallback(
-    (value: OrderType) => {
-      setOrderType(value);
-    },
-    []
-  );
+  const handleOrderTypeChange = useCallback((value: OrderType) => {
+    setOrderType(value);
+  }, []);
 
   const handleCheckout = useCallback(async () => {
     try {
@@ -273,21 +268,21 @@ export default function CartDrawer({ menuCategories = [] }: CartDrawerProps) {
 
           <div className="space-y-1.5 text-sm">
             <div className="flex justify-between text-stone-500">
-                <span>Sous-total</span>
-                <span id="cart-total-desktop">EUR {pricingSummary.subtotal.toFixed(2)}</span>
+              <span>Sous-total</span>
+              <span id="cart-total-desktop">EUR {pricingSummary.subtotal.toFixed(2)}</span>
+            </div>
+            {pricingSummary.dishDiscountTotal > 0 && (
+              <div className="flex justify-between text-emerald-600">
+                <span>Remises article</span>
+                <span>−EUR {pricingSummary.dishDiscountTotal.toFixed(2)}</span>
               </div>
-              {pricingSummary.dishDiscountTotal > 0 && (
-                <div className="flex justify-between text-emerald-600">
-                  <span>Remises article</span>
-                  <span>−EUR {pricingSummary.dishDiscountTotal.toFixed(2)}</span>
-                </div>
-              )}
-              {pricingSummary.takeawayDiscountTotal > 0 && (
-                <div className="flex justify-between text-emerald-600">
-                  <span>Remise à emporter</span>
-                  <span>−EUR {pricingSummary.takeawayDiscountTotal.toFixed(2)}</span>
-                </div>
-              )}
+            )}
+            {pricingSummary.takeawayDiscountTotal > 0 && (
+              <div className="flex justify-between text-emerald-600">
+                <span>Remise à emporter</span>
+                <span>−EUR {pricingSummary.takeawayDiscountTotal.toFixed(2)}</span>
+              </div>
+            )}
             <div className="flex justify-between font-bold text-stone-900 pt-1 border-t border-stone-100">
               <span>Total</span>
               <span>EUR {pricingSummary.total.toFixed(2)}</span>
@@ -353,7 +348,10 @@ export default function CartDrawer({ menuCategories = [] }: CartDrawerProps) {
                             exit={{ opacity: 0, y: -10 }}
                             transition={{ duration: 0.2 }}
                           >
-                            <CartItemImage item={item} className="w-16 h-16 object-cover rounded mr-4" />
+                            <CartItemImage
+                              item={item}
+                              className="w-16 h-16 object-cover rounded mr-4"
+                            />
                             <div className="flex-1">
                               <h3 className="text-base font-medium text-gray-900">{item.name}</h3>
                               <p className="text-sm text-gray-500">

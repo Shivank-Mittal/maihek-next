@@ -5,6 +5,7 @@ Maihak is a modern, full-stack web application for a French-Indian restaurant. B
 ## 🚀 Key Features
 
 ### Public-Facing
+
 - **Modern Landing Page:** A fast, responsive landing page showcasing the restaurant's unique blend of French and Indian cuisine.
 - **Interactive Menu:** Browse dishes by category with support for varied options like sizes, variations, and inclusions.
 - **Smart Shopping Cart:** Persistent cart management allowing users to customize their orders before checkout.
@@ -13,6 +14,7 @@ Maihak is a modern, full-stack web application for a French-Indian restaurant. B
 - **Contact & Support:** Built-in contact form with automatic email notifications.
 
 ### Admin Dashboard
+
 - **Menu Management:** Complete CRUD operations for dishes and categories, including image management and pricing options.
 - **Reservation Tracking:** Monitor and manage incoming table bookings with status updates.
 - **Analytics & Settings:** (In progress) Dashboard overview and restaurant configuration settings.
@@ -60,28 +62,31 @@ Maihak is a modern, full-stack web application for a French-Indian restaurant. B
 ### Installation
 
 1. **Clone the repository:**
+
    ```bash
    git clone https://github.com/your-username/maihak.git
    cd maihak
    ```
 
 2. **Install dependencies:**
+
    ```bash
    npm install
    ```
 
 3. **Set up Environment Variables:**
    Create a `.env.local` file in the root directory and add the following:
+
    ```env
    MONGODB_URL=your_mongodb_connection_string
    JWT_SECRET=your_jwt_secret
    NEXTAUTH_SECRET=your_nextauth_secret
-   
+
    # Stripe
    STRIPE_SECRET_KEY=your_stripe_secret
    NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=your_stripe_publishable
    STRIPE_WEBHOOK_SECRET=your_stripe_webhook_secret
-   
+
    # Nodemailer
    SMTP_HOST=your_smtp_host
    SMTP_PORT=your_smtp_port

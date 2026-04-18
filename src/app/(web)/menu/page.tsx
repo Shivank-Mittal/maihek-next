@@ -145,7 +145,9 @@ export default function Menu() {
                 <Tag className="h-3.5 w-3.5 text-emerald-600" />
               </div>
               <p className="text-[13px] font-medium text-stone-600">
-                <span className="text-emerald-700 font-bold uppercase tracking-wider text-[11px] mr-2">Offre:</span>
+                <span className="text-emerald-700 font-bold uppercase tracking-wider text-[11px] mr-2">
+                  Offre:
+                </span>
                 Profitez de <span className="text-emerald-900 font-bold">{takeawayNotice}</span>
               </p>
               <Sparkles className="h-3.5 w-3.5 text-emerald-400 animate-pulse hidden sm:block" />
