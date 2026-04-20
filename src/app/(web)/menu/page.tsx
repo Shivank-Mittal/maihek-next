@@ -86,7 +86,7 @@ export default function Menu() {
   }
 
   return (
-    <div className="bg-stone-50 min-h-screen grid grid-cols-[200px_1fr_400px] gap-4">
+    <div className="bg-stone-50 min-h-screen xl:grid xl:grid-cols-[200px_1fr_400px] xl:gap-4">
       {/* Left sidebar — category nav */}
       <div className="hidden xl:flex h-screen sticky top-0 bg-white border-r border-stone-100 overflow-y-auto">
         <div className="px-6 pt-8 pb-4">
@@ -109,7 +109,7 @@ export default function Menu() {
       </div>
 
       {/* Main content */}
-      <div className="w-full px-4 sm:px-8 py-10">
+      <div className="w-full px-4 sm:px-8 py-10 xl:col-span-1">
         <div className="mb-4 text-center">
           <p className="text-xs font-semibold uppercase tracking-[0.2em] text-stone-400 mb-3">
             Restaurant Maihak
@@ -155,6 +155,21 @@ export default function Menu() {
           </motion.div>
         )}
 
+        {/* Mobile category navigation */}
+        <div className="xl:hidden mb-8 px-4">
+          <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-2">
+            {menuItems.map((category) => (
+              <a
+                key={category._id}
+                href={`#${category._id}`}
+                className="flex-shrink-0 px-4 py-2 bg-white border border-stone-200 rounded-full text-sm font-medium text-stone-600 hover:text-stone-900 hover:border-stone-300 transition-colors duration-150 shadow-sm"
+              >
+                {category.name}
+              </a>
+            ))}
+          </div>
+        </div>
+
         <motion.div
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
@@ -162,7 +177,7 @@ export default function Menu() {
           className="flex justify-center mb-8 px-4"
         >
           <p className="max-w-md text-center text-sm text-stone-500 leading-6 tracking-wide opacity-80">
-            Le riz n'est pas inclus dans les plats — il peut être commandé séparément.
+            Le riz n&apos;est pas inclus dans les plats — il peut être commandé séparément.
           </p>
         </motion.div>
 

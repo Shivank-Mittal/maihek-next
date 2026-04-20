@@ -26,7 +26,7 @@ export default function AdminLoginPage() {
     if (result?.error) {
       setError("Email ou mot de passe invalide");
     } else {
-      router.push("/dashboard");
+      router.push("/dashboard/orders");
     }
   };
 

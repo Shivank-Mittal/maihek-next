@@ -71,80 +71,81 @@ export default function DishCard({
         </div>
       )}
       <div className="p-5">
-        <div className="flex items-start gap-3">
+        <div className="flex flex-col gap-4">
           {dish.image ? (
             <img
               src={dish.image}
               alt={dish.name}
-              className="w-14 h-14 rounded-xl object-cover shrink-0"
+              className="w-full h-44 rounded-[2rem] object-cover border border-stone-100 shadow-sm"
             />
           ) : (
-            <div className="w-14 h-14 rounded-xl bg-stone-50 border border-stone-100 flex items-center justify-center text-2xl shrink-0">
+            <div className="w-full h-44 rounded-[2rem] bg-stone-50 border border-stone-100 flex items-center justify-center text-4xl shadow-sm">
               {getCategoryEmoji(categoryName)}
             </div>
           )}
-          <div className="flex-1 min-w-0">
-            <div className="flex items-start justify-between gap-3 mb-2">
-              <h3 className="text-base font-semibold text-stone-800 leading-snug">{dish.name}</h3>
+
+          <div className="space-y-3">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+              <h3 className="text-xl font-semibold text-stone-900 leading-tight">{dish.name}</h3>
               {dish.discount && dish.discount.percentage > 0 && (
-                <span className="shrink-0 text-xs font-semibold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-100">
+                <span className="inline-flex items-center justify-center rounded-full bg-emerald-50 text-emerald-700 border border-emerald-100 px-3 py-1 text-xs font-semibold">
                   -{dish.discount.percentage}%
                 </span>
               )}
             </div>
             <p className="text-sm text-stone-500 leading-relaxed">{dish.description}</p>
             {dish.includes && dish.includes.length > 0 && (
-              <ul className="mt-3 flex flex-wrap gap-1.5">
+              <ul className="flex flex-wrap gap-2">
                 {dish.includes.map((item, index) => (
                   <li
                     key={index}
-                    className="text-xs text-stone-400 bg-stone-50 border border-stone-100 px-2 py-0.5 rounded-full"
+                    className="text-[11px] text-stone-500 bg-stone-100 border border-stone-200 px-2.5 py-1 rounded-full"
                   >
                     {item}
                   </li>
                 ))}
               </ul>
             )}
+          </div>
 
-            <div className="flex justify-between items-center mt-4">
-              <div className={`${isDisabled ? "text-stone-300" : "text-stone-800"}`}>
-                {hasDishDiscount ? (
-                  <div className="flex flex-col">
-                    <span className="text-xs text-stone-400 line-through">
-                      €{pricing.unitBasePrice.toFixed(2)}
-                    </span>
-                    <span className="text-lg font-bold">€{pricing.unitTotal.toFixed(2)}</span>
-                  </div>
-                ) : (
-                  <span className="text-lg font-bold">€{pricing.unitBasePrice.toFixed(2)}</span>
-                )}
-              </div>
-              <div className="flex items-center gap-1.5">
+          <div className="grid gap-3">
+            <div className={`${isDisabled ? "text-stone-300" : "text-stone-800"}`}>
+              {hasDishDiscount ? (
+                <div className="space-y-1">
+                  <span className="block text-xs text-stone-400 line-through">€{pricing.unitBasePrice.toFixed(2)}</span>
+                  <span className="text-2xl font-bold">€{pricing.unitTotal.toFixed(2)}</span>
+                </div>
+              ) : (
+                <span className="text-2xl font-bold">€{pricing.unitBasePrice.toFixed(2)}</span>
+              )}
+            </div>
+
+            <div className="grid gap-3 sm:grid-cols-[auto_1fr] sm:items-center">
+              <div className="flex items-center gap-2 justify-between sm:justify-start">
                 <button
-                  className="decrease-qty w-8 h-8 flex items-center justify-center rounded-full bg-stone-100 text-stone-600 hover:bg-stone-200 disabled:opacity-30 disabled:cursor-not-allowed transition-colors text-lg font-medium"
+                  className="w-11 h-11 flex items-center justify-center rounded-full bg-stone-100 text-stone-600 hover:bg-stone-200 disabled:opacity-30 disabled:cursor-not-allowed transition-colors text-lg font-medium"
                   onClick={handleDecrement}
                   disabled={quantity === 0 || isDisabled}
                 >
                   −
                 </button>
-                <span className="w-6 text-center text-sm font-semibold text-stone-700 qty-display">
-                  {quantity}
-                </span>
+                <span className="w-9 text-center text-sm font-semibold text-stone-700 qty-display">{quantity}</span>
                 <button
-                  className="increase-qty w-8 h-8 flex items-center justify-center rounded-full bg-stone-100 text-stone-600 hover:bg-stone-200 disabled:opacity-30 disabled:cursor-not-allowed transition-colors text-lg font-medium"
+                  className="w-11 h-11 flex items-center justify-center rounded-full bg-stone-100 text-stone-600 hover:bg-stone-200 disabled:opacity-30 disabled:cursor-not-allowed transition-colors text-lg font-medium"
                   onClick={handleIncrement}
                   disabled={isDisabled}
                 >
                   +
                 </button>
-                <button
-                  className="add-to-cart ml-1.5 bg-stone-900 text-white text-sm px-4 py-2 rounded-full hover:bg-stone-700 transition-colors duration-200 disabled:opacity-30 disabled:cursor-not-allowed font-medium"
-                  onClick={handleAddToCart}
-                  disabled={quantity === 0 || isDisabled}
-                >
-                  Ajouter au panier
-                </button>
               </div>
+
+              <button
+                className="w-full bg-stone-900 text-white text-sm px-4 py-3 rounded-full hover:bg-stone-700 transition-colors duration-200 disabled:opacity-30 disabled:cursor-not-allowed font-medium"
+                onClick={handleAddToCart}
+                disabled={quantity === 0 || isDisabled}
+              >
+                Ajouter au panier
+              </button>
             </div>
           </div>
         </div>

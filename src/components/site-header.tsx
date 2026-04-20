@@ -22,6 +22,7 @@ import {
 import { signOut, useSession } from "next-auth/react";
 
 const navMain = [
+  { title: "Orders", url: "/dashboard/orders" },
   { title: "Dishes", url: "/dashboard" },
   { title: "Settings", url: "/dashboard/settings" },
 ];

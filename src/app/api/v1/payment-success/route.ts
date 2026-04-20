@@ -1,6 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
 import nodemailer from "nodemailer";
+import connectDB from "@/lib/db";
+import { Order } from "@/models/order";
+import { PushSubscription } from "@/models/push-subscription";
+import webpush from "web-push";
+
+webpush.setVapidDetails(
+  process.env.VAPID_EMAIL as string,
+  process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY as string,
+  process.env.VAPID_PRIVATE_KEY as string
+);
 import {
   calculateCartTotal,
   getDeliveryMinimumMessage,
@@ -76,6 +86,46 @@ export async function POST(req: NextRequest) {
       const fullAddress = [meta.addressLine, meta.addressFloor, meta.addressCity]
         .filter(Boolean)
         .join(", ");
+
+      try {
+        await connectDB();
+        await Order.create({
+          customerName: meta.customerName || customer?.name || "Anonymous",
+          phone: meta.customerPhone || customer?.phone || "",
+          email: meta.customerEmail || customer?.email || "",
+          deliveryAddress: fullAddress || customer?.address?.line1 || "",
+          addressPincode: meta.addressPincode || customer?.address?.postal_code || "",
+          addressInstructions: meta.addressInstructions || "",
+          orderType,
+          items: order,
+          total,
+          status: "pending",
+          stripeSessionId: session.id,
+        });
+      } catch (dbErr) {
+        console.error("Failed to persist order to DB:", dbErr);
+      }
+
+      // Send push notifications to all subscribed admin devices
+      try {
+        await connectDB();
+        const subscriptions = await PushSubscription.find().lean();
+        const customerName = meta.customerName || customer?.name || "Anonymous";
+        const payload = JSON.stringify({
+          title: "Nouvelle commande !",
+          body: `${customerName} — ${total.toFixed(2)} €`,
+        });
+        await Promise.allSettled(
+          subscriptions.map((sub) =>
+            webpush.sendNotification(
+              { endpoint: sub.endpoint, keys: sub.keys },
+              payload
+            )
+          )
+        );
+      } catch (pushErr) {
+        console.error("Failed to send push notification:", pushErr);
+      }
 
       const response = await sendEmail(
         meta.customerName || customer?.name || "Anonymous",
