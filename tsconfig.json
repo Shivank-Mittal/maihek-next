@@ -22,7 +22,7 @@
       "@/*": ["./src/*"],
       "@repo-types/*": ["./types/*"]
     },
-    "types": ["jest", "@testing-library/jest-dom"],
+    "types": ["jest", "@testing-library/jest-dom", "google.maps"],
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
   "exclude": ["node_modules"],

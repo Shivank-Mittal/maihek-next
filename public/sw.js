@@ -1,5 +1,6 @@
 self.addEventListener("push", (event) => {
-  const data = event.data?.json() ?? {};
+  let data = {};
+  try { data = event.data?.json() ?? {}; } catch { data = { title: event.data?.text() ?? "Nouvelle commande !" }; }
   const title = data.title ?? "Nouvelle commande !";
   const options = {
     body: data.body ?? "",
