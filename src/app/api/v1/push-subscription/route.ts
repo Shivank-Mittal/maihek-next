@@ -2,7 +2,7 @@ import { NextRequest } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import connectDB from "@/lib/db";
-import { PushSubscription } from "@/models/push-subscription";
+import { FcmToken } from "@/models/fcm-token";
 import ApiResponse from "@/lib/response";
 
 export async function POST(req: NextRequest) {
@@ -11,17 +11,11 @@ export async function POST(req: NextRequest) {
     return ApiResponse.unauthorized("Not authorized");
   }
 
-  const { endpoint, keys } = await req.json();
-  if (!endpoint || !keys?.p256dh || !keys?.auth) {
-    return ApiResponse.badRequest("Invalid subscription");
-  }
+  const { token } = await req.json();
+  if (!token) return ApiResponse.badRequest("Missing FCM token");
 
   await connectDB();
-  await PushSubscription.findOneAndUpdate(
-    { endpoint },
-    { endpoint, keys },
-    { upsert: true, new: true }
-  );
+  await FcmToken.findOneAndUpdate({ token }, { token }, { upsert: true, new: true });
 
   return ApiResponse.ok({ message: "Subscribed" });
 }
@@ -32,8 +26,8 @@ export async function DELETE(req: NextRequest) {
     return ApiResponse.unauthorized("Not authorized");
   }
 
-  const { endpoint } = await req.json();
+  const { token } = await req.json();
   await connectDB();
-  await PushSubscription.deleteOne({ endpoint });
+  await FcmToken.deleteOne({ token });
   return ApiResponse.ok({ message: "Unsubscribed" });
 }

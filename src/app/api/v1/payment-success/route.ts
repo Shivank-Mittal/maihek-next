@@ -3,14 +3,8 @@ import Stripe from "stripe";
 import nodemailer from "nodemailer";
 import connectDB from "@/lib/db";
 import { Order } from "@/models/order";
-import { PushSubscription } from "@/models/push-subscription";
-import webpush from "web-push";
-
-webpush.setVapidDetails(
-  process.env.VAPID_EMAIL as string,
-  process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY as string,
-  process.env.VAPID_PRIVATE_KEY as string
-);
+import { FcmToken } from "@/models/fcm-token";
+import { getAdminMessaging } from "@/firebase/admin";
 import {
   calculateCartTotal,
   getDeliveryMinimumMessage,
@@ -109,18 +103,21 @@ export async function POST(req: NextRequest) {
       // Send push notifications to all subscribed admin devices
       try {
         await connectDB();
-        const subscriptions = await PushSubscription.find().lean();
+        const tokens = await FcmToken.find().lean();
         const customerName = meta.customerName || customer?.name || "Anonymous";
-        const payload = JSON.stringify({
-          title: "Nouvelle commande !",
-          body: `${customerName} — ${total.toFixed(2)} €`,
-        });
+        const adminMessaging = getAdminMessaging();
         await Promise.allSettled(
-          subscriptions.map((sub) =>
-            webpush.sendNotification(
-              { endpoint: sub.endpoint, keys: sub.keys },
-              payload
-            )
+          tokens.map((t) =>
+            adminMessaging.send({
+              token: t.token,
+              notification: {
+                title: "Nouvelle commande !",
+                body: `${customerName} — ${total.toFixed(2)} €`,
+              },
+              webpush: {
+                fcmOptions: { link: "/dashboard/orders" },
+              },
+            })
           )
         );
       } catch (pushErr) {

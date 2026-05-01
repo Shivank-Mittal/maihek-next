@@ -3,6 +3,8 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { motion } from "framer-motion";
 import { Printer, Bell, BellOff } from "lucide-react";
+import { getToken, onMessage } from "firebase/messaging";
+import { firebaseMessaging } from "@/firebase/initialize";
 import {
   Table,
   TableBody,
@@ -37,12 +39,6 @@ interface Order {
   createdAt: string;
 }
 
-function urlBase64ToUint8Array(base64String: string) {
-  const padding = "=".repeat((4 - (base64String.length % 4)) % 4);
-  const base64 = (base64String + padding).replace(/-/g, "+").replace(/_/g, "/");
-  const rawData = atob(base64);
-  return Uint8Array.from([...rawData].map((c) => c.charCodeAt(0)));
-}
 
 const statusConfig = {
   pending: {
@@ -117,55 +113,84 @@ export default function OrdersPage() {
     return () => clearInterval(id);
   }, [fetchOrders]);
 
+  const fcmTokenRef = useRef<string | null>(null);
+  const swRegRef = useRef<ServiceWorkerRegistration | null>(null);
+
+  const getSwReg = () => {
+    if (swRegRef.current) return Promise.resolve(swRegRef.current);
+    return navigator.serviceWorker.register("/firebase-messaging-sw.js").then((reg) => {
+      swRegRef.current = reg;
+      return reg;
+    });
+  };
+
   // Check if already subscribed on mount
   useEffect(() => {
-    if (!("serviceWorker" in navigator) || !("PushManager" in window)) return;
-    navigator.serviceWorker.register("/sw.js").then(async (reg) => {
-      const sub = await reg.pushManager.getSubscription();
-      setPushSubscribed(!!sub);
+    if (!("Notification" in window) || Notification.permission !== "granted") return;
+    getSwReg().then(async (reg) => {
+      const token = await getToken(firebaseMessaging, {
+        vapidKey: process.env.NEXT_PUBLIC_FIREBASE_VAPID_KEY,
+        serviceWorkerRegistration: reg,
+      }).catch(() => null);
+      if (token) {
+        fcmTokenRef.current = token;
+        setPushSubscribed(true);
+      }
     });
   }, []);
 
+  // Handle foreground messages
+  useEffect(() => {
+    const unsub = onMessage(firebaseMessaging, (payload) => {
+      const title = payload.notification?.title ?? "Nouvelle commande !";
+      const body = payload.notification?.body ?? "";
+      playBeep();
+      new Notification(title, { body, requireInteraction: true });
+    });
+    return unsub;
+  }, []);
+
+  // Play beep when a background notification is clicked and tab is focused
+  useEffect(() => {
+    const handler = (event: MessageEvent) => {
+      if (event.data?.type === "NOTIFICATION_CLICK") playBeep();
+    };
+    navigator.serviceWorker?.addEventListener("message", handler);
+    return () => navigator.serviceWorker?.removeEventListener("message", handler);
+  }, []);
+
   const handlePushToggle = async () => {
-    if (!("serviceWorker" in navigator) || !("PushManager" in window)) {
-      alert("Les notifications push ne sont pas supportées sur ce navigateur.");
+    if (!("Notification" in window)) {
+      alert("Les notifications ne sont pas supportées sur ce navigateur.");
       return;
     }
     setPushLoading(true);
     try {
-      const reg = await navigator.serviceWorker.register("/sw.js");
-      const existing = await reg.pushManager.getSubscription();
-
-      if (existing) {
-        // Unsubscribe
-        await existing.unsubscribe();
+      if (pushSubscribed && fcmTokenRef.current) {
         await fetch("/api/v1/push-subscription", {
           method: "DELETE",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ endpoint: existing.endpoint }),
+          body: JSON.stringify({ token: fcmTokenRef.current }),
         });
+        fcmTokenRef.current = null;
         setPushSubscribed(false);
       } else {
-        // Subscribe
         const permission = await Notification.requestPermission();
         if (permission !== "granted") {
           alert("Permission refusée. Activez les notifications dans les paramètres.");
           return;
         }
-        const vapidKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
-        if (!vapidKey) {
-          alert("VAPID public key not configured.");
-          return;
-        }
-        const sub = await reg.pushManager.subscribe({
-          userVisibleOnly: true,
-          applicationServerKey: urlBase64ToUint8Array(vapidKey),
+        const reg = await getSwReg();
+        const token = await getToken(firebaseMessaging, {
+          vapidKey: process.env.NEXT_PUBLIC_FIREBASE_VAPID_KEY,
+          serviceWorkerRegistration: reg,
         });
         await fetch("/api/v1/push-subscription", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(sub.toJSON()),
+          body: JSON.stringify({ token }),
         });
+        fcmTokenRef.current = token;
         setPushSubscribed(true);
       }
     } catch (err) {
