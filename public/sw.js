@@ -4,10 +4,8 @@ self.addEventListener("push", (event) => {
   const title = data.title ?? "Nouvelle commande !";
   const options = {
     body: data.body ?? "",
-    icon: "/icon-192.png",
-    badge: "/icon-192.png",
     vibrate: [200, 100, 200, 100, 200],
-    requireInteraction: true, // stays on screen until dismissed
+    requireInteraction: true,
   };
   event.waitUntil(self.registration.showNotification(title, options));
 });

@@ -152,11 +152,14 @@ export default function OrdersPage() {
           alert("Permission refusée. Activez les notifications dans les paramètres.");
           return;
         }
+        const vapidKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
+        if (!vapidKey) {
+          alert("VAPID public key not configured.");
+          return;
+        }
         const sub = await reg.pushManager.subscribe({
           userVisibleOnly: true,
-          applicationServerKey: urlBase64ToUint8Array(
-            "BJPGQ52zIPFLgddBXW2apV55TjMvakT2vraAlZXw6XU_yx1Eixwa4VSexWM8C9rLycKOD-lawePPblxiYpiMynE"
-          ),
+          applicationServerKey: urlBase64ToUint8Array(vapidKey),
         });
         await fetch("/api/v1/push-subscription", {
           method: "POST",
