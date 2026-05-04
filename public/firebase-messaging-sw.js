@@ -1,21 +1,14 @@
-import { NextResponse } from "next/server";
-
-export async function GET() {
-  const config = {
-    apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
-    authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
-    projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
-    storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
-    messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
-    appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
-    measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID,
-  };
-
-  const sw = `
 importScripts("https://www.gstatic.com/firebasejs/12.12.1/firebase-app-compat.js");
 importScripts("https://www.gstatic.com/firebasejs/12.12.1/firebase-messaging-compat.js");
 
-firebase.initializeApp(${JSON.stringify(config)});
+firebase.initializeApp({
+  apiKey: "AIzaSyAhw4KtNEBWed4CVcflu9F_Z8Hg31l9XTw",
+  authDomain: "maihak.firebaseapp.com",
+  projectId: "maihak",
+  storageBucket: "maihak.firebasestorage.app",
+  messagingSenderId: "834752351653",
+  appId: "1:834752351653:web:4e0555580f04d682016c4c",
+});
 
 const messaging = firebase.messaging();
 
@@ -43,9 +36,3 @@ self.addEventListener("notificationclick", (event) => {
     })
   );
 });
-`;
-
-  return new NextResponse(sw, {
-    headers: { "Content-Type": "application/javascript" },
-  });
-}

@@ -265,7 +265,7 @@ function CheckoutContent() {
                       });
 
                       return (
-                        <tr key={item.id} className="border-b border-gray-100">
+                        <tr id="items-row" key={item.id} className="border-b border-gray-100">
                           <td className="py-3 px-2 text-sm">
                             <div className="font-medium text-gray-900">{item.name}</div>
                             {item.option && (

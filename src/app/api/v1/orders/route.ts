@@ -4,10 +4,23 @@ import { authOptions } from "@/lib/auth";
 import connectDB from "@/lib/db";
 import { Order } from "@/models/order";
 import ApiResponse from "@/lib/response";
+import jwt from "jsonwebtoken";
 
-export async function GET() {
+function isAuthorized(req: NextRequest, session: any) {
+  if (session?.user?.role === "admin") return true;
+  const auth = req.headers.get("authorization");
+  if (!auth?.startsWith("Bearer ")) return false;
+  try {
+    const payload = jwt.verify(auth.slice(7), process.env.JWT_SECRET as string) as any;
+    return payload?.role === "admin";
+  } catch {
+    return false;
+  }
+}
+
+export async function GET(req: NextRequest) {
   const session = await getServerSession(authOptions);
-  if (!session || (session.user as any)?.role !== "admin") {
+  if (!isAuthorized(req, session)) {
     return ApiResponse.unauthorized("Not authorized");
   }
 
@@ -18,7 +31,7 @@ export async function GET() {
 
 export async function PATCH(req: NextRequest) {
   const session = await getServerSession(authOptions);
-  if (!session || (session.user as any)?.role !== "admin") {
+  if (!isAuthorized(req, session)) {
     return ApiResponse.unauthorized("Not authorized");
   }
 

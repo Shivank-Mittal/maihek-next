@@ -61,9 +61,18 @@ const statusConfig = {
   },
 };
 
-const playBeep = () => {
-  const ctx = new AudioContext();
+let audioCtx: AudioContext | null = null;
 
+const unlockAudio = () => {
+  if (!audioCtx) audioCtx = new AudioContext();
+  if (audioCtx.state === "suspended") audioCtx.resume();
+};
+
+const playBeep = async () => {
+  if (!audioCtx) audioCtx = new AudioContext();
+  if (audioCtx.state === "suspended") await audioCtx.resume();
+
+  const ctx = audioCtx;
   const beep = (startTime: number) => {
     const osc = ctx.createOscillator();
     const gain = ctx.createGain();
@@ -77,7 +86,6 @@ const playBeep = () => {
     osc.stop(startTime + 0.25);
   };
 
-  // 3 quick beeps
   beep(ctx.currentTime);
   beep(ctx.currentTime + 0.35);
   beep(ctx.currentTime + 0.7);
@@ -145,7 +153,12 @@ export default function OrdersPage() {
       const title = payload.notification?.title ?? "Nouvelle commande !";
       const body = payload.notification?.body ?? "";
       playBeep();
-      new Notification(title, { body, requireInteraction: true });
+      const reg = swRegRef.current;
+      if (reg) {
+        reg.showNotification(title, { body, requireInteraction: true });
+      } else {
+        new Notification(title, { body, requireInteraction: true });
+      }
     });
     return unsub;
   }, []);
@@ -160,6 +173,7 @@ export default function OrdersPage() {
   }, []);
 
   const handlePushToggle = async () => {
+    unlockAudio();
     if (!("Notification" in window)) {
       alert("Les notifications ne sont pas supportées sur ce navigateur.");
       return;
@@ -185,6 +199,7 @@ export default function OrdersPage() {
           vapidKey: process.env.NEXT_PUBLIC_FIREBASE_VAPID_KEY,
           serviceWorkerRegistration: reg,
         });
+        console.log("Susbscribed with the token, ", token )
         await fetch("/api/v1/push-subscription", {
           method: "POST",
           headers: { "Content-Type": "application/json" },

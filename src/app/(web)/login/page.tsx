@@ -77,7 +77,7 @@ export default function AdminLoginPage() {
             </div>
             <div>
               <label htmlFor="password" className="block text-sm font-medium text-gray-700">
-                Password
+                Mot de passe
               </label>
               <motion.input
                 initial={{ opacity: 0, x: -20 }}
@@ -136,7 +136,7 @@ export default function AdminLoginPage() {
             className="absolute inset-0 flex items-center justify-center"
           >
             <p className="text-white text-2xl font-semibold text-center px-4">
-              Manage Your Restaurant with Ease
+              Gérez votre restaurant en toute simplicité
             </p>
           </motion.div>
         </div>
