@@ -147,7 +147,7 @@ export default function CartDrawer({ menuCategories = [] }: CartDrawerProps) {
     <div>
       <button
         onClick={() => setIsDrawerOpen(true)}
-        className="xl:hidden bottom-20 right-4 z-50 bg-black text-white p-3 rounded-full shadow-lg hover:bg-gray-800 transition duration-300 focus:outline-none focus:ring-2 focus:ring-gray-400"
+        className="xl:hidden fixed bottom-6 right-4 z-50 bg-black text-white p-3 rounded-full shadow-lg hover:bg-gray-800 transition duration-300 focus:outline-none focus:ring-2 focus:ring-gray-400"
       >
         <ShoppingCart className="h-5 w-5" />
 

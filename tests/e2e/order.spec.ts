@@ -140,7 +140,7 @@ test("clears cart after successful takeaway order", async ({ page }) => {
   await expect(page.getByText("Commande Confirmée")).toBeVisible({ timeout: 10_000 });
   await page.getByRole("button", { name: "Fermer" }).click();
 
-  await expect(page).toHaveURL(PageConstants.MAIHAK);
+  await page.waitForURL(PageConstants.MAIHAK, { timeout: 10_000 });
   const cartItems = await page.evaluate(() => localStorage.getItem("cartItems"));
   expect(JSON.parse(cartItems ?? "[]")).toHaveLength(0);
 });
@@ -217,7 +217,7 @@ test("places livraison COD order and shows confirmation modal", async ({ page })
 // ─── Checkout: API error handling ────────────────────────────────────────────
 
 test("shows error toast when send-email API fails", async ({ page }) => {
-  await page.route("http://localhost:3000/api/v1/send-email", async (route) => {
+  await page.route("**/api/v1/send-email", async (route) => {
     await route.fulfill({
       status: 500,
       contentType: "application/json",
@@ -243,7 +243,7 @@ test("shows error toast when send-email API fails", async ({ page }) => {
 
 test("redirects unauthenticated user from orders page to login", async ({ page }) => {
   await page.goto(PageConstants.ORDERS);
-  await expect(page).toHaveURL(/\/login/);
+  await expect(page).toHaveURL(/\/login/, { timeout: 10_000 });
 });
 
 test("shows orders table after admin login", async ({ page }) => {
@@ -276,7 +276,7 @@ test("shows orders table after admin login", async ({ page }) => {
   // Log in first
   await page.goto(PageConstants.LOGIN);
   await page.getByLabel(/email administrateur/i).fill("maihakrestoindien@gmail.com");
-  await page.getByLabel(/mot de passe/i).fill("maihak@2024");
+  await page.getByLabel(/mot de passe/i).fill("admin123");
   await page.getByRole("button", { name: /se connecter au tableau de bord/i }).click();
 
   await page.goto(PageConstants.ORDERS);

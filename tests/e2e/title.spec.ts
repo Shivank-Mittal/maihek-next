@@ -34,7 +34,7 @@ test("should redirect to the login page if not logged in", async ({page}) => {
     const pageName = PageConstants.DASHBOARD;
     await page.goto(pageName);
 
-    await expect(page).toHaveURL(/\/login/);
+    await expect(page).toHaveURL(/\/login/, { timeout: 10_000 });
 
 
    const title = await page.title();

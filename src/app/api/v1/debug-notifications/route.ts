@@ -35,6 +35,6 @@ export async function POST(req: NextRequest) {
     return ApiResponse.ok({ success: true, messageId: result });
   } catch (err: any) {
     console.error("[debug-notifications] FAILED:", err);
-    return ApiResponse.error(err?.message ?? "Unknown error", 500);
+    return ApiResponse.internalServerError(err?.message ?? "Unknown error");
   }
 }

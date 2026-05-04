@@ -8,7 +8,6 @@ import { getMessaging } from "firebase-admin/messaging";
 
 const TOKEN =
   "f9fq9lzNMaBTncnpoVHX8O:APA91bHw2f7ghx8t_HpnB4UHdOHHLeuK1Cz-L4zsiBaO8CTMkdSFfbVyEfTWcv3C4AkIFFS3I3oEkG95egAcf5gEqe04WmMJcXP4IT4xTnRDxXt-WrXJjxE";
-
 async function main() {
   if (!getApps().length) {
     const serviceAccount = JSON.parse(

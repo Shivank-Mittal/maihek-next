@@ -211,7 +211,6 @@ export default function Menu() {
                       border: "1px solid #44403c",
                     },
                   });
-                  setTimeout(() => setIsDrawerOpen(true), 100);
                 }}
               />
             ))}

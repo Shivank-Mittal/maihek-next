@@ -151,7 +151,7 @@ function AddOnRow({
         <button
           className="w-7 h-7 flex items-center justify-center rounded-full bg-stone-100 hover:bg-stone-200 text-stone-600 disabled:opacity-30 transition-colors"
           onClick={() => onAdd(addon)}
-          disabled={atLimit && cartQty === 0}
+          disabled={atLimit}
         >
           <Plus className="w-3 h-3" />
         </button>
