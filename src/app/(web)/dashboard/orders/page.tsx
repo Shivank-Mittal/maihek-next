@@ -37,6 +37,7 @@ interface Order {
   items: OrderItem[];
   total: number;
   status: "pending" | "confirmed" | "completed";
+  paymentMethod: string;
   createdAt: string;
 }
 
@@ -275,6 +276,14 @@ export default function OrdersPage() {
             <strong>Type:</strong>{" "}
             {printingOrder.orderType === "livraison" ? "Livraison" : "À emporter"}
           </p>
+          <p>
+            <strong>Paiement:</strong>{" "}
+            {printingOrder.paymentMethod === "online"
+              ? "En ligne (Stripe)"
+              : printingOrder.paymentMethod === "cod_card"
+                ? "Carte (à la livraison)"
+                : "Espèces (à la livraison)"}
+          </p>
           {printingOrder.orderType === "livraison" && printingOrder.deliveryAddress && (
             <p>
               <strong>Adresse:</strong> {printingOrder.deliveryAddress}{" "}
@@ -349,6 +358,7 @@ export default function OrdersPage() {
                     <TableHead>Client</TableHead>
                     <TableHead>Téléphone</TableHead>
                     <TableHead>Type</TableHead>
+                    <TableHead>Paiement</TableHead>
                     <TableHead>Articles</TableHead>
                     <TableHead>Total</TableHead>
                     <TableHead>Statut</TableHead>
@@ -377,6 +387,15 @@ export default function OrdersPage() {
                           ) : (
                             "-"
                           )}
+                        </TableCell>
+                        <TableCell className="text-sm whitespace-nowrap">
+                          {order.paymentMethod === "online"
+                            ? "En ligne"
+                            : order.paymentMethod === "cod_card"
+                              ? "Carte (livraison)"
+                              : order.paymentMethod === "cod_cash"
+                                ? "Espèces (livraison)"
+                                : "-"}
                         </TableCell>
                         <TableCell className="max-w-48 truncate text-sm">
                           {itemsSummary(order.items)}

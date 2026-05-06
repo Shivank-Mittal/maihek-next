@@ -68,6 +68,7 @@ export async function POST(req: NextRequest) {
           items,
           total,
           stripeSessionId: session.id,
+          paymentMethod: "online",
         },
         "En ligne (Stripe)"
       );

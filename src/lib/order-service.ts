@@ -21,6 +21,7 @@ export interface OrderPayload {
   items: OrderItem[];
   total: number;
   stripeSessionId?: string;
+  paymentMethod?: string;
 }
 
 /**

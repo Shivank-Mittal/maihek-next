@@ -27,6 +27,7 @@ const orderSchema = new Schema({
     default: "pending",
   },
   stripeSessionId: { type: String, default: "" },
+  paymentMethod: { type: String, default: "" },
   createdAt: { type: Date, default: Date.now },
 });
 
@@ -50,6 +51,7 @@ export interface OrderDocument extends Document {
   total: number;
   status: "pending" | "confirmed" | "completed";
   stripeSessionId: string;
+  paymentMethod: string;
   createdAt: Date;
 }
 

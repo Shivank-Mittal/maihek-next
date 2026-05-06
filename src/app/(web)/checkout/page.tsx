@@ -40,7 +40,7 @@ interface FormData {
   phone: string;
   email: string;
   orderType: "emporter" | "livraison";
-  paymentMethod: "online" | "cod";
+  paymentMethod: "online" | "cod_cash" | "cod_card";
   addressLine?: string;
   floor?: string;
   city?: string;
@@ -74,7 +74,7 @@ function CheckoutContent() {
       phone: "",
       email: "",
       orderType: "livraison",
-      paymentMethod: "online",
+      paymentMethod: "cod_cash",
       addressLine: "",
       floor: "",
       city: "",
@@ -175,6 +175,7 @@ function CheckoutContent() {
             zipcode: data.pincode,
             instructions: data.instructions,
             orderType: data.orderType,
+            paymentMethod: data.paymentMethod,
             orders: cart.map((item: CartItem) => {
               const pricing = calculateCartItemPricing(item, {
                 orderType: data.orderType,
@@ -644,37 +645,41 @@ function CheckoutContent() {
                       <label className="block text-sm font-medium text-gray-700 mb-2">
                         Mode de paiement
                       </label>
-                      <div className="flex gap-3">
-                        {(["online", "cod"] as const).map((method) => (
+                      <div className="flex flex-col gap-3">
+                        {(
+                          [
+                            { value: "online" as const, label: "En ligne", sub: "Carte via Stripe", icon: "credit" },
+                            { value: "cod_cash" as const, label: "À la livraison — Espèces", sub: "Paiement en espèces", icon: "banknote" },
+                            { value: "cod_card" as const, label: "À la livraison — Carte", sub: "Paiement par carte bancaire", icon: "credit" },
+                          ]
+                        ).map((method) => (
                           <label
-                            key={method}
-                            className={`flex-1 flex items-center gap-2 p-3 rounded-lg border cursor-pointer transition-all text-sm ${
-                              paymentMethod === method
+                            key={method.value}
+                            className={`flex items-center gap-2 p-3 rounded-lg border cursor-pointer transition-all text-sm ${
+                              paymentMethod === method.value
                                 ? "border-black bg-black text-white"
                                 : "border-gray-200 bg-white text-gray-700 hover:border-gray-400"
                             }`}
                           >
                             <input
                               type="radio"
-                              value={method}
+                              value={method.value}
                               {...register("paymentMethod")}
                               className="sr-only"
                             />
-                            {method === "online" ? (
-                              <CreditCard className="h-4 w-4 shrink-0" />
-                            ) : (
+                            {method.icon === "banknote" ? (
                               <Banknote className="h-4 w-4 shrink-0" />
+                            ) : (
+                              <CreditCard className="h-4 w-4 shrink-0" />
                             )}
                             <div>
-                              <p className="font-medium leading-tight">
-                                {method === "online" ? "En ligne" : "À la livraison"}
-                              </p>
+                              <p className="font-medium leading-tight">{method.label}</p>
                               <p
                                 className={`text-xs leading-tight mt-0.5 ${
-                                  paymentMethod === method ? "text-gray-300" : "text-gray-400"
+                                  paymentMethod === method.value ? "text-gray-300" : "text-gray-400"
                                 }`}
                               >
-                                {method === "online" ? "Carte via Stripe" : "Espèces"}
+                                {method.sub}
                               </p>
                             </div>
                           </label>

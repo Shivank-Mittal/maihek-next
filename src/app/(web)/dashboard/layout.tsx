@@ -2,17 +2,26 @@
 
 import { SiteHeader } from "@/components/site-header";
 import { useSession } from "next-auth/react";
-import { redirect } from "next/navigation";
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
 
 export default function layout({ children }: { children: React.ReactNode }) {
   const { data: session, status } = useSession();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (status === "loading") return;
+    if (!session || session?.user?.role !== "admin") {
+      router.replace("/login");
+    }
+  }, [session, status, router]);
 
   if (status === "loading") {
     return <div>Loading...</div>;
   }
 
   if (!session || session?.user?.role !== "admin") {
-    redirect("/login");
+    return null;
   }
 
   return (

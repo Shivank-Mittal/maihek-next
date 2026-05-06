@@ -23,6 +23,7 @@ interface RequestBody {
   address?: string;
   zipcode?: string;
   orderType?: string;
+  paymentMethod?: string;
   instructions?: string;
 }
 
@@ -36,7 +37,7 @@ const round2 = (n: number) => Math.round((n + Number.EPSILON) * 100) / 100;
 export async function POST(request: NextRequest) {
   try {
     const body: RequestBody = await request.json();
-    const { name, orders, phone, email, address, zipcode, orderType, instructions } = body;
+    const { name, orders, phone, email, address, zipcode, orderType, paymentMethod, instructions } = body;
 
     if (!Array.isArray(orders) || orders.length === 0) {
       return NextResponse.json({ message: "No orders supplied" }, { status: 400 });
@@ -69,8 +70,9 @@ export async function POST(request: NextRequest) {
         orderType: (orderType as "livraison" | "emporter") ?? "",
         items,
         total,
+        paymentMethod: paymentMethod ?? "",
       },
-      "Espèces (Cash)"
+      paymentMethod === "cod_card" ? "Carte (à la livraison)" : "Espèces (à la livraison)"
     );
 
     return NextResponse.json({ message: "Order received successfully!" });

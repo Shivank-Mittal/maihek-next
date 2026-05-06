@@ -16,5 +16,6 @@ export async function saveOrder(payload: OrderPayload): Promise<void> {
     total: payload.total,
     status: "pending",
     stripeSessionId: payload.stripeSessionId ?? "",
+    paymentMethod: payload.paymentMethod ?? "",
   });
 }
