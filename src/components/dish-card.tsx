@@ -30,6 +30,7 @@ export default function DishCard({
   addToCart,
 }: DishCardProps) {
   const [quantity, setQuantity] = useState(0);
+  const [imgError, setImgError] = useState(false);
   const isDisabled = dish.active === false || restaurantClosed === true;
   const pricing = calculateCartItemPricing({
     price: dish.price,
@@ -72,24 +73,16 @@ export default function DishCard({
       )}
       <div className="p-5">
         <div className="flex flex-col gap-4">
-          {dish.image ? (
+          {dish.image && !imgError ? (
             <img
               src={dish.image}
               alt={dish.name}
+              referrerPolicy="no-referrer"
               className="w-full h-44 rounded-[2rem] object-cover border border-stone-100 shadow-sm"
-              onError={(e) => {
-                e.currentTarget.style.display = "none";
-                e.currentTarget.nextElementSibling?.removeAttribute("hidden");
-              }}
+              onError={() => setImgError(true)}
             />
-          ) : null}
-          {!dish.image && (
+          ) : (
             <div className="w-full h-44 rounded-[2rem] bg-stone-50 border border-stone-100 flex items-center justify-center text-4xl shadow-sm">
-              {getCategoryEmoji(categoryName)}
-            </div>
-          )}
-          {dish.image && (
-            <div hidden className="w-full h-44 rounded-[2rem] bg-stone-50 border border-stone-100 flex items-center justify-center text-4xl shadow-sm">
               {getCategoryEmoji(categoryName)}
             </div>
           )}
