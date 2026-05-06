@@ -11,12 +11,17 @@ export async function POST(req: NextRequest) {
     return ApiResponse.unauthorized("Not authorized");
   }
 
-  const { token } = await req.json();
+  const { token, checkOnly } = await req.json();
   if (!token) return ApiResponse.badRequest("Missing FCM token");
 
   await connectDB();
-  await FcmToken.findOneAndUpdate({ token }, { token }, { upsert: true, new: true });
 
+  if (checkOnly) {
+    const exists = await FcmToken.exists({ token });
+    return ApiResponse.ok({ subscribed: !!exists });
+  }
+
+  await FcmToken.findOneAndUpdate({ token }, { token }, { upsert: true, new: true });
   return ApiResponse.ok({ message: "Subscribed" });
 }
 

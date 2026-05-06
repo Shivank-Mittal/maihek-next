@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { motion } from "framer-motion";
 import { getToken, onMessage } from "firebase/messaging";
-import { firebaseMessaging } from "@/firebase/initialize";
+import { getFirebaseMessaging } from "@/firebase/initialize";
 import {
   IconBell,
   IconBellOff,
@@ -150,11 +150,19 @@ export default function OrdersPage() {
   useEffect(() => {
     if (!("Notification" in window) || Notification.permission !== "granted") return;
     getSwReg().then(async (reg) => {
-      const token = await getToken(firebaseMessaging, {
+      const token = await getToken(getFirebaseMessaging(), {
         vapidKey: process.env.NEXT_PUBLIC_FIREBASE_VAPID_KEY,
         serviceWorkerRegistration: reg,
       }).catch(() => null);
-      if (token) {
+      if (!token) return;
+      // Verify this token is actually registered in the DB
+      const res = await fetch("/api/v1/push-subscription", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ token, checkOnly: true }),
+      }).catch(() => null);
+      const json = res ? await res.json().catch(() => null) : null;
+      if (json?.data?.subscribed) {
         fcmTokenRef.current = token;
         setPushSubscribed(true);
       }
@@ -162,7 +170,7 @@ export default function OrdersPage() {
   }, []);
 
   useEffect(() => {
-    const unsub = onMessage(firebaseMessaging, (payload) => {
+    const unsub = onMessage(getFirebaseMessaging(), (payload) => {
       const title = payload.notification?.title ?? "Nouvelle commande !";
       const body = payload.notification?.body ?? "";
       playBeep();
@@ -207,7 +215,7 @@ export default function OrdersPage() {
           return;
         }
         const reg = await getSwReg();
-        const token = await getToken(firebaseMessaging, {
+        const token = await getToken(getFirebaseMessaging(), {
           vapidKey: process.env.NEXT_PUBLIC_FIREBASE_VAPID_KEY,
           serviceWorkerRegistration: reg,
         });

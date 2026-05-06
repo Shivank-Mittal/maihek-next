@@ -1,5 +1,5 @@
-import { initializeApp, getApps } from "firebase/app";
-import { getMessaging } from "firebase/messaging";
+import { initializeApp, getApps, type FirebaseApp } from "firebase/app";
+import { getMessaging, type Messaging } from "firebase/messaging";
 
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
@@ -11,5 +11,15 @@ const firebaseConfig = {
   measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID,
 };
 
-export const firebaseApp = getApps().length ? getApps()[0] : initializeApp(firebaseConfig);
-export const firebaseMessaging = getMessaging(firebaseApp);
+let _app: FirebaseApp | null = null;
+let _messaging: Messaging | null = null;
+
+function getFirebaseApp(): FirebaseApp {
+  if (!_app) _app = getApps().length ? getApps()[0] : initializeApp(firebaseConfig);
+  return _app;
+}
+
+export function getFirebaseMessaging(): Messaging {
+  if (!_messaging) _messaging = getMessaging(getFirebaseApp());
+  return _messaging;
+}
