@@ -28,7 +28,7 @@ const orderSchema = new Schema({
   },
   stripeSessionId: { type: String, default: "", sparse: true, unique: true },
   paymentMethod: { type: String, default: "" },
-  createdAt: { type: Date, default: Date.now },
+  createdAt: { type: Date, default: Date.now, expires: 604800 },
 });
 
 export interface OrderItemDocument {
