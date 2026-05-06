@@ -38,6 +38,7 @@ interface Order {
   total: number;
   status: "pending" | "confirmed" | "completed";
   paymentMethod: string;
+  stripeSessionId?: string;
   createdAt: string;
 }
 
@@ -363,6 +364,7 @@ export default function OrdersPage() {
                     <TableHead>Total</TableHead>
                     <TableHead>Statut</TableHead>
                     <TableHead>Actions</TableHead>
+                    <TableHead>Stripe</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -426,6 +428,21 @@ export default function OrdersPage() {
                               <Printer className="h-4 w-4" />
                             </Button>
                           </div>
+                        </TableCell>
+                        <TableCell>
+                          {order.stripeSessionId ? (
+                            <a
+                              href={`https://dashboard.stripe.com/payments/${order.stripeSessionId}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                            >
+                              <Button size="sm" variant="outline" className="font-mono text-xs">
+                                {order.stripeSessionId.slice(-8)}…
+                              </Button>
+                            </a>
+                          ) : (
+                            <span className="text-muted-foreground text-xs">-</span>
+                          )}
                         </TableCell>
                       </TableRow>
                     );

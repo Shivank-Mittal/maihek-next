@@ -1,11 +1,10 @@
 "use client";
 
 import { Suspense, useEffect, useState } from "react";
-import { AnimatePresence, motion } from "framer-motion";
+import { motion } from "framer-motion";
 import {
   Banknote,
   Building2,
-  CheckCircle2,
   CreditCard,
   FileText,
   Hash,
@@ -54,7 +53,6 @@ function CheckoutContent() {
   const { cart, removeFromCart, clearCart } = useCart();
 
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [showModal, setShowModal] = useState(false);
   const [allowedPincodes, setAllowedPincodes] = useState<string[]>([]);
   const [addressConfirmed, setAddressConfirmed] = useState(false);
   const [discountSettings, setDiscountSettings] = useState<DiscountSettingsResponse>({
@@ -193,12 +191,32 @@ function CheckoutContent() {
         if (!response.ok) throw new Error((await response.json()).message);
 
         clearCart();
-        toast.success("Commande réussie !", {
-          duration: 3000,
-          style: { background: "#1a1a1a", color: "#fff", border: "1px solid #333" },
-        });
-        setShowModal(true);
         reset();
+        const orderSummary = {
+          customerName: data.name,
+          phone: data.phone,
+          email: data.email,
+          orderType: data.orderType,
+          deliveryAddress: fullAddress,
+          addressPincode: data.pincode ?? "",
+          addressInstructions: data.instructions ?? "",
+          paymentMethod: data.paymentMethod,
+          items: cart.map((item: CartItem) => {
+            const pricing = calculateCartItemPricing(item, {
+              orderType: data.orderType,
+              takeawayDiscount: discountSettings.takeawayDiscount,
+            });
+            return {
+              name: item.name,
+              quantity: item.quantity || 1,
+              price: pricing.unitTotal,
+              _subtotal: pricing.lineTotal,
+              option: item.option,
+            };
+          }),
+          total: pricingSummary.total,
+        };
+        router.push(`/success?order=${encodeURIComponent(JSON.stringify(orderSummary))}`);
       }
     } catch (error: any) {
       toast.error(error.message || "Erreur, réessayez.", {
@@ -746,42 +764,6 @@ function CheckoutContent() {
           </motion.div>
         )}
 
-        <AnimatePresence>
-          {showModal && (
-            <motion.div
-              className="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-            >
-              <motion.div
-                className="bg-white p-8 rounded-lg shadow-lg max-w-md w-full mx-4"
-                initial={{ scale: 0.85, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                exit={{ scale: 0.85, opacity: 0 }}
-                transition={{ duration: 0.3 }}
-              >
-                <div className="flex flex-col items-center text-center">
-                  <CheckCircle2 className="h-12 w-12 text-green-500 mb-4" />
-                  <h3 className="text-xl font-bold text-gray-900 mb-2">Commande Confirmée</h3>
-                  <p className="text-gray-600 mb-1">Merci pour votre commande !</p>
-                  <p className="text-gray-400 text-sm mb-6">
-                    Un e-mail de confirmation vous a été envoyé.
-                  </p>
-                  <button
-                    onClick={() => {
-                      setShowModal(false);
-                      router.push("/");
-                    }}
-                    className="w-full bg-black text-white py-2.5 rounded-lg hover:bg-gray-800 transition duration-300 font-medium"
-                  >
-                    Fermer
-                  </button>
-                </div>
-              </motion.div>
-            </motion.div>
-          )}
-        </AnimatePresence>
       </div>
     </section>
   );

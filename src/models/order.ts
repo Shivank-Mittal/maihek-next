@@ -26,7 +26,7 @@ const orderSchema = new Schema({
     enum: ["pending", "confirmed", "completed"],
     default: "pending",
   },
-  stripeSessionId: { type: String, default: "" },
+  stripeSessionId: { type: String, default: "", sparse: true, unique: true },
   paymentMethod: { type: String, default: "" },
   createdAt: { type: Date, default: Date.now },
 });
