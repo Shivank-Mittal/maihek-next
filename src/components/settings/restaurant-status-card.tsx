@@ -5,24 +5,47 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { DEFAULT_WINDOWS, type RestaurantStatusSettings } from "@/hooks/use-restaurant-settings";
+import { Loader2 } from "lucide-react";
 
 interface Props {
   settings: RestaurantStatusSettings;
+  savedWindows: { open: string; close: string }[];
   loading: boolean;
   onSave: (patch: Partial<RestaurantStatusSettings>) => void;
   onWindowChange: (index: number, field: "open" | "close", value: string) => void;
 }
 
-export function RestaurantStatusCard({ settings, loading, onSave, onWindowChange }: Props) {
+function windowsDirty(
+  current: { open: string; close: string }[],
+  saved: { open: string; close: string }[]
+) {
+  if (current.length !== saved.length) return true;
+  return current.some((w, i) => w.open !== saved[i].open || w.close !== saved[i].close);
+}
+
+export function RestaurantStatusCard({
+  settings,
+  savedWindows,
+  loading,
+  onSave,
+  onWindowChange,
+}: Props) {
+  const windows = settings.windows ?? DEFAULT_WINDOWS;
+  const isDirty = windowsDirty(windows, savedWindows);
+
   return (
     <Card className="bg-white border border-gray-300 shadow-md">
       <CardHeader>
         <CardTitle className="text-2xl font-semibold text-gray-900">Statut du Restaurant</CardTitle>
         <CardDescription className="text-gray-500 text-sm mt-1">
           Actuellement :{" "}
-          <span className={`font-medium ${settings.isOpen ? "text-emerald-600" : "text-red-600"}`}>
-            {settings.isOpen ? "Ouvert" : "Ferme"}
-          </span>
+          {loading ? (
+            <Loader2 className="inline h-3 w-3 animate-spin text-gray-400" />
+          ) : (
+            <span className={`font-medium ${settings.isOpen ? "text-emerald-600" : "text-red-600"}`}>
+              {settings.isOpen ? "Ouvert" : "Ferme"}
+            </span>
+          )}
         </CardDescription>
       </CardHeader>
 
@@ -66,7 +89,7 @@ export function RestaurantStatusCard({ settings, loading, onSave, onWindowChange
         <div className="space-y-3">
           <p className="text-sm font-medium text-gray-700">Horaires d'ouverture</p>
 
-          {(settings.windows ?? DEFAULT_WINDOWS).map((w, i) => (
+          {windows.map((w, i) => (
             <div key={i} className="flex items-center gap-3">
               <span className="text-sm text-gray-500 w-16">Service {i + 1}</span>
               <Input
@@ -88,8 +111,18 @@ export function RestaurantStatusCard({ settings, loading, onSave, onWindowChange
           ))}
 
           <div className="flex justify-end">
-            <Button onClick={() => onSave({ windows: settings.windows })} disabled={loading}>
-              {loading ? "Enregistrement..." : "Enregistrer les horaires"}
+            <Button
+              onClick={() => onSave({ windows })}
+              disabled={loading || !isDirty}
+            >
+              {loading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Enregistrement...
+                </>
+              ) : (
+                "Enregistrer les horaires"
+              )}
             </Button>
           </div>
         </div>

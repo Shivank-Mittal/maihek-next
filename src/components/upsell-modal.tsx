@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Plus, Minus, ChevronRight, ChevronLeft } from "lucide-react";
 import { useCart } from "@/hooks/use-cart";
@@ -57,6 +57,19 @@ type UpsellModalProps = {
 
 type Step = "dishes" | "addons";
 
+function UpsellDishImage({ src, alt }: { src: string; alt: string }) {
+  const [failed, setFailed] = React.useState(false);
+  if (failed) return null;
+  return (
+    <img
+      src={src}
+      alt={alt}
+      className="w-10 h-10 rounded-lg object-cover shrink-0"
+      onError={() => setFailed(true)}
+    />
+  );
+}
+
 // ─── Dish row ────────────────────────────────────────────────────────────────
 
 function DishRow({
@@ -75,13 +88,9 @@ function DishRow({
   return (
     <div className="flex items-center justify-between gap-3 py-3 border-b border-stone-100 last:border-0">
       <div className="flex items-center gap-3 min-w-0">
-        {dish.image && (
-          <img
-            src={dish.image}
-            alt={dish.name}
-            className="w-10 h-10 rounded-lg object-cover shrink-0"
-          />
-        )}
+        {dish.image ? (
+          <UpsellDishImage src={dish.image} alt={dish.name} />
+        ) : null}
         <div className="min-w-0">
           <p className="text-sm font-semibold text-stone-800 truncate">{dish.name}</p>
           <p className="text-xs text-stone-400">€{dish.price.toFixed(2)}</p>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ShoppingCart, Tag, Clock } from "lucide-react";
 import { useCart, type CartItem } from "@/hooks/use-cart";
@@ -24,8 +24,9 @@ import type { DiscountSettingsResponse } from "@repo-types/discounts";
 type OrderType = "emporter" | "livraison";
 
 function CartItemImage({ item, className }: { item: CartItem; className: string }) {
-  if (item.image) {
-    return <img src={item.image} alt={item.name} className={className} />;
+  const [failed, setFailed] = React.useState(false);
+  if (item.image && !failed) {
+    return <img src={item.image} alt={item.name} className={className} onError={() => setFailed(true)} />;
   }
   return (
     <div

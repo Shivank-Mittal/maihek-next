@@ -120,18 +120,21 @@ describe("computeEffectiveIsOpen", () => {
 
 // ─── RestaurantStatusCard ─────────────────────────────────────────────────────
 
+const defaultWindows = [
+  { open: "11:45", close: "14:15" },
+  { open: "18:30", close: "22:30" },
+];
+
 const defaultSettings = {
   isOpen: true,
   useSchedule: false,
   manualIsOpen: true,
-  windows: [
-    { open: "11:45", close: "14:15" },
-    { open: "18:30", close: "22:30" },
-  ],
+  windows: defaultWindows,
 };
 
 const mockProps = {
   settings: defaultSettings,
+  savedWindows: defaultWindows,
   loading: false,
   onSave: jest.fn(),
   onWindowChange: jest.fn(),
@@ -236,10 +239,40 @@ describe("RestaurantStatusCard", () => {
     ).toBeInTheDocument();
   });
 
-  it("calls onSave with windows when save button is clicked", () => {
+  it("save button is disabled when windows match saved windows", () => {
     render(<RestaurantStatusCard {...mockProps} />);
+    expect(screen.getByRole("button", { name: "Enregistrer les horaires" })).toBeDisabled();
+  });
+
+  it("save button is enabled when windows differ from saved windows", () => {
+    const dirtyWindows = [
+      { open: "12:00", close: "14:15" },
+      { open: "18:30", close: "22:30" },
+    ];
+    render(
+      <RestaurantStatusCard
+        {...mockProps}
+        settings={{ ...defaultSettings, windows: dirtyWindows }}
+        savedWindows={defaultWindows}
+      />
+    );
+    expect(screen.getByRole("button", { name: "Enregistrer les horaires" })).not.toBeDisabled();
+  });
+
+  it("calls onSave with windows when save button is clicked", () => {
+    const dirtyWindows = [
+      { open: "12:00", close: "14:15" },
+      { open: "18:30", close: "22:30" },
+    ];
+    render(
+      <RestaurantStatusCard
+        {...mockProps}
+        settings={{ ...defaultSettings, windows: dirtyWindows }}
+        savedWindows={defaultWindows}
+      />
+    );
     fireEvent.click(screen.getByRole("button", { name: "Enregistrer les horaires" }));
-    expect(mockProps.onSave).toHaveBeenCalledWith({ windows: defaultSettings.windows });
+    expect(mockProps.onSave).toHaveBeenCalledWith({ windows: dirtyWindows });
   });
 
   it("shows loading state on save button", () => {

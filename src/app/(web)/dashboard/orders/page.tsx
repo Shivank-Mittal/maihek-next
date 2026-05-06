@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { motion } from "framer-motion";
 import { Printer, Bell, BellOff } from "lucide-react";
 import { getToken, onMessage } from "firebase/messaging";
@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 
 interface OrderItem {
   name: string;
@@ -95,6 +96,8 @@ export default function OrdersPage() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [printingOrder, setPrintingOrder] = useState<Order | null>(null);
+  const [page, setPage] = useState(1);
+  const PAGE_SIZE = 10;
   const [pushSubscribed, setPushSubscribed] = useState(false);
   const [pushLoading, setPushLoading] = useState(false);
   const lastCountRef = useRef<number | null>(null);
@@ -105,11 +108,12 @@ export default function OrdersPage() {
       const json = await res.json();
       if (!json.success) return;
       const incoming: Order[] = json.data;
-      if (lastCountRef.current !== null && incoming.length > lastCountRef.current) {
-        playBeep();
-      }
+      const prevCount = lastCountRef.current;
+      const hasNewOrders = prevCount !== null && incoming.length > prevCount;
+      if (hasNewOrders) playBeep();
       lastCountRef.current = incoming.length;
       setOrders(incoming);
+      if (hasNewOrders) setPage(1);
     } catch {
       // silently fail on poll errors
     }
@@ -242,6 +246,12 @@ export default function OrdersPage() {
       minute: "2-digit",
     });
 
+  const totalPages = Math.max(1, Math.ceil(orders.length / PAGE_SIZE));
+  const pagedOrders = useMemo(
+    () => orders.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE),
+    [orders, page, PAGE_SIZE]
+  );
+
   const itemsSummary = (items: OrderItem[]) => {
     if (items.length === 0) return "-";
     const first = `${items[0].quantity}x ${items[0].name}`;
@@ -346,7 +356,7 @@ export default function OrdersPage() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {orders.map((order) => {
+                  {pagedOrders.map((order) => {
                     const cfg = statusConfig[order.status];
                     return (
                       <TableRow key={order._id}>
@@ -403,6 +413,36 @@ export default function OrdersPage() {
                   })}
                 </TableBody>
               </Table>
+              {totalPages > 1 && (
+                <div className="mt-4 flex items-center justify-between text-sm text-muted-foreground">
+                  <span>
+                    {(page - 1) * PAGE_SIZE + 1}–{Math.min(page * PAGE_SIZE, orders.length)} sur {orders.length} commandes
+                  </span>
+                  <div className="flex items-center gap-1">
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={() => setPage((p) => Math.max(1, p - 1))}
+                      disabled={page === 1}
+                      aria-label="Page précédente"
+                    >
+                      <ChevronLeft className="h-4 w-4" />
+                    </Button>
+                    <span className="px-3 font-medium text-foreground">
+                      {page} / {totalPages}
+                    </span>
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                      disabled={page === totalPages}
+                      aria-label="Page suivante"
+                    >
+                      <ChevronRight className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+              )}
             </div>
           )}
         </motion.div>

@@ -31,7 +31,7 @@ export default function SettingsPage() {
 
   const [categories, setCategories] = useState<DishCategoryOption[]>([]);
   const [dishes, setDishes] = useState<AdminDish[]>([]);
-  const [pageLoading, setPageLoading] = useState(true);
+  const [discountLoading, setDiscountLoading] = useState(true);
 
   useEffect(() => {
     if (status === "loading") return;
@@ -45,49 +45,33 @@ export default function SettingsPage() {
   useEffect(() => {
     if (!session) return;
 
-    const fetchPageData = async () => {
-      setPageLoading(true);
-      try {
-        const [
-          reservationResponse,
-          restaurantResponse,
-          discountResponse,
-          categoryOptions,
-          adminDishes,
-        ] = await Promise.all([
-          fetch("/api/v1/reservation-status"),
-          fetch("/api/v1/restaurant-status"),
-          getDiscountSettings(),
-          listCategoryOptions(),
-          listAdminDishes(),
-        ]);
+    // Fetch each section independently so cards appear as data arrives
+    fetch("/api/v1/reservation-status")
+      .then((r) => r.json())
+      .then((data: ReservationStatus) => reservationControl.setReservationStatus(data))
+      .catch(() => toast.error("Impossible de charger le statut des réservations."));
 
-        if (reservationResponse.ok) {
-          const data: ReservationStatus = await reservationResponse.json();
-          reservationControl.setReservationStatus(data);
-        }
+    fetch("/api/v1/restaurant-status")
+      .then((r) => r.json())
+      .then((data: RestaurantStatusSettings) => {
+        const windows = data.windows?.length ? data.windows : restaurantSettings.settings.windows;
+        restaurantSettings.setSettings({ ...data, windows });
+        restaurantSettings.setSavedWindows(windows);
+      })
+      .catch(() => toast.error("Impossible de charger le statut du restaurant."));
 
-        if (restaurantResponse.ok) {
-          const data: RestaurantStatusSettings = await restaurantResponse.json();
-          const windows = data.windows?.length ? data.windows : restaurantSettings.settings.windows;
-          restaurantSettings.setSettings({ ...data, windows });
-        }
-
+    setDiscountLoading(true);
+    Promise.all([getDiscountSettings(), listCategoryOptions(), listAdminDishes()])
+      .then(([discountResponse, categoryOptions, adminDishes]) => {
         takeawayDiscount.setTakeawayDiscount(discountResponse.takeawayDiscount);
         setCategories(categoryOptions);
         setDishes(adminDishes);
-      } catch (error) {
-        console.error(error);
-        toast.error("Impossible de charger les reglages.");
-      } finally {
-        setPageLoading(false);
-      }
-    };
-
-    fetchPageData();
+      })
+      .catch(() => toast.error("Impossible de charger les réglages de remise."))
+      .finally(() => setDiscountLoading(false));
   }, [session]);
 
-  if (status === "loading" || pageLoading || !session || session.user?.role !== "admin") {
+  if (status === "loading" || !session || session.user?.role !== "admin") {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-100">
         <p className="text-gray-700 text-lg">Chargement...</p>
@@ -105,6 +89,7 @@ export default function SettingsPage() {
       >
         <RestaurantStatusCard
           settings={restaurantSettings.settings}
+          savedWindows={restaurantSettings.savedWindows}
           loading={restaurantSettings.loading}
           onSave={restaurantSettings.save}
           onWindowChange={(index, field, value) =>
@@ -129,7 +114,7 @@ export default function SettingsPage() {
           takeawayDiscount={takeawayDiscount.takeawayDiscount}
           categories={categories}
           dishes={dishes}
-          loading={takeawayDiscount.loading}
+          loading={takeawayDiscount.loading || discountLoading}
           onChange={takeawayDiscount.setTakeawayDiscount}
           onSave={takeawayDiscount.save}
         />

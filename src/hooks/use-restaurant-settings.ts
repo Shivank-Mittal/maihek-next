@@ -24,6 +24,7 @@ export function useRestaurantSettings(accessToken: string | undefined) {
     manualIsOpen: true,
     windows: DEFAULT_WINDOWS,
   });
+  const [savedWindows, setSavedWindows] = useState(DEFAULT_WINDOWS);
   const [loading, setLoading] = useState(false);
 
   const save = async (patch: Partial<RestaurantStatusSettings>) => {
@@ -40,7 +41,9 @@ export function useRestaurantSettings(accessToken: string | undefined) {
       });
       if (!response.ok) throw new Error("Impossible de mettre a jour le statut.");
       const data: RestaurantStatusSettings = await response.json();
-      setSettings({ ...data, windows: patch.windows ?? data.windows ?? DEFAULT_WINDOWS });
+      const newWindows = patch.windows ?? data.windows ?? DEFAULT_WINDOWS;
+      setSettings({ ...data, windows: newWindows });
+      setSavedWindows(newWindows);
       await refreshRestaurantStatus();
       toast.success("Statut du restaurant mis a jour.");
     } catch (error) {
@@ -50,5 +53,5 @@ export function useRestaurantSettings(accessToken: string | undefined) {
     }
   };
 
-  return { settings, setSettings, loading, save };
+  return { settings, setSettings, savedWindows, setSavedWindows, loading, save };
 }

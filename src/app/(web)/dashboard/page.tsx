@@ -58,6 +58,8 @@ export default function DishesPage() {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [editingDish, setEditingDish] = useState<AdminDish | null>(null);
   const [isCreateMode, setIsCreateMode] = useState(false);
+  const [filterPaused, setFilterPaused] = useState(false);
+  const [filterDiscounted, setFilterDiscounted] = useState(false);
 
   const createEmptyDish = (): AdminDish => {
     const defaultCategory = categories[0]?.name ?? "";
@@ -96,6 +98,10 @@ export default function DishesPage() {
   useEffect(() => {
     loadDashboardData();
   }, []);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [filterPaused, filterDiscounted]);
 
   // Handle delete dish
   const handleDelete = async (id: string) => {
@@ -236,11 +242,17 @@ export default function DishesPage() {
     });
   };
 
-  // Pagination logic
-  const totalPages = Math.ceil(dishes.length / itemsPerPage);
+  // Filter + pagination logic
+  const filteredDishes = dishes.filter((dish) => {
+    if (filterPaused && dish.active) return false;
+    if (filterDiscounted && !dish.discount) return false;
+    return true;
+  });
+
+  const totalPages = Math.ceil(filteredDishes.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
-  const currentDishes = dishes.slice(startIndex, endIndex);
+  const currentDishes = filteredDishes.slice(startIndex, endIndex);
 
   const handleNextPage = () => {
     if (currentPage < totalPages) {
@@ -276,12 +288,54 @@ export default function DishesPage() {
               Add Dish
             </Button>
           </div>
+          <div className="mb-4 flex flex-wrap gap-2">
+            <Button
+              variant={filterPaused ? "default" : "outline"}
+              size="sm"
+              onClick={() => setFilterPaused((v) => !v)}
+            >
+              <Pause className="mr-1.5 h-3.5 w-3.5" />
+              Paused
+              {filterPaused && dishes.filter((d) => !d.active).length > 0 && (
+                <span className="ml-1.5 rounded-full bg-white/20 px-1.5 text-xs">
+                  {dishes.filter((d) => !d.active).length}
+                </span>
+              )}
+            </Button>
+            <Button
+              variant={filterDiscounted ? "default" : "outline"}
+              size="sm"
+              onClick={() => setFilterDiscounted((v) => !v)}
+            >
+              <span className="mr-1.5 text-xs font-bold">%</span>
+              Discounted
+              {filterDiscounted && dishes.filter((d) => d.discount).length > 0 && (
+                <span className="ml-1.5 rounded-full bg-white/20 px-1.5 text-xs">
+                  {dishes.filter((d) => d.discount).length}
+                </span>
+              )}
+            </Button>
+            {(filterPaused || filterDiscounted) && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => {
+                  setFilterPaused(false);
+                  setFilterDiscounted(false);
+                }}
+              >
+                Clear filters
+              </Button>
+            )}
+          </div>
           {loading ? (
             <p className="text-gray-600 text-center">Loading dishes...</p>
           ) : error ? (
             <p className="text-red-500 text-center">{error}</p>
-          ) : dishes.length === 0 ? (
-            <p className="text-gray-600 text-center">No dishes available.</p>
+          ) : filteredDishes.length === 0 ? (
+            <p className="text-gray-600 text-center">
+              {dishes.length === 0 ? "No dishes available." : "No dishes match the current filters."}
+            </p>
           ) : (
             <>
               <div className="overflow-x-auto">

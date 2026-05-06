@@ -77,9 +77,19 @@ export default function DishCard({
               src={dish.image}
               alt={dish.name}
               className="w-full h-44 rounded-[2rem] object-cover border border-stone-100 shadow-sm"
+              onError={(e) => {
+                e.currentTarget.style.display = "none";
+                e.currentTarget.nextElementSibling?.removeAttribute("hidden");
+              }}
             />
-          ) : (
+          ) : null}
+          {!dish.image && (
             <div className="w-full h-44 rounded-[2rem] bg-stone-50 border border-stone-100 flex items-center justify-center text-4xl shadow-sm">
+              {getCategoryEmoji(categoryName)}
+            </div>
+          )}
+          {dish.image && (
+            <div hidden className="w-full h-44 rounded-[2rem] bg-stone-50 border border-stone-100 flex items-center justify-center text-4xl shadow-sm">
               {getCategoryEmoji(categoryName)}
             </div>
           )}
