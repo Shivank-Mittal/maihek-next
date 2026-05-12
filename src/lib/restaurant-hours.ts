@@ -31,7 +31,15 @@ export function computeEffectiveIsOpen(
   }
 
   const now = new Date();
-  const currentMinutes = now.getHours() * 60 + now.getMinutes();
+  const parts = new Intl.DateTimeFormat("en-US", {
+    timeZone: "Europe/Paris",
+    hour: "numeric",
+    minute: "numeric",
+    hour12: false,
+  }).formatToParts(now);
+  const hour = Number(parts.find((p) => p.type === "hour")!.value);
+  const minute = Number(parts.find((p) => p.type === "minute")!.value);
+  const currentMinutes = hour * 60 + minute;
   const windows = doc.windows?.length ? doc.windows : DEFAULT_WINDOWS;
 
   return windows.some((w) => isInWindow(currentMinutes, w));
