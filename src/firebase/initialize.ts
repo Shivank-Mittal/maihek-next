@@ -19,7 +19,17 @@ function getFirebaseApp(): FirebaseApp {
   return _app;
 }
 
-export function getFirebaseMessaging(): Messaging {
+export function isMessagingSupported(): boolean {
+  return (
+    typeof window !== "undefined" &&
+    "serviceWorker" in navigator &&
+    "Notification" in window &&
+    "PushManager" in window
+  );
+}
+
+export function getFirebaseMessaging(): Messaging | null {
+  if (!isMessagingSupported()) return null;
   if (!_messaging) _messaging = getMessaging(getFirebaseApp());
   return _messaging;
 }

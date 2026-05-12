@@ -22,6 +22,8 @@ import {
   IconCalendar,
   IconReceipt,
   IconExternalLink,
+  IconCheck,
+  IconRotateClockwise,
 } from "@tabler/icons-react";
 import {
   Table,
@@ -107,6 +109,7 @@ export default function OrdersPage() {
   const [loading, setLoading] = useState(true);
   const [printingOrder, setPrintingOrder] = useState<Order | null>(null);
   const [detailOrder, setDetailOrder] = useState<Order | null>(null);
+  const [updatingStatus, setUpdatingStatus] = useState<string | null>(null);
   const [page, setPage] = useState(1);
   const PAGE_SIZE = 10;
   const [pushSubscribed, setPushSubscribed] = useState(false);
@@ -149,8 +152,10 @@ export default function OrdersPage() {
 
   useEffect(() => {
     if (!("Notification" in window) || Notification.permission !== "granted") return;
+    const messaging = getFirebaseMessaging();
+    if (!messaging) return;
     getSwReg().then(async (reg) => {
-      const token = await getToken(getFirebaseMessaging(), {
+      const token = await getToken(messaging, {
         vapidKey: process.env.NEXT_PUBLIC_FIREBASE_VAPID_KEY,
         serviceWorkerRegistration: reg,
       }).catch(() => null);
@@ -170,7 +175,9 @@ export default function OrdersPage() {
   }, []);
 
   useEffect(() => {
-    const unsub = onMessage(getFirebaseMessaging(), (payload) => {
+    const messaging = getFirebaseMessaging();
+    if (!messaging) return;
+    const unsub = onMessage(messaging, (payload) => {
       const title = payload.notification?.title ?? "Nouvelle commande !";
       const body = payload.notification?.body ?? "";
       playBeep();
@@ -215,7 +222,9 @@ export default function OrdersPage() {
           return;
         }
         const reg = await getSwReg();
-        const token = await getToken(getFirebaseMessaging(), {
+        const messaging = getFirebaseMessaging();
+        if (!messaging) throw new Error("Firebase Messaging not available");
+        const token = await getToken(messaging, {
           vapidKey: process.env.NEXT_PUBLIC_FIREBASE_VAPID_KEY,
           serviceWorkerRegistration: reg,
         });
@@ -240,6 +249,25 @@ export default function OrdersPage() {
       window.print();
       window.onafterprint = () => setPrintingOrder(null);
     }, 50);
+  };
+
+  const updateStatus = async (order: Order, newStatus: "pending" | "completed") => {
+    setUpdatingStatus(order._id);
+    try {
+      const res = await fetch("/api/v1/orders", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: order._id, status: newStatus }),
+      });
+      const json = await res.json();
+      if (!json.success) return;
+      setOrders((prev) => prev.map((o) => (o._id === order._id ? { ...o, status: newStatus } : o)));
+      if (detailOrder?._id === order._id) setDetailOrder((d) => d ? { ...d, status: newStatus } : d);
+    } catch {
+      // silently fail
+    } finally {
+      setUpdatingStatus(null);
+    }
   };
 
   const formatTime = (iso: string) =>
@@ -359,6 +387,7 @@ export default function OrdersPage() {
                       <TableHead className="text-xs font-semibold uppercase tracking-wide text-gray-500">Type</TableHead>
                       <TableHead className="text-xs font-semibold uppercase tracking-wide text-gray-500">Paiement</TableHead>
                       <TableHead className="text-xs font-semibold uppercase tracking-wide text-gray-500 text-right">Total</TableHead>
+                      <TableHead className="text-xs font-semibold uppercase tracking-wide text-gray-500">Statut</TableHead>
                       <TableHead className="text-xs font-semibold uppercase tracking-wide text-gray-500 text-right">Actions</TableHead>
                     </TableRow>
                   </TableHeader>
@@ -403,6 +432,19 @@ export default function OrdersPage() {
                           <TableCell className="text-right font-semibold text-gray-900">
                             {order.total.toFixed(2)} €
                           </TableCell>
+                          <TableCell>
+                            {order.status === "completed" ? (
+                              <Badge className="gap-1.5 bg-green-100 text-green-700 border-green-200 hover:bg-green-100" variant="outline">
+                                <IconCheck size={11} />
+                                Terminée
+                              </Badge>
+                            ) : (
+                              <Badge className="gap-1.5 bg-amber-100 text-amber-700 border-amber-200 hover:bg-amber-100" variant="outline">
+                                <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
+                                En attente
+                              </Badge>
+                            )}
+                          </TableCell>
                           <TableCell className="text-right">
                             <div className="inline-flex items-center gap-1">
                               <Button
@@ -413,6 +455,16 @@ export default function OrdersPage() {
                                 aria-label="Détails"
                               >
                                 <IconFileDescription size={16} />
+                              </Button>
+                              <Button
+                                size="icon"
+                                variant="ghost"
+                                className={`h-8 w-8 hover:bg-gray-100 ${order.status === "completed" ? "text-green-500 hover:text-amber-600" : "text-gray-400 hover:text-green-600"}`}
+                                onClick={() => updateStatus(order, order.status === "completed" ? "pending" : "completed")}
+                                disabled={updatingStatus === order._id}
+                                aria-label={order.status === "completed" ? "Marquer en attente" : "Marquer terminée"}
+                              >
+                                {order.status === "completed" ? <IconRotateClockwise size={16} /> : <IconCheck size={16} />}
                               </Button>
                               <Button
                                 size="icon"
@@ -562,6 +614,39 @@ export default function OrdersPage() {
                   <span>Total</span>
                   <span className="tabular-nums">{detailOrder.total.toFixed(2)} €</span>
                 </div>
+              </div>
+
+              <div className="border-t border-gray-100" />
+
+              {/* Status */}
+              <div className="flex items-center justify-between">
+                <div className="space-y-1">
+                  <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Statut</p>
+                  {detailOrder.status === "completed" ? (
+                    <Badge className="gap-1.5 bg-green-100 text-green-700 border-green-200 hover:bg-green-100" variant="outline">
+                      <IconCheck size={11} />
+                      Terminée
+                    </Badge>
+                  ) : (
+                    <Badge className="gap-1.5 bg-amber-100 text-amber-700 border-amber-200 hover:bg-amber-100" variant="outline">
+                      <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
+                      En attente
+                    </Badge>
+                  )}
+                </div>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className={`gap-1.5 ${detailOrder.status === "completed" ? "text-amber-600 border-amber-200 hover:bg-amber-50" : "text-green-600 border-green-200 hover:bg-green-50"}`}
+                  onClick={() => updateStatus(detailOrder, detailOrder.status === "completed" ? "pending" : "completed")}
+                  disabled={updatingStatus === detailOrder._id}
+                >
+                  {detailOrder.status === "completed" ? (
+                    <><IconRotateClockwise size={14} /> Remettre en attente</>
+                  ) : (
+                    <><IconCheck size={14} /> Marquer terminée</>
+                  )}
+                </Button>
               </div>
 
               {/* Stripe */}

@@ -1,12 +1,12 @@
 import { defineConfig, devices } from '@playwright/test';
+import dotenv from 'dotenv';
+import path from 'path';
 
-/**
- * Read environment variables from file.
- * https://github.com/motdotla/dotenv
- */
-// import dotenv from 'dotenv';
-// import path from 'path';
-// dotenv.config({ path: path.resolve(__dirname, '.env') });
+// Parse .env.test so we can inject its values into the webServer process env.
+// dotenv.config alone isn't enough — Next.js loads .env itself at startup and
+// would overwrite anything we set beforehand. Passing env to webServer ensures
+// the dev server process sees the test keys with higher priority.
+const testEnv = dotenv.config({ path: path.resolve(__dirname, '.env.test') }).parsed ?? {};
 
 /**
  * See https://playwright.dev/docs/test-configuration.
@@ -27,7 +27,7 @@ export default defineConfig({
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
     /* Base URL to use in actions like `await page.goto('')`. */
-    baseURL: 'http://localhost:3000',
+    baseURL: 'http://localhost:3001',
 
     /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
     trace: 'on-first-retry',
@@ -73,8 +73,12 @@ export default defineConfig({
 
   /* Run your local dev server before starting the tests */
   webServer: {
-    command: 'npm run dev',
-    url: 'http://localhost:3000',
-    reuseExistingServer: !process.env.CI,
+    // Use port 3001 for the test server so it never conflicts with a running dev server on 3000.
+    // This guarantees the server Playwright spawns always uses the test env keys from .env.test,
+    // while any existing `npm run dev` on port 3000 continues to use .env (live keys) untouched.
+    command: 'npm run dev -- --port 3001',
+    url: 'http://localhost:3001',
+    reuseExistingServer: false,
+    env: testEnv,
   },
 });

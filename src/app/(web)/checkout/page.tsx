@@ -72,7 +72,7 @@ function CheckoutContent() {
       phone: "",
       email: "",
       orderType: "livraison",
-      paymentMethod: "cod_cash",
+      paymentMethod: "online",
       addressLine: "",
       floor: "",
       city: "",
