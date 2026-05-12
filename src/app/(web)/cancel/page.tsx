@@ -32,7 +32,8 @@ export default function OrderCancelPage() {
             <p className="mt-3 text-sm">Que souhaitez-vous faire maintenant&nbsp;?</p>
             <ul className="mt-2 text-sm list-none space-y-2">
               <li className="flex items-center">
-                <span className="text-red-500 mr-2">•</span> Essayer de passer votre commande à nouveau
+                <span className="text-red-500 mr-2">•</span> Essayer de passer votre commande à
+                nouveau
               </li>
               <li className="flex items-center">
                 <span className="text-red-500 mr-2">•</span> Découvrir notre délicieux menu
@@ -43,7 +44,6 @@ export default function OrderCancelPage() {
             </ul>
           </div>
           <div className="flex flex-col space-y-4">
-            
             <Link
               href="/menu"
               className="w-full py-3 px-6 border border-red-300 rounded-full text-base font-semibold text-red-600 bg-white hover:bg-red-50 focus:outline-none focus:ring-4 focus:ring-red-200 transition duration-300"

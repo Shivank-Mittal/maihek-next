@@ -1,24 +1,26 @@
-'use client';
-import type { Metadata } from 'next';
-import { Geist, Geist_Mono } from 'next/font/google';
-import './globals.css';
-import { CartProvider } from '@/hooks/use-cart';
-import { SessionProvider } from 'next-auth/react';
+"use client";
+import type { Metadata } from "next";
+import { Geist, Geist_Mono } from "next/font/google";
+import "./globals.css";
+import { CartProvider } from "@/hooks/use-cart";
+import { RestaurantStatusProvider } from "@/hooks/use-restaurant-status";
+import { SessionProvider } from "next-auth/react";
 
 const geistSans = Geist({
-  variable: '--font-geist-sans',
-  subsets: ['latin'],
+  variable: "--font-geist-sans",
+  subsets: ["latin"],
 });
 
 const geistMono = Geist_Mono({
-  variable: '--font-geist-mono',
-  subsets: ['latin'],
+  variable: "--font-geist-mono",
+  subsets: ["latin"],
 });
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
       <head>
+        <link rel="manifest" href="/manifest.json" />
         {/* Google Search Console */}
         <meta
           name="google-site-verification"
@@ -51,19 +53,21 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           }}
         />
       </head>
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased bg-white`}>
+      <body className={`${geistSans.variable} ${geistMono.variable} antialiased bg-white`} suppressHydrationWarning>
         <noscript>
           <iframe
             src="https://www.googletagmanager.com/ns.html?id=GTM-5B2TH9N6"
             height="0"
             width="0"
-            style={{ display: 'none', visibility: 'hidden' }}
+            style={{ display: "none", visibility: "hidden" }}
           />
         </noscript>
         <SessionProvider>
-          <CartProvider>
-            <>{children}</>
-          </CartProvider>
+          <RestaurantStatusProvider>
+            <CartProvider>
+              <>{children}</>
+            </CartProvider>
+          </RestaurantStatusProvider>
         </SessionProvider>
       </body>
     </html>

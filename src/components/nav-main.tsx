@@ -1,16 +1,7 @@
-'use client';
+"use client";
 
-import { IconCirclePlusFilled, IconMail, type Icon } from '@tabler/icons-react';
-
-import { Button } from '@/components/ui/button';
-import {
-  SidebarGroup,
-  SidebarGroupContent,
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
-} from '@/components/ui/sidebar';
-import { useRouter } from 'next/navigation';
+import { type Icon } from "@tabler/icons-react";
+import Link from "next/link";
 
 export function NavMain({
   items,
@@ -21,21 +12,18 @@ export function NavMain({
     icon?: Icon;
   }[];
 }) {
-  const router = useRouter();
   return (
-    <SidebarGroup>
-      <SidebarGroupContent className="flex flex-col gap-2">
-        <SidebarMenu>
-          {items.map((item) => (
-            <SidebarMenuItem key={item.title}>
-              <SidebarMenuButton tooltip={item.title}>
-                {item.icon && <item.icon />}
-                <span onClick={() => router.push(item.url)}>{item.title}</span>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-          ))}
-        </SidebarMenu>
-      </SidebarGroupContent>
-    </SidebarGroup>
+    <nav className="flex items-center gap-1">
+      {items.map((item) => (
+        <Link
+          key={item.title}
+          href={item.url}
+          className="flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium hover:bg-accent hover:text-accent-foreground transition-colors"
+        >
+          {item.icon && <item.icon className="size-4" />}
+          <span>{item.title}</span>
+        </Link>
+      ))}
+    </nav>
   );
 }

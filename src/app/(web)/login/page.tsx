@@ -1,15 +1,15 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { motion } from 'framer-motion';
-import Link from 'next/link';
-import Image from 'next/image';
-import { signIn } from 'next-auth/react';
-import { useRouter } from 'next/navigation';
+import { useState } from "react";
+import { motion } from "framer-motion";
+import Link from "next/link";
+import Image from "next/image";
+import { signIn } from "next-auth/react";
+import { useRouter } from "next/navigation";
 
 export default function AdminLoginPage() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
 
@@ -17,16 +17,16 @@ export default function AdminLoginPage() {
     e.preventDefault();
     setError(null);
 
-    const result = await signIn('credentials', {
+    const result = await signIn("credentials", {
       redirect: false,
       email,
       password,
     });
 
     if (result?.error) {
-      setError('Invalid email or password');
+      setError("Email ou mot de passe invalide");
     } else {
-      router.push('/dashboard');
+      router.push("/dashboard/orders");
     }
   };
 
@@ -35,7 +35,7 @@ export default function AdminLoginPage() {
       <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 0.6, ease: 'easeOut' }}
+        transition={{ duration: 0.6, ease: "easeOut" }}
         className="flex w-full max-w-5xl bg-white rounded-2xl shadow-2xl overflow-hidden"
       >
         {/* Left Side: Form */}
@@ -46,7 +46,7 @@ export default function AdminLoginPage() {
             transition={{ delay: 0.2, duration: 0.5 }}
             className="flex items-center justify-center mb-6"
           >
-            <h2 className="text-3xl font-bold text-gray-800">Restaurant Admin Login</h2>
+            <h2 className="text-3xl font-bold text-gray-800">Connexion administrateur</h2>
           </motion.div>
           {error && (
             <motion.p
@@ -60,7 +60,7 @@ export default function AdminLoginPage() {
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-                Admin Email
+                Email administrateur
               </label>
               <motion.input
                 initial={{ opacity: 0, x: -20 }}
@@ -77,7 +77,7 @@ export default function AdminLoginPage() {
             </div>
             <div>
               <label htmlFor="password" className="block text-sm font-medium text-gray-700">
-                Password
+                Mot de passe
               </label>
               <motion.input
                 initial={{ opacity: 0, x: -20 }}
@@ -97,7 +97,7 @@ export default function AdminLoginPage() {
                 href="/admin/forgot-password"
                 className="text-sm text-amber-600 hover:underline"
               >
-                Forgot Password?
+                Mot de passe oublié ?
               </Link>
             </div>
             <motion.button
@@ -106,13 +106,13 @@ export default function AdminLoginPage() {
               type="submit"
               className="w-full bg-amber-600 text-white py-3 rounded-lg hover:bg-amber-700 transition-colors font-medium"
             >
-              Sign In to Dashboard
+              Se connecter au tableau de bord
             </motion.button>
           </form>
           <p className="mt-6 text-center text-sm text-gray-600">
-            Not an admin?{' '}
+            Pas admin ?{" "}
             <Link href="/" className="text-amber-600 hover:underline font-medium">
-              Visit Restaurant Homepage
+              Visiter la page d'accueil du restaurant
             </Link>
           </p>
         </div>
@@ -136,7 +136,7 @@ export default function AdminLoginPage() {
             className="absolute inset-0 flex items-center justify-center"
           >
             <p className="text-white text-2xl font-semibold text-center px-4">
-              Manage Your Restaurant with Ease
+              Gérez votre restaurant en toute simplicité
             </p>
           </motion.div>
         </div>

@@ -18,21 +18,34 @@ type CheckoutItem = {
   quantity: number;
 };
 
+type CustomerInfo = {
+  name?: string;
+  phone?: string;
+  email?: string;
+};
+
+type AddressData = {
+  addressLine: string;
+  floor?: string;
+  city: string;
+  pincode: string;
+  instructions?: string;
+};
+
 export async function POST(req: NextRequest) {
   try {
     const origin = req.headers.get("origin") || "http://localhost:3000";
-    const { items, orderType } = (await req.json()) as {
+    const { items, orderType, customerInfo, address } = (await req.json()) as {
       items: CheckoutItem[];
       orderType?: string;
+      customerInfo?: CustomerInfo;
+      address?: AddressData;
     };
 
     const total = calculateCartTotal(items);
 
     if (!isDeliveryMinimumMet(orderType, total)) {
-      return NextResponse.json(
-        { error: getDeliveryMinimumMessage("EUR") },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: getDeliveryMinimumMessage("EUR") }, { status: 400 });
     }
 
     const lineItems = items.map((item) => ({
@@ -51,22 +64,23 @@ export async function POST(req: NextRequest) {
       payment_method_types: ["card"],
       line_items: lineItems,
       mode: "payment",
-      success_url: `${origin}/success`,
+      success_url: `${origin}/success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${origin}/cancel`,
       currency: "EUR",
       metadata: {
         orderType: orderType ?? "emporter",
+        customerName: customerInfo?.name ?? "",
+        customerPhone: customerInfo?.phone ?? "",
+        customerEmail: customerInfo?.email ?? "",
+        addressLine: address?.addressLine ?? "",
+        addressFloor: address?.floor ?? "",
+        addressCity: address?.city ?? "",
+        addressPincode: address?.pincode ?? "",
+        addressInstructions: address?.instructions ?? "",
       },
       phone_number_collection: {
         enabled: true,
       },
-      ...(isDeliveryOrderType(orderType)
-        ? {
-            shipping_address_collection: {
-              allowed_countries: ["FR"],
-            },
-          }
-        : {}),
       invoice_creation: {
         enabled: true,
         invoice_data: {

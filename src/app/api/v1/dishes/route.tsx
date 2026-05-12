@@ -3,6 +3,19 @@ import { Dish, DishInput } from "@/models/dish";
 import ApiResponse from "@/lib/response";
 import Category from "@/models/category";
 import { ObjectId } from "mongodb";
+import { sanitizeDishDiscount } from "@/lib/checkout";
+
+async function resolveCategory(categoryName?: string, categoryId?: string) {
+  if (categoryName) {
+    return Category.findOne({ name: categoryName });
+  }
+
+  if (categoryId) {
+    return Category.findById(categoryId);
+  }
+
+  return null;
+}
 
 export async function GET(req: any) {
   try {
@@ -45,32 +58,65 @@ export async function POST(req: any) {
     } catch (error) {
       return ApiResponse.badRequest("Invalid JSON body");
     }
-    const { category, dishes } = body;
 
-    if (!category) {
+    const { category, categoryId, dishes } = body;
+    const categoryDocument = await resolveCategory(category, categoryId);
+
+    if (!categoryDocument) {
       return ApiResponse.badRequest("Category is required");
     }
 
-    if (!dishes) {
-      return ApiResponse.badRequest("Dishes are required");
+    if (dishes) {
+      const dishesArray = Array.isArray(dishes) ? dishes : [dishes];
+      const invalidDish = dishesArray.some(
+        (dish: DishInput) => !dish.name || dish.price === undefined || !dish.description
+      );
+
+      if (invalidDish) {
+        return ApiResponse.badRequest("Each dish must include 'name', 'price', and 'description'");
+      }
+
+      const dishesWithCategory = dishesArray.map((dish: DishInput) => ({
+        ...dish,
+        discount: sanitizeDishDiscount(dish.discount),
+        active: dish.active ?? true,
+        category: categoryDocument._id,
+      }));
+
+      await Dish.insertMany(dishesWithCategory);
+
+      return ApiResponse.created({ message: "Dish(es) created successfully" });
     }
 
-    const dishesArray = Array.isArray(dishes) ? dishes : [dishes];
+    const { name, price, description, image, active = true, discount } = body;
 
-    // const invalid = dishesArray.some(
-    //   (dish: DishInput) => !dish.name || !dish.price || !dish.description
-    // );
+    if (!name || price === undefined || !description) {
+      return ApiResponse.badRequest("'name', 'price', and 'description' are required");
+    }
 
-    // if (invalid) {
-    //   return ApiResponse.badRequest("Each dish must have 'name', 'price', 'description' ");
-    // }
-    const dishesWithCategory = dishesArray.map((dish: DishInput) => ({
-      ...dish,
-      category,
-    }));
-    await Dish.insertMany(dishesWithCategory);
+    const createdDish = await Dish.create({
+      name,
+      price,
+      description,
+      image,
+      active,
+      discount: sanitizeDishDiscount(discount),
+      category: categoryDocument._id,
+    });
 
-    return ApiResponse.created({ message: "Dish(es) created successfully" });
+    return ApiResponse.created({
+      message: "Dish created successfully",
+      dish: {
+        _id: createdDish._id,
+        name: createdDish.name,
+        price: createdDish.price,
+        description: createdDish.description,
+        image: createdDish.image,
+        active: createdDish.active,
+        discount: createdDish.discount,
+        category: categoryDocument.name,
+      },
+    });
   } catch (error: any) {
     console.error("Error in API route:", error);
     return ApiResponse.internalServerError(error.message, error.statusCode);
