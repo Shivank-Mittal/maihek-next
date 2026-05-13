@@ -5,38 +5,12 @@ import { motion, AnimatePresence } from "framer-motion";
 import { X, Plus, Minus, ChevronRight, ChevronLeft } from "lucide-react";
 import { useCart } from "@/hooks/use-cart";
 import { ADDON_EMOJI } from "@/lib/food-emojis";
+import AddonsStep, { ADD_ONS } from "@/components/addons-step";
+import type { AddOn } from "@/components/addons-step";
 import type { DishCategory, MenuDish } from "@repo-types/dishes";
 
-// ─── Hardcoded add-ons ───────────────────────────────────────────────────────
-
-type AddOn = {
-  id: string;
-  name: string;
-  price: number;
-};
-
-const ADD_ONS: AddOn[] = [
-  { id: "addon-chicken", name: "Poulet", price: 2 },
-  { id: "addon-lamb", name: "Agneau", price: 2 },
-  { id: "addon-shrimp", name: "Crevettes", price: 3 },
-  { id: "addon-paneer", name: "Paneer", price: 0 },
-  { id: "addon-extra-chicken", name: "Poulet supplémentaire", price: 2 },
-  { id: "addon-extra-lamb", name: "Agneau supplémentaire", price: 2 },
-  { id: "addon-extra-shrimp", name: "Crevettes supplémentaires", price: 3 },
-  { id: "addon-extra-sauce", name: "Sauce supplémentaire", price: 1.5 },
-  { id: "addon-extra-gravy", name: "Sauce supplémentaire", price: 1.5 },
-  { id: "addon-potatoes", name: "Pommes de terre", price: 1 },
-  { id: "addon-peas", name: "Pois", price: 1 },
-  { id: "addon-mixed-veg", name: "Légumes mélangés", price: 1.5 },
-  { id: "addon-extra-garlic", name: "Ail supplémentaire", price: 0.5 },
-  { id: "addon-coriander", name: "Coriandre fraîche", price: 0.5 },
-  { id: "addon-ginger", name: "Gingembre", price: 0.5 },
-  { id: "addon-lemon", name: "Citron", price: 0.5 },
-  { id: "addon-onions", name: "Oignons", price: 0.5 },
-  { id: "addon-pickles", name: "Cornichons", price: 0.5 },
-  { id: "addon-raita", name: "Raita", price: 1.5 },
-  { id: "addon-fresh-cream", name: "Crème fraîche", price: 1.5 },
-];
+// Set to true to re-enable the extras step in the upsell flow
+const ADDONS_ENABLED = false;
 
 // ─── Category name matchers ──────────────────────────────────────────────────
 
@@ -117,58 +91,6 @@ function DishRow({
   );
 }
 
-// ─── Add-on row ──────────────────────────────────────────────────────────────
-
-const MAX_ADDONS = 2;
-
-function AddOnRow({
-  addon,
-  onAdd,
-  onRemove,
-  cartQty,
-  atLimit,
-}: {
-  addon: AddOn;
-  onAdd: (addon: AddOn) => void;
-  onRemove: (id: string) => void;
-  cartQty: number;
-  atLimit: boolean;
-}) {
-  return (
-    <div className="flex items-center justify-between gap-3 py-3 border-b border-stone-100 last:border-0">
-      <div className="flex items-center gap-3 min-w-0">
-        <div className="w-10 h-10 rounded-lg bg-stone-50 border border-stone-100 flex items-center justify-center text-xl shrink-0">
-          {ADDON_EMOJI[addon.id]}
-        </div>
-        <div className="min-w-0">
-          <p className="text-sm font-semibold text-stone-800">{addon.name}</p>
-          <p className="text-xs text-stone-400">
-            {addon.price === 0 ? "gratuit" : `+€${addon.price.toFixed(2)}`}
-          </p>
-        </div>
-      </div>
-
-      <div className="flex items-center gap-1.5 shrink-0">
-        <button
-          className="w-7 h-7 flex items-center justify-center rounded-full bg-stone-100 hover:bg-stone-200 text-stone-600 disabled:opacity-30 transition-colors"
-          onClick={() => onRemove(addon.id)}
-          disabled={cartQty === 0}
-        >
-          <Minus className="w-3 h-3" />
-        </button>
-        <span className="w-5 text-center text-sm font-semibold text-stone-700">{cartQty}</span>
-        <button
-          className="w-7 h-7 flex items-center justify-center rounded-full bg-stone-100 hover:bg-stone-200 text-stone-600 disabled:opacity-30 transition-colors"
-          onClick={() => onAdd(addon)}
-          disabled={atLimit}
-        >
-          <Plus className="w-3 h-3" />
-        </button>
-      </div>
-    </div>
-  );
-}
-
 // ─── Main modal ──────────────────────────────────────────────────────────────
 
 export default function UpsellModal({
@@ -180,12 +102,10 @@ export default function UpsellModal({
   const { cart, addToCart, updateQuantity } = useCart();
   const [step, setStep] = useState<Step>("dishes");
 
-  // Reset to first step whenever modal opens
   useEffect(() => {
     if (open) setStep("dishes");
   }, [open]);
 
-  // Prevent background scroll when open
   useEffect(() => {
     document.body.style.overflow = open ? "hidden" : "";
     return () => {
@@ -242,9 +162,11 @@ export default function UpsellModal({
     updateQuantity(id, qty - 1);
   };
 
+  const totalSteps = ADDONS_ENABLED ? 2 : 1;
+
   const stepConfig = {
     dishes: {
-      eyebrow: "Étape 1 sur 2",
+      eyebrow: ADDONS_ENABLED ? "Étape 1 sur 2" : null,
       title: "Ajoutez des accompagnements à votre commande",
     },
     addons: {
@@ -281,7 +203,7 @@ export default function UpsellModal({
               {/* Header */}
               <div className="flex items-center justify-between px-5 pt-5 pb-4 border-b border-stone-100 shrink-0">
                 <div className="flex items-center gap-2">
-                  {step === "addons" && (
+                  {ADDONS_ENABLED && step === "addons" && (
                     <button
                       onClick={() => setStep("dishes")}
                       className="w-8 h-8 flex items-center justify-center rounded-full bg-stone-100 hover:bg-stone-200 text-stone-500 transition-colors"
@@ -290,9 +212,11 @@ export default function UpsellModal({
                     </button>
                   )}
                   <div>
-                    <p className="text-[10px] font-semibold uppercase tracking-widest text-stone-400 mb-0.5">
-                      {stepConfig[step].eyebrow}
-                    </p>
+                    {stepConfig[step].eyebrow && (
+                      <p className="text-[10px] font-semibold uppercase tracking-widest text-stone-400 mb-0.5">
+                        {stepConfig[step].eyebrow}
+                      </p>
+                    )}
                     <h2 className="text-lg font-bold text-stone-900">{stepConfig[step].title}</h2>
                   </div>
                 </div>
@@ -304,19 +228,21 @@ export default function UpsellModal({
                 </button>
               </div>
 
-              {/* Step indicator */}
-              <div className="flex gap-1.5 px-5 pt-3 shrink-0">
-                {(["dishes", "addons"] as Step[]).map((s) => (
-                  <div
-                    key={s}
-                    className={`h-1 flex-1 rounded-full transition-colors duration-300 ${
-                      step === s ? "bg-stone-900" : "bg-stone-200"
-                    }`}
-                  />
-                ))}
-              </div>
+              {/* Step indicator — only shown when addons are enabled */}
+              {ADDONS_ENABLED && (
+                <div className="flex gap-1.5 px-5 pt-3 shrink-0">
+                  {(["dishes", "addons"] as Step[]).map((s) => (
+                    <div
+                      key={s}
+                      className={`h-1 flex-1 rounded-full transition-colors duration-300 ${
+                        step === s ? "bg-stone-900" : "bg-stone-200"
+                      }`}
+                    />
+                  ))}
+                </div>
+              )}
 
-              {/* Scrollable content — animated between steps */}
+              {/* Scrollable content */}
               <div className="overflow-y-auto flex-1 px-5 py-4 scrollbar-hidden">
                 <AnimatePresence mode="wait">
                   {step === "dishes" ? (
@@ -378,32 +304,11 @@ export default function UpsellModal({
                       exit={{ opacity: 0, x: -20 }}
                       transition={{ duration: 0.2 }}
                     >
-                      {(() => {
-                        const totalAddons = ADD_ONS.reduce(
-                          (sum, a) => sum + (cartQtyMap.get(a.id) ?? 0),
-                          0
-                        );
-                        const atLimit = totalAddons >= MAX_ADDONS;
-                        return (
-                          <>
-                            {atLimit && (
-                              <p className="text-xs text-stone-400 text-center mb-3">
-                                Maximum de {MAX_ADDONS} extras atteint
-                              </p>
-                            )}
-                            {ADD_ONS.map((addon) => (
-                              <AddOnRow
-                                key={addon.id}
-                                addon={addon}
-                                onAdd={handleAddAddon}
-                                onRemove={handleRemoveAddon}
-                                cartQty={cartQtyMap.get(addon.id) ?? 0}
-                                atLimit={atLimit}
-                              />
-                            ))}
-                          </>
-                        );
-                      })()}
+                      <AddonsStep
+                        cartQtyMap={cartQtyMap}
+                        onAdd={handleAddAddon}
+                        onRemove={handleRemoveAddon}
+                      />
                     </motion.div>
                   )}
                 </AnimatePresence>
@@ -411,7 +316,7 @@ export default function UpsellModal({
 
               {/* Footer */}
               <div className="px-5 pb-6 pt-4 border-t border-stone-100 shrink-0 flex flex-col gap-2.5">
-                {step === "dishes" ? (
+                {ADDONS_ENABLED && step === "dishes" ? (
                   <>
                     <button
                       onClick={() => setStep("addons")}
