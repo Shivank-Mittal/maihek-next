@@ -60,6 +60,8 @@ export default function DishesPage() {
   const [isCreateMode, setIsCreateMode] = useState(false);
   const [filterPaused, setFilterPaused] = useState(false);
   const [filterDiscounted, setFilterDiscounted] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [filterCategory, setFilterCategory] = useState<string>("all");
 
   const createEmptyDish = (): AdminDish => {
     const defaultCategory = categories[0]?.name ?? "";
@@ -246,6 +248,8 @@ export default function DishesPage() {
   const filteredDishes = dishes.filter((dish) => {
     if (filterPaused && dish.active) return false;
     if (filterDiscounted && !dish.discount) return false;
+    if (filterCategory !== "all" && dish.category !== filterCategory) return false;
+    if (searchQuery && !dish.name.toLowerCase().includes(searchQuery.toLowerCase())) return false;
     return true;
   });
 
@@ -288,45 +292,75 @@ export default function DishesPage() {
               Add Dish
             </Button>
           </div>
-          <div className="mb-4 flex flex-wrap gap-2">
-            <Button
-              variant={filterPaused ? "default" : "outline"}
-              size="sm"
-              onClick={() => setFilterPaused((v) => !v)}
-            >
-              <Pause className="mr-1.5 h-3.5 w-3.5" />
-              Paused
-              {filterPaused && dishes.filter((d) => !d.active).length > 0 && (
-                <span className="ml-1.5 rounded-full bg-white/20 px-1.5 text-xs">
-                  {dishes.filter((d) => !d.active).length}
-                </span>
-              )}
-            </Button>
-            <Button
-              variant={filterDiscounted ? "default" : "outline"}
-              size="sm"
-              onClick={() => setFilterDiscounted((v) => !v)}
-            >
-              <span className="mr-1.5 text-xs font-bold">%</span>
-              Discounted
-              {filterDiscounted && dishes.filter((d) => d.discount).length > 0 && (
-                <span className="ml-1.5 rounded-full bg-white/20 px-1.5 text-xs">
-                  {dishes.filter((d) => d.discount).length}
-                </span>
-              )}
-            </Button>
-            {(filterPaused || filterDiscounted) && (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => {
-                  setFilterPaused(false);
-                  setFilterDiscounted(false);
-                }}
+          <div className="mb-4 flex flex-col gap-3">
+            <div className="flex flex-wrap gap-2">
+              <div className="relative flex-1 min-w-48">
+                <Input
+                  placeholder="Search dishes..."
+                  value={searchQuery}
+                  onChange={(e) => { setSearchQuery(e.target.value); setCurrentPage(1); }}
+                  className="pl-3"
+                />
+              </div>
+              <Select
+                value={filterCategory}
+                onValueChange={(v) => { setFilterCategory(v); setCurrentPage(1); }}
               >
-                Clear filters
+                <SelectTrigger className="w-48">
+                  <SelectValue placeholder="All categories" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All categories</SelectItem>
+                  {categories.map((cat) => (
+                    <SelectItem key={cat.name} value={cat.name}>
+                      {cat.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <Button
+                variant={filterPaused ? "default" : "outline"}
+                size="sm"
+                onClick={() => setFilterPaused((v) => !v)}
+              >
+                <Pause className="mr-1.5 h-3.5 w-3.5" />
+                Paused
+                {filterPaused && dishes.filter((d) => !d.active).length > 0 && (
+                  <span className="ml-1.5 rounded-full bg-white/20 px-1.5 text-xs">
+                    {dishes.filter((d) => !d.active).length}
+                  </span>
+                )}
               </Button>
-            )}
+              <Button
+                variant={filterDiscounted ? "default" : "outline"}
+                size="sm"
+                onClick={() => setFilterDiscounted((v) => !v)}
+              >
+                <span className="mr-1.5 text-xs font-bold">%</span>
+                Discounted
+                {filterDiscounted && dishes.filter((d) => d.discount).length > 0 && (
+                  <span className="ml-1.5 rounded-full bg-white/20 px-1.5 text-xs">
+                    {dishes.filter((d) => d.discount).length}
+                  </span>
+                )}
+              </Button>
+              {(filterPaused || filterDiscounted || searchQuery || filterCategory !== "all") && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => {
+                    setFilterPaused(false);
+                    setFilterDiscounted(false);
+                    setSearchQuery("");
+                    setFilterCategory("all");
+                  }}
+                >
+                  Clear filters
+                </Button>
+              )}
+            </div>
           </div>
           {loading ? (
             <p className="text-gray-600 text-center">Loading dishes...</p>
@@ -334,7 +368,7 @@ export default function DishesPage() {
             <p className="text-red-500 text-center">{error}</p>
           ) : filteredDishes.length === 0 ? (
             <p className="text-gray-600 text-center">
-              {dishes.length === 0 ? "No dishes available." : "No dishes match the current filters."}
+              {dishes.length === 0 ? "No dishes available." : "No dishes match the current search or filters."}
             </p>
           ) : (
             <>

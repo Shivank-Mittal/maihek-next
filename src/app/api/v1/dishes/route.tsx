@@ -17,6 +17,23 @@ async function resolveCategory(categoryName?: string, categoryId?: string) {
   return null;
 }
 
+const MENU_SEQUENCE = [
+  "Entrées Beignets",
+  "Entrées Grillades",
+  "Salades",
+  "Biryani",
+  "Plats Légumes",
+  "Plats Poulet",
+  "Plats Agneau",
+  "Pains",
+  "Riz Basmati",
+  "Plats Poissons ou Crevettes",
+  "Desserts",
+  "Boissons",
+  "Vins",
+  "Menus",
+];
+
 export async function GET(req: any) {
   try {
     await connectDB();
@@ -26,14 +43,22 @@ export async function GET(req: any) {
       Dish.find().populate("category"),
     ]);
 
-    const dishesByCategory = categories.map((cat) => {
+    const sortedCategories = [...categories].sort((a, b) => {
+      const ai = MENU_SEQUENCE.indexOf(a.name);
+      const bi = MENU_SEQUENCE.indexOf(b.name);
+      const aOrder = ai === -1 ? MENU_SEQUENCE.length : ai;
+      const bOrder = bi === -1 ? MENU_SEQUENCE.length : bi;
+      return aOrder - bOrder;
+    });
+
+    const dishesByCategory = sortedCategories.map((cat) => {
       const catId = (cat._id as ObjectId).toString();
 
       const relatedDishes = dishes
         .filter((dish) => dish.category && dish.category._id.toString() === catId)
         .map((dish) => {
           const { category, ...rest } = dish.toObject();
-          return rest; // exclude category to avoid redundancy
+          return rest;
         });
 
       return {
