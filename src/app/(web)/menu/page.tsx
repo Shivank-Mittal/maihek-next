@@ -11,6 +11,8 @@ import { listDishCategories } from "@/services/dishes-service";
 import { useRestaurantStatus } from "@/hooks/use-restaurant-status";
 import { getDiscountSettings } from "@/services/discount-settings-service";
 import { DEFAULT_TAKEAWAY_DISCOUNT_SETTINGS, getTakeawayDiscountSummary } from "@/lib/checkout";
+import { DEFAULT_ADDON_SETTINGS, getEnabledAddonsForDish, isDishAddonEligible, type AddonSettings } from "@/lib/addon-settings";
+import { ADD_ONS } from "@/components/addons-step";
 import type { DishCategory, MenuDish } from "@repo-types/dishes";
 
 export default function Menu() {
@@ -23,18 +25,23 @@ export default function Menu() {
   const [takeawayNotice, setTakeawayNotice] = useState<string | null>(
     getTakeawayDiscountSummary(DEFAULT_TAKEAWAY_DISCOUNT_SETTINGS)
   );
+  const [addonSettings, setAddonSettings] = useState<AddonSettings>(DEFAULT_ADDON_SETTINGS);
 
   const fetchMenuItems = async () => {
     try {
-      const [categories, discountSettings] = await Promise.all([
+      const [categories, discountSettings, addonSettingsData] = await Promise.all([
         listDishCategories(),
         getDiscountSettings().catch(() => ({
           takeawayDiscount: DEFAULT_TAKEAWAY_DISCOUNT_SETTINGS,
         })),
+        fetch("/api/v1/addon-settings")
+          .then((r) => r.json() as Promise<AddonSettings>)
+          .catch(() => DEFAULT_ADDON_SETTINGS),
       ]);
 
       setMenuItems(categories);
       setTakeawayNotice(getTakeawayDiscountSummary(discountSettings.takeawayDiscount));
+      setAddonSettings(addonSettingsData);
     } catch (error) {
       console.error("Error fetching menu items:", error);
       setError("Échec du chargement du menu. Affichage du menu par défaut.");
@@ -201,6 +208,7 @@ export default function Menu() {
                 title={category.name}
                 dishes={category.dishes || []}
                 restaurantClosed={!isRestaurantOpen}
+                addonSettings={addonSettings}
                 addToCart={(item, quantity) => {
                   addToCart({ ...item, id: item._id }, quantity);
                   toast.success(`${item.name} a été ajouté au panier !`, {
@@ -227,12 +235,14 @@ const CategoryBlock = ({
   dishes,
   title,
   restaurantClosed,
+  addonSettings,
   addToCart,
 }: {
   _id: string;
   title: string;
   dishes: MenuDish[];
   restaurantClosed?: boolean;
+  addonSettings: AddonSettings;
   addToCart: (
     item: {
       _id: string;
@@ -263,6 +273,8 @@ const CategoryBlock = ({
             dish={dish}
             categoryName={title}
             restaurantClosed={restaurantClosed}
+            addonsEligible={isDishAddonEligible(dish._id, title, addonSettings)}
+            enabledAddonIds={getEnabledAddonsForDish(dish._id, addonSettings, ADD_ONS.map((a) => a.id))}
             addToCart={addToCart}
           />
         ))}

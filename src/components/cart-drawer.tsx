@@ -205,6 +205,16 @@ export default function CartDrawer({ menuCategories = [] }: CartDrawerProps) {
                       {pricing.lineDiscount.toFixed(2)}
                     </p>
                   )}
+                  {item.addons && item.addons.length > 0 && (
+                    <ul className="mt-1 space-y-0.5">
+                      {item.addons.map((a) => (
+                        <li key={a.id} className="text-xs text-stone-400">
+                          + {a.name}{a.quantity > 1 ? ` ×${a.quantity}` : ""}
+                          {a.price > 0 && ` (+€${(a.price * a.quantity).toFixed(2)})`}
+                        </li>
+                      ))}
+                    </ul>
+                  )}
                   <div className="flex items-center gap-2 mt-2">
                     <button
                       className="decreaseQty w-6 h-6 flex items-center justify-center rounded-full bg-stone-200 text-stone-600 hover:bg-stone-300 text-sm transition-colors"
@@ -374,6 +384,16 @@ export default function CartDrawer({ menuCategories = [] }: CartDrawerProps) {
                                   {pricing.appliedDiscountLabels.join(" + ")} : -EUR{" "}
                                   {pricing.lineDiscount.toFixed(2)}
                                 </p>
+                              )}
+                              {item.addons && item.addons.length > 0 && (
+                                <ul className="mt-1 space-y-0.5">
+                                  {item.addons.map((a) => (
+                                    <li key={a.id} className="text-xs text-gray-400">
+                                      + {a.name}{a.quantity > 1 ? ` ×${a.quantity}` : ""}
+                                      {a.price > 0 && ` (+€${(a.price * a.quantity).toFixed(2)})`}
+                                    </li>
+                                  ))}
+                                </ul>
                               )}
                               <div className="flex items-center mt-2">
                                 <motion.button

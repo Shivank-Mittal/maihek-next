@@ -38,7 +38,7 @@ export const MAX_ADDONS = 2;
 
 // ─── AddOnRow ────────────────────────────────────────────────────────────────
 
-function AddOnRow({
+export function AddOnRow({
   addon,
   onAdd,
   onRemove,

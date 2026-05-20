@@ -14,10 +14,18 @@ type PricedCartItem = {
   quantity?: number;
 };
 
+type CartItemAddon = {
+  id: string;
+  name: string;
+  price: number;
+  quantity: number;
+};
+
 export type DiscountablePricedItem = PricedCartItem & {
   id?: string;
   category?: string;
   dishDiscount?: DishDiscount | null;
+  addons?: CartItemAddon[];
 };
 
 export type CartLinePricing = {
@@ -190,6 +198,11 @@ export const calculateCartItemPricing = (
   const lineDishDiscount = roundCurrency(unitDishDiscount * quantity);
   const lineTakeawayDiscount = roundCurrency(unitTakeawayDiscount * quantity);
 
+  const addonUnitCost = (item.addons ?? []).reduce(
+    (s, a) => s + roundCurrency(a.price * a.quantity),
+    0
+  );
+
   return {
     quantity,
     unitBasePrice,
@@ -200,7 +213,7 @@ export const calculateCartItemPricing = (
     lineDishDiscount,
     lineTakeawayDiscount,
     lineDiscount: roundCurrency(lineDishDiscount + lineTakeawayDiscount),
-    lineTotal: roundCurrency(unitTotal * quantity),
+    lineTotal: roundCurrency((unitTotal + addonUnitCost) * quantity),
     appliedDiscountLabels,
   };
 };

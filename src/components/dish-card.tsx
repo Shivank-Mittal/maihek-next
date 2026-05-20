@@ -3,12 +3,16 @@
 import { useState } from "react";
 import { calculateCartItemPricing } from "@/lib/checkout";
 import { getCategoryEmoji } from "@/lib/food-emojis";
+import AddonPickerDialog from "@/components/addon-picker-dialog";
+import type { CartItemAddon } from "@/hooks/use-cart";
 import type { DishDiscount, MenuDish } from "@repo-types/dishes";
 
 type DishCardProps = {
   dish: MenuDish;
   categoryName: string;
   restaurantClosed?: boolean;
+  addonsEligible?: boolean;
+  enabledAddonIds?: string[];
   addToCart: (
     item: {
       _id: string;
@@ -17,6 +21,7 @@ type DishCardProps = {
       image?: string;
       category?: string;
       dishDiscount?: DishDiscount | null;
+      addons?: CartItemAddon[];
     },
     quantity: number
   ) => void;
@@ -26,10 +31,13 @@ export default function DishCard({
   dish,
   categoryName,
   restaurantClosed,
+  addonsEligible = true,
+  enabledAddonIds,
   addToCart,
 }: DishCardProps) {
   const [quantity, setQuantity] = useState(0);
   const [imgError, setImgError] = useState(false);
+  const [addonDialogOpen, setAddonDialogOpen] = useState(false);
   const isDisabled = dish.active === false || restaurantClosed === true;
   const pricing = calculateCartItemPricing({
     price: dish.price,
@@ -41,10 +49,16 @@ export default function DishCard({
   const handleDecrement = () => setQuantity((current) => Math.max(0, current - 1));
 
   const handleAddToCart = () => {
-    if (quantity === 0) {
-      return;
+    if (quantity === 0) return;
+    if (addonsEligible) {
+      setAddonDialogOpen(true);
+    } else {
+      commitToCart([]);
     }
+  };
 
+  const commitToCart = (addons: CartItemAddon[]) => {
+    setAddonDialogOpen(false);
     addToCart(
       {
         _id: dish._id,
@@ -53,14 +67,15 @@ export default function DishCard({
         image: dish.image,
         category: categoryName,
         dishDiscount: dish.discount ?? null,
+        addons: addons.length > 0 ? addons : undefined,
       },
       quantity
     );
-
     setQuantity(0);
   };
 
   return (
+    <>
     <div className="relative bg-white rounded-2xl border border-stone-100 hover:border-stone-200 hover:shadow-md transition-all duration-300 overflow-hidden">
       {dish.active === false && (
         <div className="absolute inset-0 bg-white/80 backdrop-blur-[2px] rounded-2xl flex items-center justify-center z-10">
@@ -152,5 +167,14 @@ export default function DishCard({
         </div>
       </div>
     </div>
+
+    <AddonPickerDialog
+      open={addonDialogOpen}
+      dishName={dish.name}
+      enabledAddonIds={enabledAddonIds}
+      onConfirm={commitToCart}
+      onClose={() => setAddonDialogOpen(false)}
+    />
+    </>
   );
 }

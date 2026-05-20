@@ -2,12 +2,20 @@ import { saveOrder } from "@/services/order-db-service";
 import { sendOrderPushNotifications } from "@/services/order-notification-service";
 import { sendOrderEmail } from "@/services/order-email-service";
 
+export interface OrderItemAddon {
+  id: string;
+  name: string;
+  price: number;
+  quantity: number;
+}
+
 export interface OrderItem {
   name: string;
   price: number;
   quantity: number;
   _subtotal: number;
   option?: string;
+  addons?: OrderItemAddon[];
 }
 
 export interface OrderPayload {

@@ -98,6 +98,13 @@ import { toast } from "sonner"; // Optional: Remove if not using sonner
 import { listDishCategories } from "@/services/dishes-service";
 import type { DishCategory, DishDiscount } from "@repo-types/dishes";
 
+export interface CartItemAddon {
+  id: string;
+  name: string;
+  price: number;
+  quantity: number;
+}
+
 // Define cart item interface (matches checkout page and /api/send-email)
 export interface CartItem {
   id: string;
@@ -110,6 +117,7 @@ export interface CartItem {
   selectedItems?: Record<string, string>;
   image?: string;
   emoji?: string;
+  addons?: CartItemAddon[];
 }
 
 // Define location interface (optional, adjust as needed)
@@ -161,11 +169,18 @@ const buildLatestDishMap = (categories: DishCategory[]) => {
   return dishMap;
 };
 
+const buildAddonKey = (addons?: CartItemAddon[]) =>
+  (addons ?? [])
+    .map((a) => `${a.id}:${a.quantity}`)
+    .sort()
+    .join("|");
+
 const enrichCartItems = (items: CartItem[], categories: DishCategory[]) => {
   const latestDishMap = buildLatestDishMap(categories);
 
   return items.map((item) => {
-    const latestDish = latestDishMap.get(item.id);
+    const dishId = item.id.split("__")[0];
+    const latestDish = latestDishMap.get(dishId);
 
     if (!latestDish) {
       return item;
@@ -249,12 +264,18 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
   // Add item to cart (Update quantity if exists)
   const addToCart = (item: Omit<CartItem, "quantity">, quantity: number) => {
     setCart((prevCart) => {
+      const itemAddonKey = buildAddonKey(item.addons);
       const existingItem = prevCart.find(
-        (cartItem) => cartItem.id === item.id && cartItem.option === item.option
+        (cartItem) =>
+          cartItem.id === item.id &&
+          cartItem.option === item.option &&
+          buildAddonKey(cartItem.addons) === itemAddonKey
       );
       if (existingItem) {
         return prevCart.map((cartItem) =>
-          cartItem.id === item.id && cartItem.option === item.option
+          cartItem.id === item.id &&
+          cartItem.option === item.option &&
+          buildAddonKey(cartItem.addons) === itemAddonKey
             ? { ...cartItem, ...item, quantity: cartItem.quantity + quantity }
             : cartItem
         );
@@ -285,7 +306,13 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
   // Get total price (needed for checkout page)
   const getTotal = () => {
     return cart
-      .reduce((total, item) => total + item.price * (item.quantity || 1), 0)
+      .reduce((total, item) => {
+        const addonSum = (item.addons ?? []).reduce(
+          (s, a) => s + a.price * a.quantity,
+          0
+        );
+        return total + (item.price + addonSum) * (item.quantity || 1);
+      }, 0)
       .toFixed(2);
   };
 
