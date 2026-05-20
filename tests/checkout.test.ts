@@ -3,6 +3,7 @@ import {
   calculateCartTotal,
   sanitizeTakeawayDiscountSettings,
   DEFAULT_TAKEAWAY_DISCOUNT_SETTINGS,
+  isOrderValid,
 } from '@/lib/checkout'
 import { mockPricedCartItems, mockPincode, mockInvalidPincode } from './mocks'
 
@@ -38,6 +39,21 @@ describe('checkout utilities', () => {
     it('should default quantity to 1', () => {
       const items = [{ price: 10 }]
       expect(calculateCartTotal(items)).toBe(10)
+    })
+  })
+
+  describe('isOrderValid', () => {
+    it('should return true for emporter regardless of addressConfirmed', () => {
+      expect(isOrderValid('emporter', false)).toBe(true)
+      expect(isOrderValid('emporter', true)).toBe(true)
+    })
+
+    it('should return false for livraison when address is not confirmed', () => {
+      expect(isOrderValid('livraison', false)).toBe(false)
+    })
+
+    it('should return true for livraison when address is confirmed', () => {
+      expect(isOrderValid('livraison', true)).toBe(true)
     })
   })
 

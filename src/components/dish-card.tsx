@@ -14,7 +14,6 @@ type DishCardProps = {
       _id: string;
       name: string;
       price: number;
-      basePrice?: number;
       image?: string;
       category?: string;
       dishDiscount?: DishDiscount | null;
@@ -51,7 +50,6 @@ export default function DishCard({
         _id: dish._id,
         name: dish.name,
         price: dish.price,
-        basePrice: dish.price,
         image: dish.image,
         category: categoryName,
         dishDiscount: dish.discount ?? null,

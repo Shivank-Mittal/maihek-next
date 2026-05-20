@@ -16,7 +16,6 @@ type PricedCartItem = {
 
 export type DiscountablePricedItem = PricedCartItem & {
   id?: string;
-  basePrice?: number;
   category?: string;
   dishDiscount?: DishDiscount | null;
 };
@@ -158,7 +157,7 @@ export const calculateCartItemPricing = (
   }
 ): CartLinePricing => {
   const quantity = Math.max(1, Math.floor(item.quantity ?? 1));
-  const unitBasePrice = roundCurrency(item.basePrice ?? item.price);
+  const unitBasePrice = roundCurrency(item.price);
   const dishDiscount = sanitizeDishDiscount(item.dishDiscount);
   const takeawayDiscount = sanitizeTakeawayDiscountSettings(options?.takeawayDiscount);
 
@@ -263,3 +262,9 @@ export const getDeliveryShortfall = (total: number) =>
 
 export const getDeliveryMinimumMessage = (currencySymbol = "EUR") =>
   `La livraison est disponible uniquement pour les commandes de ${DELIVERY_MINIMUM_ORDER_AMOUNT} ${currencySymbol} ou plus.`;
+
+
+export const isOrderValid = (
+  orderType: "emporter" | "livraison",
+  addressConfirmed: boolean
+) => (orderType !== "livraison" ? true : addressConfirmed);

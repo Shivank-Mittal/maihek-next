@@ -238,7 +238,6 @@ const CategoryBlock = ({
       _id: string;
       name: string;
       price: number;
-      basePrice?: number;
       image?: string;
       category?: string;
       dishDiscount?: MenuDish["discount"];

@@ -103,7 +103,6 @@ export interface CartItem {
   id: string;
   name: string;
   price: number;
-  basePrice?: number;
   quantity: number;
   category?: string;
   dishDiscount?: DishDiscount | null;
@@ -176,7 +175,6 @@ const enrichCartItems = (items: CartItem[], categories: DishCategory[]) => {
       ...item,
       name: latestDish.name,
       price: latestDish.price,
-      basePrice: latestDish.price,
       image: item.image || latestDish.image,
       category: latestDish.category,
       dishDiscount: latestDish.dishDiscount ?? null,
@@ -287,7 +285,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
   // Get total price (needed for checkout page)
   const getTotal = () => {
     return cart
-      .reduce((total, item) => total + (item.basePrice ?? item.price) * (item.quantity || 1), 0)
+      .reduce((total, item) => total + item.price * (item.quantity || 1), 0)
       .toFixed(2);
   };
 

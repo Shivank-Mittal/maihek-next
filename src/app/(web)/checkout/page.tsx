@@ -29,6 +29,7 @@ import {
   calculateCartItemPricing,
   calculateCartPricing,
   getTakeawayDiscountSummary,
+  isOrderValid,
 } from "@/lib/checkout";
 import { fetchAllowedPincodes } from "@/services/delivery-zones-service";
 import { getDiscountSettings } from "@/services/discount-settings-service";
@@ -114,7 +115,7 @@ function CheckoutContent() {
   };
 
   const onSubmit: SubmitHandler<FormData> = async (data) => {
-    if (data.orderType === "livraison" && !addressConfirmed) {
+    if (!isOrderValid(data.orderType, addressConfirmed)) {
       toast.error("Veuillez sélectionner une adresse depuis les suggestions.", {
         duration: 3000,
         style: { background: "#fff", color: "#000", border: "1px solid #ccc" },
