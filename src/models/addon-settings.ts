@@ -4,7 +4,7 @@ export interface AddonSettingsDocument extends Document {
   globalEnabled: boolean;
   excludedCategoryNames: string[];
   excludedDishIds: string[];
-  dishExcludedAddonIds: Map<string, string[]>;
+  dishExcludedAddonIds: Record<string, string[]>;
   updatedAt: Date;
 }
 
@@ -16,7 +16,7 @@ const addonSettingsSchema = new Schema<AddonSettingsDocument>({
   globalEnabled: { type: Boolean, default: true },
   excludedCategoryNames: { type: [String], default: [] },
   excludedDishIds: { type: [String], default: [] },
-  dishExcludedAddonIds: { type: Map, of: [String], default: {} },
+  dishExcludedAddonIds: { type: Schema.Types.Mixed, default: {} },
   updatedAt: { type: Date, default: Date.now },
 });
 

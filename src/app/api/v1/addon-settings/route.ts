@@ -25,7 +25,7 @@ export async function GET() {
     globalEnabled: settings.globalEnabled,
     excludedCategoryNames: settings.excludedCategoryNames,
     excludedDishIds: settings.excludedDishIds,
-    dishExcludedAddonIds: Object.fromEntries(settings.dishExcludedAddonIds ?? new Map()),
+    dishExcludedAddonIds: settings.dishExcludedAddonIds ?? {},
     updatedAt: settings.updatedAt?.toISOString(),
   });
 }
@@ -45,16 +45,18 @@ export async function POST(request: NextRequest) {
     const updatedSettings = await AddonSettings.findOneAndUpdate(
       {},
       {
-        globalEnabled: body.globalEnabled ?? true,
-        excludedCategoryNames: Array.isArray(body.excludedCategoryNames)
-          ? body.excludedCategoryNames
-          : [],
-        excludedDishIds: Array.isArray(body.excludedDishIds) ? body.excludedDishIds : [],
-        dishExcludedAddonIds:
-          body.dishExcludedAddonIds && typeof body.dishExcludedAddonIds === "object"
-            ? body.dishExcludedAddonIds
-            : {},
-        updatedAt: new Date(),
+        $set: {
+          globalEnabled: body.globalEnabled ?? true,
+          excludedCategoryNames: Array.isArray(body.excludedCategoryNames)
+            ? body.excludedCategoryNames
+            : [],
+          excludedDishIds: Array.isArray(body.excludedDishIds) ? body.excludedDishIds : [],
+          dishExcludedAddonIds:
+            body.dishExcludedAddonIds && typeof body.dishExcludedAddonIds === "object"
+              ? body.dishExcludedAddonIds
+              : {},
+          updatedAt: new Date(),
+        },
       },
       { new: true, upsert: true }
     );
@@ -63,7 +65,7 @@ export async function POST(request: NextRequest) {
       globalEnabled: updatedSettings.globalEnabled,
       excludedCategoryNames: updatedSettings.excludedCategoryNames,
       excludedDishIds: updatedSettings.excludedDishIds,
-      dishExcludedAddonIds: Object.fromEntries(updatedSettings.dishExcludedAddonIds ?? new Map()),
+      dishExcludedAddonIds: updatedSettings.dishExcludedAddonIds ?? {},
       updatedAt: updatedSettings.updatedAt?.toISOString(),
     });
   } catch (error) {

@@ -166,9 +166,15 @@ export default function DishesPage() {
         },
         body: JSON.stringify(updated),
       });
+      if (!res.ok) {
+        setAddonSettings(addonSettings);
+        alert("Failed to update addon settings");
+        return;
+      }
       const data = (await res.json()) as AddonSettings;
       setAddonSettings({ ...data, dishExcludedAddonIds: data.dishExcludedAddonIds ?? {} });
     } catch {
+      setAddonSettings(addonSettings);
       alert("Failed to update addon settings");
     }
   };
@@ -402,7 +408,7 @@ export default function DishesPage() {
                   <TableBody>
                     {currentDishes.map((dish) => {
                       const pricing = calculateCartItemPricing({ price: dish.price, dishDiscount: dish.discount });
-                      const dishAddonOn = !addonSettings.excludedDishIds.includes(dish._id);
+                      const dishAddonOn = !addonSettings.excludedDishIds.includes(dish._id!);
                       const catAddonOn = !addonSettings.excludedCategoryNames.includes(dish.category);
                       const effectiveAddonOn = addonSettings.globalEnabled && catAddonOn && dishAddonOn;
 
@@ -472,7 +478,7 @@ export default function DishesPage() {
                               <Button
                                 variant="outline"
                                 size="icon"
-                                onClick={() => toggleDishAddon(dish._id, !dishAddonOn)}
+                                onClick={() => toggleDishAddon(dish._id!, !dishAddonOn)}
                                 aria-label={dishAddonOn ? "Disable extras for this dish" : "Enable extras for this dish"}
                                 title={
                                   !addonSettings.globalEnabled
@@ -605,11 +611,11 @@ export default function DishesPage() {
                         <p className="text-sm font-semibold text-stone-800">Extras for this dish</p>
                         <div className="flex items-center gap-2">
                           <span className="text-xs text-stone-500">
-                            {addonSettings.excludedDishIds.includes(editingDish._id) ? "Off" : "On"}
+                            {addonSettings.excludedDishIds.includes(editingDish._id!) ? "Off" : "On"}
                           </span>
                           <SwitchToggle
-                            checked={!addonSettings.excludedDishIds.includes(editingDish._id)}
-                            onChange={(v) => toggleDishAddon(editingDish._id, v)}
+                            checked={!addonSettings.excludedDishIds.includes(editingDish._id!)}
+                            onChange={(v) => toggleDishAddon(editingDish._id!, v)}
                           />
                         </div>
                       </div>
@@ -622,7 +628,7 @@ export default function DishesPage() {
                       )}
 
                       {/* Per-addon toggles */}
-                      {!addonSettings.excludedDishIds.includes(editingDish._id) && (
+                      {!addonSettings.excludedDishIds.includes(editingDish._id!) && (
                         <div className="space-y-1 max-h-56 overflow-y-auto pr-1">
                           {ADD_ONS.map((addon) => {
                             const excluded = (addonSettings.dishExcludedAddonIds[editingDish._id] ?? []).includes(addon.id);
