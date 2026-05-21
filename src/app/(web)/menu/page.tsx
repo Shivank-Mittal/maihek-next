@@ -11,7 +11,7 @@ import { listDishCategories } from "@/services/dishes-service";
 import { useRestaurantStatus } from "@/hooks/use-restaurant-status";
 import { getDiscountSettings } from "@/services/discount-settings-service";
 import { DEFAULT_TAKEAWAY_DISCOUNT_SETTINGS, getTakeawayDiscountSummary } from "@/lib/checkout";
-import { DEFAULT_ADDON_SETTINGS, getEnabledAddonsForDish, isDishAddonEligible, type AddonSettings } from "@/lib/addon-settings";
+import { ADDONS_ENABLED, DEFAULT_ADDON_SETTINGS, getEnabledAddonsForDish, isDishAddonEligible, type AddonSettings } from "@/lib/addon-settings";
 import { ADD_ONS } from "@/components/addons-step";
 import type { DishCategory, MenuDish } from "@repo-types/dishes";
 
@@ -34,9 +34,11 @@ export default function Menu() {
         getDiscountSettings().catch(() => ({
           takeawayDiscount: DEFAULT_TAKEAWAY_DISCOUNT_SETTINGS,
         })),
-        fetch("/api/v1/addon-settings")
-          .then((r) => r.json() as Promise<AddonSettings>)
-          .catch(() => DEFAULT_ADDON_SETTINGS),
+        ADDONS_ENABLED
+          ? fetch("/api/v1/addon-settings")
+              .then((r) => r.json() as Promise<AddonSettings>)
+              .catch(() => DEFAULT_ADDON_SETTINGS)
+          : Promise.resolve(DEFAULT_ADDON_SETTINGS),
       ]);
 
       setMenuItems(categories);
@@ -273,8 +275,8 @@ const CategoryBlock = ({
             dish={dish}
             categoryName={title}
             restaurantClosed={restaurantClosed}
-            addonsEligible={isDishAddonEligible(dish._id, title, addonSettings)}
-            enabledAddonIds={getEnabledAddonsForDish(dish._id, addonSettings, ADD_ONS.map((a) => a.id))}
+            addonsEligible={ADDONS_ENABLED && isDishAddonEligible(dish._id, title, addonSettings)}
+            enabledAddonIds={ADDONS_ENABLED ? getEnabledAddonsForDish(dish._id, addonSettings, ADD_ONS.map((a) => a.id)) : []}
             addToCart={addToCart}
           />
         ))}

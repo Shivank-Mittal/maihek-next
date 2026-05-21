@@ -98,27 +98,24 @@ import { toast } from "sonner"; // Optional: Remove if not using sonner
 import { listDishCategories } from "@/services/dishes-service";
 import type { DishCategory, DishDiscount } from "@repo-types/dishes";
 
-export interface CartItemAddon {
+// Unified interface for any cart line — both dishes and addons share this shape.
+// `image` takes display priority; `emoji` is the fallback when no image URL is set.
+// Dish-only fields (category, dishDiscount, selectedItems) are simply undefined on addons.
+export interface CartLineItem {
   id: string;
   name: string;
   price: number;
   quantity: number;
-}
-
-// Define cart item interface (matches checkout page and /api/send-email)
-export interface CartItem {
-  id: string;
-  name: string;
-  price: number;
-  quantity: number;
-  category?: string;
-  dishDiscount?: DishDiscount | null;
-  option?: string;
-  selectedItems?: Record<string, string>;
   image?: string;
   emoji?: string;
-  addons?: CartItemAddon[];
+  category?: string;
+  dishDiscount?: DishDiscount | null;
+  selectedItems?: Record<string, string>;
+  addons?: CartLineItem[];
 }
+
+// CartItem is an alias kept for call-site compatibility
+export type CartItem = CartLineItem;
 
 // Define location interface (optional, adjust as needed)
 interface Location {
@@ -169,8 +166,8 @@ const buildLatestDishMap = (categories: DishCategory[]) => {
   return dishMap;
 };
 
-const buildAddonKey = (addons?: CartItemAddon[]) =>
-  (addons ?? [])
+const buildAddonKey = (addons: CartLineItem[]) =>
+  addons
     .map((a) => `${a.id}:${a.quantity}`)
     .sort()
     .join("|");
@@ -206,83 +203,79 @@ export const useCart = (): CartContextType => {
   return context;
 };
 
+
 // Cart Provider
 export const CartProvider = ({ children }: { children: ReactNode }) => {
   const [cart, setCart] = useState<CartItem[]>([]);
   const [location, setLocation] = useState<Location | null>(null);
   const [isDrawerOpen, setIsDrawerOpen] = useState<boolean>(false);
 
+  const inClientEnvironment = () => typeof window !== "undefined"
+
+  const loadDishesFromTheLocalStorage = () => {
+    const storedCart = localStorage.getItem("cartItems");
+    if (!storedCart) return []
+    return JSON.parse(storedCart) as CartItem[];
+  }
+
+  const composeCartItems = (item: Omit<CartItem, "quantity">, quantity: number, prevCart: CartItem[]) => {
+    const itemAddonKey = buildAddonKey(item.addons || []);
+    const matches = (cartItem: CartItem) =>
+      cartItem.id === item.id && 
+      buildAddonKey(cartItem.addons || []) === itemAddonKey;
+
+    if (!prevCart.some(matches)) return [...prevCart, { ...item, quantity }];
+
+    return prevCart.map((cartItem) =>
+      matches(cartItem)
+        ? { ...cartItem, ...item, quantity: cartItem.quantity + quantity }
+        : cartItem
+    );
+  }
+
   // Load cart from localStorage on first render
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      let isCancelled = false;
+    if(!inClientEnvironment()) return;
+    const controller = new AbortController();
 
-      try {
-        const storedCart = localStorage.getItem("cartItems");
-        if (storedCart) {
-          const parsedCart = JSON.parse(storedCart) as CartItem[];
-          setCart(parsedCart);
+    try {
+      const dishes = loadDishesFromTheLocalStorage();
+      setCart(dishes);
 
-          if (parsedCart.length > 0) {
-            listDishCategories()
-              .then((categories) => {
-                if (isCancelled) {
-                  return;
-                }
+      if(dishes.length === 0) return () => controller.abort();
 
-                setCart(enrichCartItems(parsedCart, categories));
-              })
-              .catch((error) => {
-                console.error("Error refreshing cart items from dishes API:", error);
-              });
-          }
-        }
-      } catch (error) {
-        console.error("Error parsing cart from localStorage:", error);
-        toast.error("Failed to load cart."); // Optional: Remove if not using sonner
-        setCart([]);
-      }
+      listDishCategories(controller.signal)
+        .then((categories) => setCart(enrichCartItems(dishes, categories)))
+        .catch((error) => {
+          if (error.name === "AbortError") return;
+          console.error("Error refreshing cart items from dishes API:", error);
+        });
 
-      return () => {
-        isCancelled = true;
-      };
+    } catch(error) {
+      console.error("Error parsing cart from localStorage:", error);
+      toast.error("Failed to load cart.");
+      setCart([]);
     }
+
+    return () => controller.abort();
   }, []);
 
   // Save cart to localStorage whenever it changes
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      try {
-        localStorage.setItem("cartItems", JSON.stringify(cart));
-      } catch (error) {
-        console.error("Error saving cart to localStorage:", error);
-        toast.error("Échec de l'enregistrement du panier.");
-      }
+    if (!inClientEnvironment()) return;
+    try {
+      localStorage.setItem("cartItems", JSON.stringify(cart));
+    } catch (error) {
+      console.error("Error saving cart to localStorage:", error);
+      toast.error("Échec de l'enregistrement du panier.");
     }
   }, [cart]);
 
   // Add item to cart (Update quantity if exists)
   const addToCart = (item: Omit<CartItem, "quantity">, quantity: number) => {
-    setCart((prevCart) => {
-      const itemAddonKey = buildAddonKey(item.addons);
-      const existingItem = prevCart.find(
-        (cartItem) =>
-          cartItem.id === item.id &&
-          cartItem.option === item.option &&
-          buildAddonKey(cartItem.addons) === itemAddonKey
-      );
-      if (existingItem) {
-        return prevCart.map((cartItem) =>
-          cartItem.id === item.id &&
-          cartItem.option === item.option &&
-          buildAddonKey(cartItem.addons) === itemAddonKey
-            ? { ...cartItem, ...item, quantity: cartItem.quantity + quantity }
-            : cartItem
-        );
-      }
+    const cartItems = (prevCart: CartItem[]) => composeCartItems(item, quantity, prevCart)
 
-      return [...prevCart, { ...item, quantity }];
-    });
+    setCart(cartItems);
     toast.success(`${item.name} a été ajouté au panier !`);
   };
 

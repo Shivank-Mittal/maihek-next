@@ -1,3 +1,7 @@
+// Set to false to disable the entire addons feature globally.
+// Flip this to true when ready to re-enable.
+export const ADDONS_ENABLED = false;
+
 export type AddonSettings = {
   globalEnabled: boolean;
   excludedCategoryNames: string[];

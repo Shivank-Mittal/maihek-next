@@ -1,8 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { verify } from "jsonwebtoken";
 import { ApiError } from "next/dist/server/api-utils";
+import mongoose from "mongoose";
 import connectDB from "@/lib/db";
 import AddonSettings from "@/models/addon-settings";
+import { ADDONS_ENABLED } from "@/lib/addon-settings";
 
 const JWT_SECRET = process.env.JWT_SECRET as string;
 
@@ -31,6 +33,9 @@ export async function GET() {
 }
 
 export async function POST(request: NextRequest) {
+  if (!ADDONS_ENABLED) {
+    return NextResponse.json({ error: "Addons are disabled" }, { status: 403 });
+  }
   try {
     await authorizeRequest(request);
     await connectDB();
@@ -42,31 +47,29 @@ export async function POST(request: NextRequest) {
       dishExcludedAddonIds?: Record<string, string[]>;
     };
 
-    const updatedSettings = await AddonSettings.findOneAndUpdate(
+    const normalizedBody = {
+      globalEnabled: body.globalEnabled ?? true,
+      excludedCategoryNames: Array.isArray(body.excludedCategoryNames) ? body.excludedCategoryNames : [],
+      excludedDishIds: Array.isArray(body.excludedDishIds) ? body.excludedDishIds : [],
+      dishExcludedAddonIds:
+        body.dishExcludedAddonIds && typeof body.dishExcludedAddonIds === "object"
+          ? body.dishExcludedAddonIds
+          : {},
+      updatedAt: new Date(),
+    };
+
+    await mongoose.connection.collection("addonsettings").updateOne(
       {},
-      {
-        $set: {
-          globalEnabled: body.globalEnabled ?? true,
-          excludedCategoryNames: Array.isArray(body.excludedCategoryNames)
-            ? body.excludedCategoryNames
-            : [],
-          excludedDishIds: Array.isArray(body.excludedDishIds) ? body.excludedDishIds : [],
-          dishExcludedAddonIds:
-            body.dishExcludedAddonIds && typeof body.dishExcludedAddonIds === "object"
-              ? body.dishExcludedAddonIds
-              : {},
-          updatedAt: new Date(),
-        },
-      },
-      { new: true, upsert: true }
+      { $set: normalizedBody },
+      { upsert: true }
     );
 
     return NextResponse.json({
-      globalEnabled: updatedSettings.globalEnabled,
-      excludedCategoryNames: updatedSettings.excludedCategoryNames,
-      excludedDishIds: updatedSettings.excludedDishIds,
-      dishExcludedAddonIds: updatedSettings.dishExcludedAddonIds ?? {},
-      updatedAt: updatedSettings.updatedAt?.toISOString(),
+      globalEnabled: normalizedBody.globalEnabled,
+      excludedCategoryNames: normalizedBody.excludedCategoryNames,
+      excludedDishIds: normalizedBody.excludedDishIds,
+      dishExcludedAddonIds: normalizedBody.dishExcludedAddonIds,
+      updatedAt: normalizedBody.updatedAt.toISOString(),
     });
   } catch (error) {
     return NextResponse.json(
