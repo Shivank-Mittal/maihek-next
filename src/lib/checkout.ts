@@ -1,5 +1,6 @@
 import type { TakeawayDiscountSettings } from "@repo-types/discounts";
 import type { DishDiscount } from "@repo-types/dishes";
+import type { CartLineItem } from "@/hooks/use-cart";
 
 export const DELIVERY_MINIMUM_ORDER_AMOUNT = 20;
 
@@ -14,18 +15,11 @@ type PricedCartItem = {
   quantity?: number;
 };
 
-type CartItemAddon = {
-  id: string;
-  name: string;
-  price: number;
-  quantity: number;
-};
-
 export type DiscountablePricedItem = PricedCartItem & {
   id?: string;
   category?: string;
   dishDiscount?: DishDiscount | null;
-  addons?: CartItemAddon[];
+  addons?: CartLineItem[];
 };
 
 export type CartLinePricing = {

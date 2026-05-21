@@ -8,13 +8,13 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { ADD_ONS, AddOnRow, MAX_ADDONS } from "@/components/addons-step";
-import type { CartItemAddon } from "@/hooks/use-cart";
+import type { CartLineItem } from "@/hooks/use-cart";
 
 type AddonPickerDialogProps = {
   open: boolean;
   dishName: string;
   enabledAddonIds?: string[];
-  onConfirm: (addons: CartItemAddon[]) => void;
+  onConfirm: (addons: CartLineItem[]) => void;
   onClose: () => void;
 };
 
@@ -55,7 +55,7 @@ export default function AddonPickerDialog({
     });
   };
 
-  const buildAddons = (): CartItemAddon[] =>
+  const buildAddons = (): CartLineItem[] =>
     visibleAddons.filter((a) => (qtyMap.get(a.id) ?? 0) > 0).map((a) => ({
       id: a.id,
       name: a.name,

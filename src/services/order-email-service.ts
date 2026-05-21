@@ -27,7 +27,6 @@ function buildEmailHtml(payload: OrderPayload, paymentLabel: string): string {
         <p><strong>${item.name}</strong><br/>
            Quantité: ${item.quantity}<br/>
            Prix unitaire: ${item.price.toFixed(2)} €</p>
-        ${item.option ? `<p style="margin:4px 0;"><em>Option:</em> ${item.option}</p>` : ""}
         <p style="font-weight:bold;color:#2563eb;">Sous-total: ${item._subtotal.toFixed(2)} €</p>
       </li>`
     )

@@ -4,7 +4,7 @@ import { useState } from "react";
 import { calculateCartItemPricing } from "@/lib/checkout";
 import { getCategoryEmoji } from "@/lib/food-emojis";
 import AddonPickerDialog from "@/components/addon-picker-dialog";
-import type { CartItemAddon } from "@/hooks/use-cart";
+import type { CartLineItem } from "@/hooks/use-cart";
 import type { DishDiscount, MenuDish } from "@repo-types/dishes";
 
 type DishCardProps = {
@@ -21,7 +21,7 @@ type DishCardProps = {
       image?: string;
       category?: string;
       dishDiscount?: DishDiscount | null;
-      addons?: CartItemAddon[];
+      addons?: CartLineItem[];
     },
     quantity: number
   ) => void;
@@ -50,14 +50,16 @@ export default function DishCard({
 
   const handleAddToCart = () => {
     if (quantity === 0) return;
-    if (addonsEligible) {
+    const hasVisibleAddons = !enabledAddonIds || enabledAddonIds.length > 0;
+    console.log("[DishCard] handleAddToCart", { dishId: dish._id, addonsEligible, enabledAddonIds, hasVisibleAddons });
+    if (addonsEligible && hasVisibleAddons) {
       setAddonDialogOpen(true);
     } else {
       commitToCart([]);
     }
   };
 
-  const commitToCart = (addons: CartItemAddon[]) => {
+  const commitToCart = (addons: CartLineItem[]) => {
     setAddonDialogOpen(false);
     addToCart(
       {

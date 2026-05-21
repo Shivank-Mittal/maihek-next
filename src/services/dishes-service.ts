@@ -20,8 +20,8 @@ export async function listCategoryOptions(): Promise<DishCategoryOption[]> {
   }));
 }
 
-export async function listDishCategories(): Promise<DishCategory[]> {
-  const response = await fetch(DISHES_ENDPOINT);
+export async function listDishCategories(signal?: AbortSignal): Promise<DishCategory[]> {
+  const response = await fetch(DISHES_ENDPOINT, { signal });
   const categories = await parseResponse<ApiDishCategory[]>(response);
 
   return categories.map(normalizeCategory);

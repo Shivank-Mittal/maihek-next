@@ -212,7 +212,9 @@ function CheckoutContent() {
               quantity: item.quantity || 1,
               price: pricing.unitTotal,
               _subtotal: pricing.lineTotal,
-              option: item.option,
+              ...(item.addons?.length
+                ? { addons: item.addons.map((a) => ({ name: a.name, price: a.price, quantity: a.quantity })) }
+                : {}),
             };
           }),
           total: pricingSummary.total,
@@ -288,9 +290,6 @@ function CheckoutContent() {
                         <tr id="items-row" key={item.id} className="border-b border-gray-100">
                           <td className="py-3 px-2 text-sm">
                             <div className="font-medium text-gray-900">{item.name}</div>
-                            {item.option && (
-                              <div className="text-xs text-gray-500 mt-0.5">{item.option}</div>
-                            )}
                             {item.selectedItems && (
                               <ul className="text-xs text-gray-500 mt-0.5">
                                 {Object.entries(item.selectedItems).map(([key, value]) => (

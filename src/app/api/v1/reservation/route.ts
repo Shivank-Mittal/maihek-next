@@ -9,7 +9,6 @@ interface CartItem {
   name: { en: string; fr: string } | string;
   price: number;
   quantity?: number;
-  option?: string;
   selectedItems?: Record<string, string>;
 }
 
@@ -109,7 +108,6 @@ const sendEmail = async (params: {
       <li>
         <p>English: ${nameEn} - Quantity: ${item.quantity || 1}, Price: ${item.price} €</p>
         <p>Français: ${nameFr} - Quantité: ${item.quantity || 1}, Prix: ${item.price} €</p>
-        ${item.option ? `<ul><li>English: Option: ${item.option} | Français: Option: ${item.option}</li></ul>` : ""}
         ${
           item.selectedItems
             ? `<ul>${Object.entries(item.selectedItems)

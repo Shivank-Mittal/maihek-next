@@ -42,12 +42,18 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 
+interface OrderItemAddon {
+  name: string;
+  price: number;
+  quantity: number;
+}
+
 interface OrderItem {
   name: string;
   price: number;
   quantity: number;
   _subtotal: number;
-  option?: string;
+  addons?: OrderItemAddon[];
 }
 
 interface Order {
@@ -317,12 +323,17 @@ export default function OrdersPage() {
           <hr className="my-4" />
           <ul className="space-y-1">
             {printingOrder.items.map((item, i) => (
-              <li key={i} className="flex justify-between">
-                <span>
-                  {item.quantity}x {item.name}
-                  {item.option ? ` (${item.option})` : ""}
-                </span>
-                <span>{item._subtotal.toFixed(2)} €</span>
+              <li key={i} className="space-y-0.5">
+                <div className="flex justify-between">
+                  <span>{item.quantity}x {item.name}</span>
+                  <span>{item._subtotal.toFixed(2)} €</span>
+                </div>
+                {item.addons?.map((a, j) => (
+                  <div key={j} className="flex justify-between text-gray-500 pl-4 text-sm">
+                    <span>+ {a.quantity}x {a.name}</span>
+                    <span>{(a.price * a.quantity).toFixed(2)} €</span>
+                  </div>
+                ))}
               </li>
             ))}
           </ul>
@@ -598,15 +609,20 @@ export default function OrdersPage() {
                 <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Articles</p>
                 <ul className="space-y-1.5">
                   {detailOrder.items.map((item, i) => (
-                    <li key={i} className="flex justify-between text-gray-700">
-                      <span>
-                        <span className="font-medium">{item.quantity}×</span>{" "}
-                        {item.name}
-                        {item.option && (
-                          <span className="text-gray-400 text-xs ml-1">({item.option})</span>
-                        )}
-                      </span>
-                      <span className="font-medium tabular-nums">{item._subtotal.toFixed(2)} €</span>
+                    <li key={i} className="space-y-0.5 text-gray-700">
+                      <div className="flex justify-between">
+                        <span>
+                          <span className="font-medium">{item.quantity}×</span>{" "}
+                          {item.name}
+                        </span>
+                        <span className="font-medium tabular-nums">{item._subtotal.toFixed(2)} €</span>
+                      </div>
+                      {item.addons?.map((a, j) => (
+                        <div key={j} className="flex justify-between text-gray-400 pl-4 text-sm">
+                          <span>+ {a.quantity}× {a.name}</span>
+                          <span className="tabular-nums">{(a.price * a.quantity).toFixed(2)} €</span>
+                        </div>
+                      ))}
                     </li>
                   ))}
                 </ul>

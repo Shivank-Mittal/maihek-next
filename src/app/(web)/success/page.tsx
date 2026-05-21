@@ -5,12 +5,18 @@ import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Suspense } from "react";
 
+interface OrderItemAddon {
+  name: string;
+  price: number;
+  quantity: number;
+}
+
 interface OrderItem {
   name: string;
   price: number;
   quantity: number;
   _subtotal: number;
-  option?: string;
+  addons?: OrderItemAddon[];
 }
 
 interface Order {
@@ -128,12 +134,17 @@ function SuccessContent() {
 
             <ul className="space-y-1">
               {order.items.map((item, i) => (
-                <li key={i} className="flex justify-between">
-                  <span>
-                    {item.quantity}× {item.name}
-                    {item.option ? ` (${item.option})` : ""}
-                  </span>
-                  <span>{item._subtotal.toFixed(2)} €</span>
+                <li key={i} className="space-y-0.5">
+                  <div className="flex justify-between">
+                    <span>{item.quantity}× {item.name}</span>
+                    <span>{item._subtotal.toFixed(2)} €</span>
+                  </div>
+                  {item.addons?.map((a, j) => (
+                    <div key={j} className="flex justify-between text-gray-400 pl-4">
+                      <span>+ {a.quantity}× {a.name}</span>
+                      <span>{(a.price * a.quantity).toFixed(2)} €</span>
+                    </div>
+                  ))}
                 </li>
               ))}
             </ul>

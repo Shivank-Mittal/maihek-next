@@ -1,12 +1,21 @@
 import mongoose, { Document, Schema } from "mongoose";
 
+const orderItemAddonSchema = new Schema(
+  {
+    name: { type: String, required: true },
+    price: { type: Number, required: true },
+    quantity: { type: Number, required: true },
+  },
+  { _id: false }
+);
+
 const orderItemSchema = new Schema(
   {
     name: { type: String, required: true },
     price: { type: Number, required: true },
     quantity: { type: Number, required: true },
     _subtotal: { type: Number, required: true },
-    option: { type: String, default: "" },
+    addons: { type: [orderItemAddonSchema], default: [] },
   },
   { _id: false }
 );
@@ -31,12 +40,18 @@ const orderSchema = new Schema({
   createdAt: { type: Date, default: Date.now, expires: 604800 },
 });
 
+export interface OrderItemAddonDocument {
+  name: string;
+  price: number;
+  quantity: number;
+}
+
 export interface OrderItemDocument {
   name: string;
   price: number;
   quantity: number;
   _subtotal: number;
-  option?: string;
+  addons?: OrderItemAddonDocument[];
 }
 
 export interface OrderDocument extends Document {

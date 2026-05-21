@@ -3,7 +3,6 @@ import { sendOrderPushNotifications } from "@/services/order-notification-servic
 import { sendOrderEmail } from "@/services/order-email-service";
 
 export interface OrderItemAddon {
-  id: string;
   name: string;
   price: number;
   quantity: number;
@@ -14,7 +13,6 @@ export interface OrderItem {
   price: number;
   quantity: number;
   _subtotal: number;
-  option?: string;
   addons?: OrderItemAddon[];
 }
 

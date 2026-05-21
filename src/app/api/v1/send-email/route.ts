@@ -6,13 +6,19 @@ import {
 } from "@/lib/checkout";
 import { fulfillOrder, type OrderItem } from "@/lib/order-service";
 
+interface CartItemAddon {
+  name: string;
+  price: number;
+  quantity: number;
+}
+
 interface CartItem {
   id: string;
   name: string;
   price: number;
   quantity?: number;
-  option?: string;
   selectedItems?: Record<string, string>;
+  addons?: CartItemAddon[];
 }
 
 interface RequestBody {
@@ -47,7 +53,18 @@ export async function POST(request: NextRequest) {
       const quantity = clampQty(o.quantity);
       const price = round2(toNumber(o.price, 0));
       if (price < 0) throw new Error(`Invalid price at item ${i}: ${o.price}`);
-      return { name: o.name, price, quantity, _subtotal: round2(price * quantity), option: o.option };
+      const addons = (o.addons ?? []).map((a) => ({
+        name: a.name,
+        price: round2(toNumber(a.price, 0)),
+        quantity: clampQty(a.quantity),
+      }));
+      return {
+        name: o.name,
+        price,
+        quantity,
+        _subtotal: round2(price * quantity),
+        ...(addons.length ? { addons } : {}),
+      };
     });
 
     const total = round2(items.reduce((sum, item) => sum + item._subtotal, 0));
