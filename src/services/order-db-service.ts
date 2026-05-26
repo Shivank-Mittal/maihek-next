@@ -16,7 +16,7 @@ export async function saveOrder(payload: OrderPayload): Promise<void> {
     items: payload.items,
     total: payload.total,
     status: "pending",
-    stripeSessionId: payload.stripeSessionId ?? "",
+    stripeSessionId: payload.stripeSessionId ?? `local_${payload.customerName.replace(/\s+/g, "_")}_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
     paymentMethod: payload.paymentMethod ?? "",
   };
 
