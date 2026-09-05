@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { setOptions, importLibrary } from "@googlemaps/js-api-loader";
+import { cn } from "@/lib/utils";
 
 interface AddressAutocompleteProps {
   value: string;
@@ -14,48 +14,13 @@ interface AddressAutocompleteProps {
   hasError?: boolean;
 }
 
-let placesPromise: Promise<google.maps.PlacesLibrary> | null = null;
-
-function loadPlacesLibrary() {
-  if (!placesPromise) {
-    setOptions({
-      key: process.env.NEXT_PUBLIC_GOOGLE_PLACES_API_KEY!,
-      language: "fr",
-      region: "FR",
-    });
-    placesPromise = importLibrary("places") as Promise<google.maps.PlacesLibrary>;
-  }
-  return placesPromise;
+interface Suggestion {
+  placeId: string;
+  text: string;
 }
 
-function patchShadowDom() {
-  if (typeof window === "undefined") return;
-  if ((window as any).__gmpShadowPatched) return;
-  (window as any).__gmpShadowPatched = true;
-  const orig = Element.prototype.attachShadow;
-  Element.prototype.attachShadow = function (init) {
-    return orig.call(this, { ...init, mode: "open" });
-  };
-}
-
-const SHADOW_STYLE = `
-  .input-container {
-    background: #ffffff !important;
-    border: 1px solid #e5e7eb !important;
-    border-radius: 0.375rem !important;
-    box-shadow: none !important;
-    height: 2.5rem !important;
-  }
-  input {
-    color: #111827 !important;
-    background: transparent !important;
-    font-size: 0.875rem !important;
-    font-family: inherit !important;
-    padding-left: 0.75rem !important;
-  }
-  .autocomplete-icon { display: none !important; }
-  .clear-icon { display: none !important; }
-`;
+const DEBOUNCE_MS = 300;
+const MIN_INPUT_LENGTH = 3;
 
 export function AddressAutocomplete({
   value,
@@ -66,116 +31,160 @@ export function AddressAutocomplete({
   placeholder = "12 Rue de la Paix",
   className,
 }: AddressAutocompleteProps) {
-  const containerRef = useRef<HTMLDivElement>(null);
-  const [isReady, setIsReady] = useState(false);
+  const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
+  const [isOpen, setIsOpen] = useState(false);
+  const [highlightedIndex, setHighlightedIndex] = useState(-1);
   const [zoneError, setZoneError] = useState<string | null>(null);
 
-  const onChangeRef = useRef(onChange);
-  const onAddressSelectRef = useRef(onAddressSelect);
-  const onValidSelectionRef = useRef(onValidSelection);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const abortRef = useRef<AbortController | null>(null);
   const allowedPincodesRef = useRef(allowedPincodes);
-  const setZoneErrorRef = useRef(setZoneError);
-  useEffect(() => { onChangeRef.current = onChange; });
-  useEffect(() => { onAddressSelectRef.current = onAddressSelect; });
-  useEffect(() => { onValidSelectionRef.current = onValidSelection; });
-  useEffect(() => { allowedPincodesRef.current = allowedPincodes; });
-  useEffect(() => { setZoneErrorRef.current = setZoneError; });
-
   useEffect(() => {
-    patchShadowDom();
-    loadPlacesLibrary()
-      .then(() => setIsReady(true))
-      .catch(console.error);
+    allowedPincodesRef.current = allowedPincodes;
+  });
+
+  // Close the suggestion list when clicking outside the component
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
+        setIsOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  // Clean up any pending debounce/fetch on unmount
   useEffect(() => {
-    if (!isReady || !containerRef.current) return;
-
-    const el = new google.maps.places.PlaceAutocompleteElement({
-      includedRegionCodes: ["fr"],
-    });
-
-    el.setAttribute("placeholder", placeholder);
-    el.style.colorScheme = "light";
-    el.style.width = "100%";
-
-    containerRef.current.appendChild(el);
-
-    const injectShadowStyles = () => {
-      const shadow = (el as any).shadowRoot;
-      if (!shadow) return;
-      if (shadow.querySelector("#gmp-custom-style")) return;
-      const style = document.createElement("style");
-      style.id = "gmp-custom-style";
-      style.textContent = SHADOW_STYLE;
-      shadow.appendChild(style);
+    return () => {
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+      abortRef.current?.abort();
     };
-    injectShadowStyles();
-    const timer = setTimeout(injectShadowStyles, 150);
+  }, []);
 
-    // The correct event is "gmp-select", and the property is event.placePrediction
-    const handleSelect = async (event: Event) => {
-      const selectEvent = event as unknown as google.maps.places.PlacePredictionSelectEvent;
-      const place = selectEvent.placePrediction.toPlace();
-      await place.fetchFields({ fields: ["addressComponents"] });
+  const fetchSuggestions = (input: string) => {
+    abortRef.current?.abort();
 
-      const components = place.addressComponents ?? [];
-      let streetNumber = "";
-      let route = "";
-      let city = "";
-      let pincode = "";
+    if (input.trim().length < MIN_INPUT_LENGTH) {
+      setSuggestions([]);
+      setIsOpen(false);
+      return;
+    }
 
-      for (const component of components) {
-        const types = component.types ?? [];
-        if (types.includes("street_number")) streetNumber = component.longText ?? "";
-        else if (types.includes("route")) route = component.longText ?? "";
-        else if (types.includes("locality")) city = component.longText ?? "";
-        else if (types.includes("postal_code")) pincode = component.longText ?? "";
-      }
+    const controller = new AbortController();
+    abortRef.current = controller;
 
-      if (pincode && !allowedPincodesRef.current.includes(pincode)) {
-        setZoneErrorRef.current(
-          `Désolé, nous ne livrons pas dans la zone ${pincode}. Codes postaux acceptés : ${allowedPincodesRef.current.join(", ")}.`
-        );
-        onChangeRef.current("");
-        onValidSelectionRef.current(false);
+    fetch(`/api/v1/places/autocomplete?input=${encodeURIComponent(input)}`, {
+      signal: controller.signal,
+    })
+      .then((res) => res.json())
+      .then((json) => {
+        if (json.success) {
+          setSuggestions(json.data.suggestions ?? []);
+          setIsOpen(true);
+          setHighlightedIndex(-1);
+        }
+      })
+      .catch((error) => {
+        if (error?.name !== "AbortError") console.error("Address suggestion error:", error);
+      });
+  };
+
+  const handleInputChange = (val: string) => {
+    onChange(val);
+    setZoneError(null);
+    onValidSelection(false);
+
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => fetchSuggestions(val), DEBOUNCE_MS);
+  };
+
+  const selectSuggestion = async (suggestion: Suggestion) => {
+    setIsOpen(false);
+    setSuggestions([]);
+
+    try {
+      const res = await fetch(
+        `/api/v1/places/details?placeId=${encodeURIComponent(suggestion.placeId)}`
+      );
+      const json = await res.json();
+
+      if (!json.success) {
+        console.error("Address details error:", json.error);
         return;
       }
 
-      setZoneErrorRef.current(null);
-      const addressLine = [streetNumber, route].filter(Boolean).join(" ");
-      onChangeRef.current(addressLine);
-      onAddressSelectRef.current({ addressLine, city, pincode });
-      onValidSelectionRef.current(true);
-    };
+      const { addressLine, city, pincode } = json.data;
 
-    el.addEventListener("gmp-select", handleSelect);
-
-    return () => {
-      clearTimeout(timer);
-      el.removeEventListener("gmp-select", handleSelect);
-      if (containerRef.current && el.parentNode === containerRef.current) {
-        containerRef.current.removeChild(el);
+      if (pincode && !allowedPincodesRef.current.includes(pincode)) {
+        setZoneError(
+          `Désolé, nous ne livrons pas dans la zone ${pincode}. Codes postaux acceptés : ${allowedPincodesRef.current.join(", ")}.`
+        );
+        onChange("");
+        onValidSelection(false);
+        return;
       }
-    };
-  }, [isReady, placeholder]);
+
+      setZoneError(null);
+      onChange(addressLine);
+      onAddressSelect({ addressLine, city, pincode });
+      onValidSelection(true);
+    } catch (error) {
+      console.error("Address details error:", error);
+    }
+  };
+
+  const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
+    if (!isOpen || suggestions.length === 0) return;
+
+    if (event.key === "ArrowDown") {
+      event.preventDefault();
+      setHighlightedIndex((prev) => (prev + 1) % suggestions.length);
+    } else if (event.key === "ArrowUp") {
+      event.preventDefault();
+      setHighlightedIndex((prev) => (prev - 1 + suggestions.length) % suggestions.length);
+    } else if (event.key === "Enter") {
+      if (highlightedIndex >= 0) {
+        event.preventDefault();
+        selectSuggestion(suggestions[highlightedIndex]);
+      }
+    } else if (event.key === "Escape") {
+      setIsOpen(false);
+    }
+  };
 
   return (
-    <div className="relative">
-      <div ref={containerRef} className="w-full" />
-      {!isReady && (
-        <input
-          type="text"
-          value={value}
-          onChange={(e) => {
-            onChange(e.target.value);
-            setZoneError(null);
-            onValidSelection(false);
-          }}
-          placeholder={placeholder}
-          className={className}
-          autoComplete="off"
-        />
+    <div ref={containerRef} className="relative">
+      <input
+        type="text"
+        value={value}
+        onChange={(e) => handleInputChange(e.target.value)}
+        onFocus={() => suggestions.length > 0 && setIsOpen(true)}
+        onKeyDown={handleKeyDown}
+        placeholder={placeholder}
+        className={className}
+        autoComplete="off"
+      />
+      {isOpen && suggestions.length > 0 && (
+        <ul className="absolute z-20 mt-1 w-full max-h-60 overflow-auto rounded-md border border-gray-200 bg-white py-1 shadow-lg">
+          {suggestions.map((suggestion, index) => (
+            <li
+              key={suggestion.placeId}
+              className={cn(
+                "cursor-pointer px-3 py-2 text-sm text-gray-700",
+                index === highlightedIndex ? "bg-gray-100" : "hover:bg-gray-50"
+              )}
+              onMouseDown={(e) => {
+                e.preventDefault();
+                selectSuggestion(suggestion);
+              }}
+              onMouseEnter={() => setHighlightedIndex(index)}
+            >
+              {suggestion.text}
+            </li>
+          ))}
+        </ul>
       )}
       {zoneError && <p className="mt-1 text-xs text-red-500">{zoneError}</p>}
     </div>
